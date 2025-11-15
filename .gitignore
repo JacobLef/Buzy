@@ -76,3 +76,8 @@ Thumbs.db
 # -------------------------
 *.swp
 *.swo
+
+# -------------------------
+# Application Properties
+# -------------------------
+application-local.properties
