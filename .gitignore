@@ -81,3 +81,8 @@ Thumbs.db
 # Application Properties
 # -------------------------
 application-local.properties
+
+# -------------------------
+# Personal Documentation
+# -------------------------
+local/
