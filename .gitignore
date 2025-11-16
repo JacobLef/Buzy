@@ -76,3 +76,13 @@ Thumbs.db
 # -------------------------
 *.swp
 *.swo
+
+# -------------------------
+# Application Properties
+# -------------------------
+application-local.properties
+
+# -------------------------
+# Personal Documentation
+# -------------------------
+local/
