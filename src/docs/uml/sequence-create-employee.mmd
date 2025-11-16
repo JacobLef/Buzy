@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant Employer
+    participant EC as EmployeeController
+    participant ES as EmployeeService
+    participant F as BusinessPersonFactory
+    participant ER as EmployeeRepository
+    participant DB as MySQL Database
+
+    Note over Employer,DB: Workflow 1: Employer Creates New Employee
+
+    Employer->>EC: POST /api/employees
+    activate EC
+    EC->>ES: createEmployee(employeeDTO)
+    activate ES
+    ES->>F: createEmployee(name, email, salary)
+    activate F
+    F-->>ES: Employee object
+    deactivate F
+    ES->>ES: setManager(managerId)
+    ES->>ER: save(employee)
+    activate ER
+    ER->>DB: INSERT INTO employee
+    DB-->>ER: Employee record created
+    ER-->>ES: Saved employee
+    deactivate ER
+    ES-->>EC: EmployeeDTO
+    deactivate ES
+    EC-->>Employer: 201 Created
+    deactivate EC

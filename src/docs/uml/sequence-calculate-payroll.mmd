@@ -1,0 +1,51 @@
+sequenceDiagram
+    participant Employer
+    participant PR as PayrollController
+    participant PS as PayrollService
+    participant TS as TaxCalculationStrategy
+    participant ES as EmployeeService
+    participant ER as EmployeeRepository
+    participant PCR as PaycheckRepository
+    participant DB as MySQL Database
+
+    Note over Employer, DB: Workflow 2: Employer Calculates Payroll for Employee
+
+    Employer->>PR: POST /api/payroll/calculate/{employeeId}
+    activate PR
+    PR->>PS: calculatePayroll(employeeId)
+    activate PS
+
+    PS->>ES: getEmployee(employeeId)
+    activate ES
+    ES->>ER: findById(employeeId)
+    activate ER
+    ER->>DB: SELECT * FROM employee WHERE id=?
+    DB-->>ER: Employee record
+    ER-->>ES: Employee object
+    deactivate ER
+    ES-->>PS: Employee
+    deactivate ES
+
+    PS->>PS: grossPay = employee.getSalary()
+
+    PS->>TS: calculateTax(grossPay)
+    activate TS
+    TS-->>PS: taxAmount
+    deactivate TS
+
+    PS->>PS: insuranceDeduction = calculateInsurance()
+    PS->>PS: netPay = grossPay - taxAmount - insuranceDeduction
+
+    PS->>PS: createPaycheck(employee, grossPay, taxAmount, insuranceDeduction, netPay)
+
+    PS->>PCR: save(paycheck)
+    activate PCR
+    PCR->>DB: INSERT INTO paycheck
+    DB-->>PCR: Paycheck record created
+    PCR-->>PS: Saved paycheck
+    deactivate PCR
+
+    PS-->>PR: PaycheckDTO
+    deactivate PS
+    PR-->>Employer: 200 OK - Paycheck details
+    deactivate PR
