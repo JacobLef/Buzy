@@ -1,0 +1,44 @@
+graph TB
+    subgraph System["Business Management Platform"]
+        UC1[Sign Up/Login]
+        UC2[Manage Employees]
+        UC3[Manage Profile]
+        UC4[View Organization Hierarchy]
+        UC5[Manage Training Certifications]
+        UC6[Calculate Payroll]
+        UC7[Manage Business Info]
+        UC8[Assign Employees to Manager]
+        UC9[Update Employee Status]
+        UC10[Distribute Bonuses]
+    end
+
+    Employer((Employer))
+    Employee((Employee))
+    System_Admin((System))
+
+    Employer --> UC1
+    Employee --> UC1
+
+    Employer --> UC2
+    Employer --> UC7
+    Employer --> UC8
+    Employer --> UC9
+    Employer --> UC6
+    Employer --> UC10
+
+    Employee --> UC3
+    Employer --> UC3
+
+    Employee --> UC4
+    Employer --> UC4
+
+    Employee --> UC5
+    Employer --> UC5
+
+    System_Admin -.-> UC6
+    System_Admin -.-> UC5
+
+    style System fill:#e1f5ff
+    style Employer fill:#ffecb3
+    style Employee fill:#c8e6c9
+    style System_Admin fill:#f8bbd0

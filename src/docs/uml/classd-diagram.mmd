@@ -1,0 +1,229 @@
+classDiagram
+%% Abstract Classes and Interfaces
+    class BusinessPerson {
+        <<abstract>>
+        -Long id
+        -String name
+        -String email
+        -String password
+        +getId()
+        +getName()
+        +setName()
+        +getEmail()
+        +setEmail()
+    }
+
+    class Business {
+        <<interface>>
+        +getName()
+        +addEmployee()
+        +removeEmployee()
+        +getEmployees()
+    }
+
+%% Domain Models
+    class Employee {
+        -double salary
+        -Employer manager
+        -Date hireDate
+        -String position
+        +getSalary()
+        +setSalary()
+        +getManager()
+        +setManager()
+    }
+
+    class Employer {
+        -String department
+        -List~Employee~ managedEmployees
+        +getDepartment()
+        +setDepartment()
+        +addManagedEmployee()
+        +removeManagedEmployee()
+    }
+
+    class Company {
+        -Long id
+        -String name
+        -String address
+        -List~BusinessPerson~ employees
+        +addEmployee()
+        +removeEmployee()
+        +getEmployees()
+    }
+
+    class Training {
+        -Long id
+        -String trainingName
+        -Date completionDate
+        -Date expiryDate
+        -BusinessPerson person
+        +isExpired()
+        +getRemainingDays()
+    }
+
+    class Paycheck {
+        -Long id
+        -double grossPay
+        -double taxDeduction
+        -double insuranceDeduction
+        -double netPay
+        -Date payDate
+        -Employee employee
+        +calculateNetPay()
+    }
+
+%% Strategy Pattern
+    class TaxCalculationStrategy {
+        <<interface>>
+        +calculateTax(grossPay)
+    }
+
+    class FlatTaxStrategy {
+        -double taxRate
+        +calculateTax(grossPay)
+    }
+
+    class ProgressiveTaxStrategy {
+        -Map~Double,Double~ taxBrackets
+        +calculateTax(grossPay)
+    }
+
+%% Factory Pattern
+    class BusinessPersonFactory {
+        +createEmployee(name, email, salary)
+        +createEmployer(name, email, department)
+    }
+
+%% Services
+    class PayrollService {
+        <<service>>
+        -TaxCalculationStrategy taxStrategy
+        +calculatePayroll(employee)
+        +distributeBonuses(employees)
+        +setTaxStrategy(strategy)
+    }
+
+    class EmployeeService {
+        <<service>>
+        +createEmployee(employeeDTO)
+        +updateEmployee(id, employeeDTO)
+        +deleteEmployee(id)
+        +getEmployee(id)
+        +getAllEmployees()
+    }
+
+    class TrainingService {
+        <<service>>
+        +addTraining(training)
+        +checkExpiredTrainings(person)
+        +getTrainingsByPerson(personId)
+    }
+
+    class BusinessService {
+        <<service>>
+        +createBusiness(businessDTO)
+        +updateBusiness(id, businessDTO)
+        +deleteBusiness(id)
+        +getBusiness(id)
+    }
+
+%% Controllers
+    class EmployeeController {
+        <<RestController>>
+        -EmployeeService employeeService
+        +createEmployee(employeeDTO)
+        +updateEmployee(id, employeeDTO)
+        +deleteEmployee(id)
+        +getEmployee(id)
+        +getAllEmployees()
+    }
+
+    class EmployerController {
+        <<RestController>>
+        -EmployeeService employeeService
+        +createEmployer(employerDTO)
+        +updateEmployer(id, employerDTO)
+        +deleteEmployer(id)
+        +getEmployer(id)
+    }
+
+    class PayrollController {
+        <<RestController>>
+        -PayrollService payrollService
+        +calculatePayroll(employeeId)
+        +distributeBonuses(businessId)
+    }
+
+    class TrainingController {
+        <<RestController>>
+        -TrainingService trainingService
+        +addTraining(trainingDTO)
+        +getTrainingsByPerson(personId)
+        +checkExpiredTrainings(personId)
+    }
+
+    class BusinessController {
+        <<RestController>>
+        -BusinessService businessService
+        +createBusiness(businessDTO)
+        +updateBusiness(id, businessDTO)
+        +deleteBusiness(id)
+        +getBusiness(id)
+    }
+
+%% Repositories
+    class EmployeeRepository {
+        <<Repository>>
+        +save(employee)
+        +findById(id)
+        +findAll()
+        +delete(employee)
+    }
+
+    class BusinessRepository {
+        <<Repository>>
+        +save(business)
+        +findById(id)
+        +findAll()
+        +delete(business)
+    }
+
+    class TrainingRepository {
+        <<Repository>>
+        +save(training)
+        +findByPersonId(personId)
+        +findExpiredTrainings()
+    }
+
+%% Relationships - Inheritance
+    BusinessPerson <|-- Employee
+    BusinessPerson <|-- Employer
+    Business <|.. Company
+    TaxCalculationStrategy <|.. FlatTaxStrategy
+    TaxCalculationStrategy <|.. ProgressiveTaxStrategy
+
+%% Relationships - Associations
+    Employee --> Employer : managed by
+    Company "1" --> "*" BusinessPerson : employs
+    Training "*" --> "1" BusinessPerson : completed by
+    Paycheck "*" --> "1" Employee : paid to
+
+%% Services use Repositories
+    EmployeeService --> EmployeeRepository
+    BusinessService --> BusinessRepository
+    TrainingService --> TrainingRepository
+
+%% Services use Strategies
+    PayrollService --> TaxCalculationStrategy
+
+%% Controllers use Services
+    EmployeeController --> EmployeeService
+    EmployerController --> EmployeeService
+    PayrollController --> PayrollService
+    TrainingController --> TrainingService
+    BusinessController --> BusinessService
+
+%% Factory creates BusinessPersons
+    BusinessPersonFactory ..> Employee : creates
+    BusinessPersonFactory ..> Employer : creates
