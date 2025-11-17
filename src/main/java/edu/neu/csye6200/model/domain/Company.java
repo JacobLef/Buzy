@@ -64,6 +64,7 @@ public class Company implements Business {
         return name;
     }
     
+    @Override
     public void setName(String name) {
         this.name = name;
     }
@@ -88,50 +89,62 @@ public class Company implements Business {
         return new ArrayList<>(employees);
     }
     
+    @Override
     public Long getId() {
         return id;
     }
     
+    @Override
     public void setId(Long id) {
         this.id = id;
     }
     
+    @Override
     public String getAddress() {
         return address;
     }
     
+    @Override
     public void setAddress(String address) {
         this.address = address;
     }
     
+    @Override
     public String getIndustry() {
         return industry;
     }
     
+    @Override
     public void setIndustry(String industry) {
         this.industry = industry;
     }
     
+    @Override
     public LocalDate getFoundedDate() {
         return foundedDate;
     }
     
+    @Override
     public void setFoundedDate(LocalDate foundedDate) {
         this.foundedDate = foundedDate;
     }
     
+    @Override
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
     
+    @Override
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
     
+    @Override
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
     
+    @Override
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
