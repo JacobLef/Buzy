@@ -1,0 +1,151 @@
+id,training_name,description,completion_date,expiry_date,person_id,is_required
+1,Workplace Safety,OSHA workplace safety certification,2024-01-15,2025-01-15,2,true
+2,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-02-20,2025-02-20,2,true
+3,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-10,2025-03-10,2,true
+4,Java Advanced Programming,Advanced Java programming certification,2023-11-05,2024-11-05,2,false
+5,Workplace Safety,OSHA workplace safety certification,2024-01-20,2025-01-20,3,true
+6,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-02-25,2025-02-25,3,true
+7,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-15,2025-03-15,3,true
+8,Docker and Kubernetes,Container orchestration training,2024-05-10,2025-05-10,3,false
+9,Workplace Safety,OSHA workplace safety certification,2024-01-25,2025-01-25,4,true
+10,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-03-01,2025-03-01,4,true
+11,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-20,2025-03-20,4,true
+12,Git Version Control,Advanced Git workflows and best practices,2024-04-15,2025-04-15,4,false
+13,Workplace Safety,OSHA workplace safety certification,2024-02-01,2025-02-01,5,true
+14,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-03-05,2025-03-05,5,true
+15,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-25,2025-03-25,5,true
+16,Workplace Safety,OSHA workplace safety certification,2024-01-10,2025-01-10,7,true
+17,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-02-15,2025-02-15,7,true
+18,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-05,2025-03-05,7,true
+19,Project Management Professional,PMP certification training,2023-09-20,2026-09-20,7,false
+20,Workplace Safety,OSHA workplace safety certification,2024-01-12,2025-01-12,8,true
+21,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-02-18,2025-02-18,8,true
+22,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-08,2025-03-08,8,true
+23,Business Analysis Fundamentals,Core business analysis skills,2024-06-15,2025-06-15,8,false
+24,Workplace Safety,OSHA workplace safety certification,2024-01-18,2025-01-18,9,true
+25,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-02-22,2025-02-22,9,true
+26,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-12,2025-03-12,9,true
+27,Workplace Safety,OSHA workplace safety certification,2024-01-22,2025-01-22,10,true
+28,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-02-28,2025-02-28,10,true
+29,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-18,2025-03-18,10,true
+30,Medical Ethics,Healthcare professional ethics training,2024-01-05,2025-01-05,12,true
+31,HIPAA Compliance,Patient privacy and HIPAA regulations,2024-01-10,2025-01-10,12,true
+32,CPR and First Aid,Emergency response certification,2024-02-15,2026-02-15,12,true
+33,Workplace Safety,OSHA workplace safety certification,2024-03-01,2025-03-01,12,true
+34,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-20,2025-03-20,12,true
+35,Medical Ethics,Healthcare professional ethics training,2024-01-08,2025-01-08,13,true
+36,HIPAA Compliance,Patient privacy and HIPAA regulations,2024-01-15,2025-01-15,13,true
+37,CPR and First Aid,Emergency response certification,2024-02-20,2026-02-20,13,true
+38,Workplace Safety,OSHA workplace safety certification,2024-03-05,2025-03-05,13,true
+39,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-25,2025-03-25,13,true
+40,HIPAA Compliance,Patient privacy and HIPAA regulations,2024-01-20,2025-01-20,14,true
+41,CPR and First Aid,Emergency response certification,2024-02-25,2026-02-25,14,true
+42,Workplace Safety,OSHA workplace safety certification,2024-03-10,2025-03-10,14,true
+43,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-01,2025-04-01,14,true
+44,HIPAA Compliance,Patient privacy and HIPAA regulations,2024-01-25,2025-01-25,15,true
+45,CPR and First Aid,Emergency response certification,2024-03-01,2026-03-01,15,true
+46,Workplace Safety,OSHA workplace safety certification,2024-03-15,2025-03-15,15,true
+47,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-05,2025-04-05,15,true
+48,Financial Regulations,SEC and financial compliance training,2024-01-10,2025-01-10,17,true
+49,Anti-Money Laundering,AML certification and procedures,2024-01-20,2025-01-20,17,true
+50,Workplace Safety,OSHA workplace safety certification,2024-02-15,2025-02-15,17,true
+51,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-03-01,2025-03-01,17,true
+52,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-20,2025-03-20,17,true
+53,Financial Regulations,SEC and financial compliance training,2024-01-15,2025-01-15,18,true
+54,Anti-Money Laundering,AML certification and procedures,2024-01-25,2025-01-25,18,true
+55,Workplace Safety,OSHA workplace safety certification,2024-02-20,2025-02-20,18,true
+56,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-03-05,2025-03-05,18,true
+57,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-25,2025-03-25,18,true
+58,Financial Regulations,SEC and financial compliance training,2024-01-20,2025-01-20,19,true
+59,Anti-Money Laundering,AML certification and procedures,2024-02-01,2025-02-01,19,true
+60,Workplace Safety,OSHA workplace safety certification,2024-02-25,2025-02-25,19,true
+61,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-03-10,2025-03-10,19,true
+62,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-01,2025-04-01,19,true
+63,Financial Regulations,SEC and financial compliance training,2024-02-05,2025-02-05,20,true
+64,Anti-Money Laundering,AML certification and procedures,2024-02-15,2025-02-15,20,true
+65,Workplace Safety,OSHA workplace safety certification,2024-03-01,2025-03-01,20,true
+66,Cybersecurity Awareness,Basic cybersecurity and data protection training,2024-03-15,2025-03-15,20,true
+67,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-05,2025-04-05,20,true
+68,Retail Management,Store operations and customer service,2024-01-15,2025-01-15,22,true
+69,Loss Prevention,Inventory and security management,2024-02-10,2025-02-10,22,true
+70,Workplace Safety,OSHA workplace safety certification,2024-03-01,2025-03-01,22,true
+71,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-20,2025-03-20,22,true
+72,Retail Management,Store operations and customer service,2024-01-20,2025-01-20,23,true
+73,Loss Prevention,Inventory and security management,2024-02-15,2025-02-15,23,true
+74,Workplace Safety,OSHA workplace safety certification,2024-03-05,2025-03-05,23,true
+75,Diversity and Inclusion,Workplace diversity and inclusion training,2024-03-25,2025-03-25,23,true
+76,Retail Operations,Point of sale and inventory systems,2024-02-01,2025-02-01,24,true
+77,Workplace Safety,OSHA workplace safety certification,2024-03-10,2025-03-10,24,true
+78,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-01,2025-04-01,24,true
+79,Retail Operations,Point of sale and inventory systems,2024-02-10,2025-02-10,25,true
+80,Workplace Safety,OSHA workplace safety certification,2024-03-15,2025-03-15,25,true
+81,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-05,2025-04-05,25,true
+82,Manufacturing Safety,Industrial equipment safety certification,2024-01-05,2025-01-05,27,true
+83,Lean Manufacturing,Continuous improvement and waste reduction,2024-02-15,2025-02-15,27,true
+84,Quality Control,Product quality assurance procedures,2024-03-10,2025-03-10,27,true
+85,Workplace Safety,OSHA workplace safety certification,2024-01-20,2025-01-20,27,true
+86,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-01,2025-04-01,27,true
+87,Manufacturing Safety,Industrial equipment safety certification,2024-01-10,2025-01-10,28,true
+88,Lean Manufacturing,Continuous improvement and waste reduction,2024-02-20,2025-02-20,28,true
+89,Quality Control,Product quality assurance procedures,2024-03-15,2025-03-15,28,true
+90,Workplace Safety,OSHA workplace safety certification,2024-01-25,2025-01-25,28,true
+91,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-05,2025-04-05,28,true
+92,Manufacturing Safety,Industrial equipment safety certification,2024-01-20,2025-01-20,29,true
+93,Forklift Operation,Powered industrial truck certification,2024-02-10,2027-02-10,29,true
+94,Workplace Safety,OSHA workplace safety certification,2024-03-01,2025-03-01,29,true
+95,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-10,2025-04-10,29,true
+96,Manufacturing Safety,Industrial equipment safety certification,2024-01-25,2025-01-25,30,true
+97,Forklift Operation,Powered industrial truck certification,2024-02-15,2027-02-15,30,true
+98,Workplace Safety,OSHA workplace safety certification,2024-03-05,2025-03-05,30,true
+99,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-15,2025-04-15,30,true
+100,Academic Ethics,Teaching and research ethics,2024-01-10,2025-01-10,32,true
+101,Curriculum Development,Course design and assessment,2024-02-15,2025-02-15,32,true
+102,Workplace Safety,OSHA workplace safety certification,2024-03-10,2025-03-10,32,true
+103,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-05,2025-04-05,32,true
+104,Academic Ethics,Teaching and research ethics,2024-01-15,2025-01-15,33,true
+105,Curriculum Development,Course design and assessment,2024-02-20,2025-02-20,33,true
+106,Workplace Safety,OSHA workplace safety certification,2024-03-15,2025-03-15,33,true
+107,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-10,2025-04-10,33,true
+108,Academic Ethics,Teaching and research ethics,2024-01-20,2025-01-20,34,true
+109,Workplace Safety,OSHA workplace safety certification,2024-03-20,2025-03-20,34,true
+110,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-15,2025-04-15,34,true
+111,Academic Ethics,Teaching and research ethics,2024-01-25,2025-01-25,35,true
+112,Workplace Safety,OSHA workplace safety certification,2024-03-25,2025-03-25,35,true
+113,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-20,2025-04-20,35,true
+114,Renewable Energy Systems,Solar and wind power engineering,2024-01-15,2025-01-15,37,true
+115,Electrical Safety,High voltage safety certification,2024-02-10,2025-02-10,37,true
+116,Workplace Safety,OSHA workplace safety certification,2024-03-05,2025-03-05,37,true
+117,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-01,2025-04-01,37,true
+118,Renewable Energy Systems,Solar and wind power engineering,2024-01-20,2025-01-20,38,true
+119,Electrical Safety,High voltage safety certification,2024-02-15,2025-02-15,38,true
+120,Workplace Safety,OSHA workplace safety certification,2024-03-10,2025-03-10,38,true
+121,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-05,2025-04-05,38,true
+122,Renewable Energy Systems,Solar and wind power engineering,2024-02-01,2025-02-01,39,true
+123,Electrical Safety,High voltage safety certification,2024-02-20,2025-02-20,39,true
+124,Workplace Safety,OSHA workplace safety certification,2024-03-15,2025-03-15,39,true
+125,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-10,2025-04-10,39,true
+126,Renewable Energy Systems,Solar and wind power engineering,2024-02-10,2025-02-10,40,true
+127,Electrical Safety,High voltage safety certification,2024-03-01,2025-03-01,40,true
+128,Workplace Safety,OSHA workplace safety certification,2024-03-20,2025-03-20,40,true
+129,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-15,2025-04-15,40,true
+130,Legal Ethics,Attorney professional responsibility,2024-01-05,2025-01-05,42,true
+131,Continuing Legal Education,State bar requirements,2024-02-10,2025-02-10,42,true
+132,Workplace Safety,OSHA workplace safety certification,2024-03-15,2025-03-15,42,true
+133,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-01,2025-04-01,42,true
+134,Legal Ethics,Attorney professional responsibility,2024-01-10,2025-01-10,43,true
+135,Continuing Legal Education,State bar requirements,2024-02-15,2025-02-15,43,true
+136,Workplace Safety,OSHA workplace safety certification,2024-03-20,2025-03-20,43,true
+137,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-05,2025-04-05,43,true
+138,Legal Ethics,Attorney professional responsibility,2024-01-15,2025-01-15,44,true
+139,Continuing Legal Education,State bar requirements,2024-02-20,2025-02-20,44,true
+140,Workplace Safety,OSHA workplace safety certification,2024-03-25,2025-03-25,44,true
+141,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-10,2025-04-10,44,true
+142,Legal Ethics,Attorney professional responsibility,2024-01-20,2025-01-20,45,true
+143,Continuing Legal Education,State bar requirements,2024-03-01,2025-03-01,45,true
+144,Workplace Safety,OSHA workplace safety certification,2024-04-01,2025-04-01,45,true
+145,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-15,2025-04-15,45,true
+146,Digital Marketing Fundamentals,SEO and content marketing basics,2024-01-10,2025-01-10,47,true
+147,Google Analytics,Web analytics certification,2024-02-15,2025-02-15,47,true
+148,Workplace Safety,OSHA workplace safety certification,2024-03-10,2025-03-10,47,true
+149,Diversity and Inclusion,Workplace diversity and inclusion training,2024-04-05,2025-04-05,47,true
+150,Digital Marketing Fundamentals,SEO and content marketing basics,2024-01-15,2025-01-15,48,true
