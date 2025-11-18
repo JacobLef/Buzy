@@ -3,8 +3,11 @@ package edu.neu.csye6200.model.domain;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Company entity representing a business organization
@@ -147,6 +150,109 @@ public class Company implements Business {
     @Override
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public static class Builder {
+        private String name;
+        private String address;
+        private String industry;
+        private LocalDate foundedDate;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
+        
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+        
+        public Builder address(String address) {
+            this.address = address;
+            return this;
+        }
+        
+        public Builder industry(String industry) {
+            this.industry = industry;
+            return this;
+        }
+        
+        public Builder foundedDate(LocalDate foundedDate) {
+            this.foundedDate = foundedDate;
+            return this;
+        }
+        
+        public Builder createdAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+        
+        public Builder updatedAt(LocalDateTime updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+        
+        /**
+         * Creates a Builder instance from a CSV row map.
+         * 
+         * @param csvRow Map containing CSV column names as keys and values as values
+         * @return Builder instance configured with CSV data
+         * @throws IllegalArgumentException if required fields are missing or invalid
+         */
+        public static Builder fromCSV(Map<String, String> csvRow) {
+            if (csvRow == null) {
+                throw new IllegalArgumentException("CSV row cannot be null");
+            }
+            
+            Builder builder = new Builder();
+            
+            String name = csvRow.get("name");
+            if (name != null && !name.trim().isEmpty()) {
+                builder.name(name.trim());
+            }
+            
+            String address = csvRow.get("address");
+            if (address != null && !address.trim().isEmpty()) {
+                builder.address(address.trim());
+            }
+            
+            String industry = csvRow.get("industry");
+            if (industry != null && !industry.trim().isEmpty()) {
+                builder.industry(industry.trim());
+            }
+            
+            String foundedDateStr = csvRow.get("founded_date");
+            if (foundedDateStr != null && !foundedDateStr.trim().isEmpty()) {
+                try {
+                    LocalDate foundedDate = LocalDate.parse(foundedDateStr.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+                    builder.foundedDate(foundedDate);
+                } catch (DateTimeParseException e) {
+                    System.err.println("Warning: Invalid date format for founded_date: " + foundedDateStr + ". Skipping date.");
+                }
+            }
+            
+            return builder;
+        }
+        
+        public Company build() {
+            if (name == null || name.trim().isEmpty()) {
+                throw new IllegalArgumentException("Company name is required");
+            }
+            
+            Company company = new Company();
+            company.setName(name);
+            company.setAddress(address);
+            company.setIndustry(industry);
+            company.setFoundedDate(foundedDate);
+            
+            LocalDateTime now = LocalDateTime.now();
+            company.setCreatedAt(createdAt != null ? createdAt : now);
+            company.setUpdatedAt(updatedAt != null ? updatedAt : now);
+            
+            return company;
+        }
+    }
+    
+    public static Builder builder() {
+        return new Builder();
     }
 }
 
