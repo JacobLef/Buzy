@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * Business interface defining core operations for business entities
+ * 
+ * @author Qing Mi
  */
 public interface Business {
     
