@@ -25,6 +25,8 @@ import java.util.TreeMap;
  * brackets.put(50000.0, 0.20);
  * TaxCalculationStrategy strategy = new ProgressiveTaxStrategy(brackets);
  * double tax = strategy.calculateTax(60000.0); // Returns 12000.0
+ * 
+ * @author Qing Mi
  */
 public class ProgressiveTaxStrategy implements TaxCalculationStrategy {
     // TreeMap: auto-sorts by threshold (ascending), ensures correct bracket order

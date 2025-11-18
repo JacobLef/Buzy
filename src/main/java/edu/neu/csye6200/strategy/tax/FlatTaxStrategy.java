@@ -10,6 +10,8 @@ package edu.neu.csye6200.strategy.tax;
  * Usage:
  * TaxCalculationStrategy strategy = new FlatTaxStrategy(0.15);
  * double tax = strategy.calculateTax(50000.0); // Returns 7500.0
+ * 
+ * @author Qing Mi
  */
 public class FlatTaxStrategy implements TaxCalculationStrategy {
     private final double taxRate;

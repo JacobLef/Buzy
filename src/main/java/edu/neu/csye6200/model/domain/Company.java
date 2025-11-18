@@ -11,6 +11,8 @@ import java.util.Map;
 
 /**
  * Company entity representing a business organization
+ * 
+ * @author Qing Mi
  */
 @Entity
 @Table(name = "business")
@@ -63,16 +65,6 @@ public class Company implements Business {
     }
     
     @Override
-    public String getName() {
-        return name;
-    }
-    
-    @Override
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    @Override
     public void addEmployee(BusinessPerson employee) {
         if (employee != null && !employees.contains(employee)) {
             employees.add(employee);
@@ -85,6 +77,16 @@ public class Company implements Business {
         if (employee != null && employees.remove(employee)) {
             employee.setBusiness(null);
         }
+    }
+    
+    @Override
+    public String getName() {
+        return name;
+    }
+    
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
     
     @Override
