@@ -1,5 +1,7 @@
 # UML Diagrams - Business Management Platform
 
+### MUST UPADET THE CLASS DIAGRAM
+
 ## Use Case Diagram
 ![Use Case Diagram](uml/images/Use-Case-Diagram-OOD.png)
 

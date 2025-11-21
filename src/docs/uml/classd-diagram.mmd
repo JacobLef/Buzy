@@ -6,11 +6,46 @@ classDiagram
         -String name
         -String email
         -String password
+        -Company company
+        -PersonStatus status
+        -LocalDateTime createdAt
+        -LocalDateTime upatedAt
         +getId()
+        +setId()
         +getName()
         +setName()
         +getEmail()
         +setEmail()
+        +getPassword()
+        +setPassword()
+        +getCompany()
+        +setCompany()
+        +getStatus()
+        +setStatus()
+        +getCreatedAt()
+        +getUpdatedAt()
+        +onUpdate()
+    }
+
+    class BusinessPersonDTO {
+        <<abstract>>
+        -Long id
+        -String name
+        -String email
+        -Long businessId
+        -String businessName
+        -PersonStatus status
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+        +getId()
+        +getName()
+        +getEmail()
+        +getBusinessId()
+        +getBusinessName()
+        +getStatus()
+        +getCreatedAt()
+        +getUpdatedAt()
+        +Builder
     }
 
     class Business {
@@ -22,6 +57,7 @@ classDiagram
     }
 
 %% Domain Models
+
     class Employee {
         -double salary
         -Employer manager
@@ -35,11 +71,14 @@ classDiagram
 
     class Employer {
         -String department
+        -String title
         -List~Employee~ managedEmployees
         +getDepartment()
         +setDepartment()
         +addManagedEmployee()
         +removeManagedEmployee()
+        +getTitle()
+        +setTitle()
     }
 
     class Company {
@@ -95,6 +134,70 @@ classDiagram
         +createEmployer(name, email, department)
     }
 
+    class DTOFactory {
+        +createDTO(employee)
+        +createDTO(employer)
+        +createDTO(training)
+    }
+
+%% DTOs
+    class EmployerDTO {
+        -String department
+        -String title
+        -Integer directReportsCount
+        +getPersonType()
+        +getDepartment()
+        +getTitle()
+        +getDIrectReportsCount()
+        +builder()
+    }
+
+    class EmployeeDTO {
+        -Double salary
+        -String position
+        -LocalDate hireDate
+        -Long managerId
+        -String managerName
+        +getPersonType()
+        +getSalary()
+        +getPosition()
+        +getHireDate()
+        +getManagerId()
+        +getManagerName()
+        +builder()
+    }
+
+    class TrainingDTO {
+        -Long id
+        -String trainingName
+        -String description
+        -LocalDate completionDate
+        -LocalDate expiryDate
+        -boolean required
+        -boolean expired
+        -Long personId
+        -String personName
+        -LocalDateTime createdAt
+        +getId()
+        +getTrainingName()
+        +getDescription()
+        +getCompletionDate()
+        +getExpiryDate()
+        +isRequired()
+        +isExpired()
+        +getPersonId()
+        +getCreatedAt()
+        +builder()
+    }
+
+    class ErrorResponse {
+        <<record>>
+        -LocalDateTime timeStamp
+        -int status
+        -String error
+        -String message
+    }
+
 %% Services
     class PayrollService {
         <<service>>
@@ -106,11 +209,42 @@ classDiagram
 
     class EmployeeService {
         <<service>>
-        +createEmployee(employeeDTO)
-        +updateEmployee(id, employeeDTO)
-        +deleteEmployee(id)
-        +getEmployee(id)
+        +createEmployee(CreateEmployeeRequest)
+        +getEmployee(Long)
         +getAllEmployees()
+        +updateEmployee(Long, UpdateEmployeeRequest)
+        +deleteEmployee(Long)
+        +getEmployeesByBusiness(Long)
+        +getEmployeesByManager(Long)
+        +assignManager(Long, Long)
+        +removeManager(Long)
+        +updateSalary(Long, Double)
+        +giveBonus(Long, Double)
+        +updatePosition(Long, String)
+        +updateStatus(Long, String)
+        +searchByName(String)
+        +getEmployeesByPosition(String)
+        +getEmployeesHiredAfter(String)
+    }
+
+    class EmployerService {
+        <<service>>
+        +createEmployer(CreateEmployerRequest)
+        +getEmployer(Long)
+        +getAllEmployers()
+        +updateEmployer(Long, UpdateEmployerRequest)
+        +deleteEmployer(Long)
+        +getEmployersByBusiness(Long)
+        +getEmployersByDepartment(String)
+        +addManagedEmployee(Long, Long)
+        +removeManagedEmployee(Long, Long)
+        +getDirectReports(Long)
+        +getDirectReportsCount(Long)
+        +updateDepartment(Long, String)
+        +updateTitle(Long, String)
+        +updateStatus(Long, String)
+        +searchByName(String)
+        +getEmployersByTitle(String)
     }
 
     class TrainingService {
@@ -132,20 +266,29 @@ classDiagram
     class EmployeeController {
         <<RestController>>
         -EmployeeService employeeService
-        +createEmployee(employeeDTO)
-        +updateEmployee(id, employeeDTO)
-        +deleteEmployee(id)
-        +getEmployee(id)
+        +createEmployee(CreateEmployeeRequest)
+        +getEmployee(Long)
         +getAllEmployees()
+        +updateEmployee(Long, UpdateEmployeeRequest)
+        +deleteEmployee(Long)
+        +getEmployeesByBusiness(Long)
+        +getEmployeesByManager(Long)
+        +assignManager(Long, Long)
+        +updateSalary(Long, Double)
+        +giveBonus(Long, Double)
     }
 
     class EmployerController {
         <<RestController>>
-        -EmployeeService employeeService
-        +createEmployer(employerDTO)
-        +updateEmployer(id, employerDTO)
-        +deleteEmployer(id)
-        +getEmployer(id)
+        -EmployerService employerService
+        +createEmployer(CreateEmployerRequest)
+        +getEmployer(Long)
+        +getAllEmployers()
+        +updateEmployer(Long, UpdateEmployerRequest)
+        +deleteEmployer(Long)
+        +getEmployersByBusiness(Long)
+        +getEmployersByDepartment(String)
+        +getDirectReports(Long)
     }
 
     class PayrollController {
@@ -179,6 +322,28 @@ classDiagram
         +findById(id)
         +findAll()
         +delete(employee)
+        +findByBusinessId(Long)
+        +findByManagerId(Long)
+        +findByEmail(String)
+        +findByPosition(String)
+        +findByStatus(String)
+        +findByNameContainingIgnoreCase(String)
+        +findBySalaryBetween(Double, Double)
+        +findByHireDateAfter(LocalDate)
+    }
+
+    class EmployerRepository {
+        <<Repository>>
+        +save(employer)
+        +findById(id)
+        +findAll()
+        +delete(employer)
+        +findByBusinessId(Long)
+        +findByDepartment(String)
+        +findByEmail(String)
+        +findByTitle(String)
+        +findByStatus(String)
+        +findByNameContainingIgnoreCase(String)
     }
 
     class BusinessRepository {
@@ -196,21 +361,71 @@ classDiagram
         +findExpiredTrainings()
     }
 
+%% Exceptions
+    class GlobalExceptionHandler {
+        <<RestControllerAdvice>>
+        +handleEmployerNotFoundException(EmployerNotFoundException)
+        +handleEmployeeNotFoundException(EmployeeNotFoundException)
+        +handleBusinessNotFoundException(BusinessNotFoundException)
+        +handleInvalidBusinessException(InvalidBusinessException)
+        +handleIllegalArgumentException(IllegalArgumentException)
+        +handleException(Exception)
+    }
+
+    class EmployerNotFoundException {
+        <<Exception>>
+        +EmployerNotFoundException(employerId)
+        +EmployerNotFoundException(message)
+    }
+
+    class EmployeeNotFoundException {
+        <<Exception>>
+        +EmployeeNotFoundException(employeeId)
+        +EmployeeNotFoundException(message)
+    }
+
+    class BusinessNotFoundException {
+        <<Exception>>
+        +BusinessNotFoundException(id)
+        +BusinessNotFoundException(message)
+    }
+
+    class InvalidBusinessException {
+        <<Exception>>
+        +InvalidBusinessException(message)
+        +InvalidBusinessException(message, cause)
+    }
+
 %% Relationships - Inheritance
     BusinessPerson <|-- Employee
     BusinessPerson <|-- Employer
+    BusinessPersonDTO <|-- EmployeeDTO
+    BusinessPersonDTO <|-- EmployerDTO
     Business <|.. Company
     TaxCalculationStrategy <|.. FlatTaxStrategy
     TaxCalculationStrategy <|.. ProgressiveTaxStrategy
+    RuntimeException <|.. EmployerNotFoundException
+    RuntimeException <|.. EmployeeNotFoundException
+    RuntimeException <|.. BusinessNotFoundException
+    RuntimeException <|.. InvalidBusinessException
 
 %% Relationships - Associations
     Employee --> Employer : managed by
     Company "1" --> "*" BusinessPerson : employs
     Training "*" --> "1" BusinessPerson : completed by
     Paycheck "*" --> "1" Employee : paid to
+    GlobalExceptionHandler --> EmployerNotFoundException : handled by
+    GlobalExceptionHandler --> EmployeeNotFoundException : handled by
+    GlobalExceptionHandler --> BusinessNotFoundException : handled by
+    GlobalExceptionHandler --> InvalidBusinessException : handled by
 
 %% Services use Repositories
     EmployeeService --> EmployeeRepository
+    EmployeeService --> EmployerRepository
+    EmployeeService --> BusinessRepository
+    EmployerService --> EmployerRepository
+    EmployerService --> EmployeeRepository
+    EmployerService --> BusinessRepository
     BusinessService --> BusinessRepository
     TrainingService --> TrainingRepository
 
@@ -219,7 +434,7 @@ classDiagram
 
 %% Controllers use Services
     EmployeeController --> EmployeeService
-    EmployerController --> EmployeeService
+    EmployerController --> EmployerService
     PayrollController --> PayrollService
     TrainingController --> TrainingService
     BusinessController --> BusinessService
@@ -227,3 +442,5 @@ classDiagram
 %% Factory creates BusinessPersons
     BusinessPersonFactory ..> Employee : creates
     BusinessPersonFactory ..> Employer : creates
+    DTOFactory ..> EmployeeDTO : creates
+    DTOFactory ..> EmployerDTO : creates
