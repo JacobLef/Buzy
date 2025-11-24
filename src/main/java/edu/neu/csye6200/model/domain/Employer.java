@@ -68,7 +68,7 @@ public class Employer extends BusinessPerson {
    *                exists, then it is not added.
    */
   public void addManagedEmployee(Employee employee) {
-    if (!this.managedEmployees.add(employee)) {
+    if (this.managedEmployees.add(employee)) {
       employee.setManager(this);
     }
   }

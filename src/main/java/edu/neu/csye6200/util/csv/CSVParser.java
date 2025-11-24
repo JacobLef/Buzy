@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Functional interface for CSV parsing operations.
  * 
- * @author Team 10
+ * @author jacoblefkowitz
  */
 @FunctionalInterface
 public interface CSVParser {

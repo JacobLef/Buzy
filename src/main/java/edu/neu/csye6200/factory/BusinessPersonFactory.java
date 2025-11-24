@@ -33,7 +33,6 @@ public class BusinessPersonFactory {
       Employer manager
   ) {
     Employee employee = new Employee(name, email, password, salary, position);
-    employee.setManager(manager);
     if (manager != null) {
       manager.addManagedEmployee(employee);
     }

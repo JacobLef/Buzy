@@ -1,0 +1,33 @@
+id,name,email,password,department,title,company_id,status
+1,Sarah Johnson,sarah.johnson@techvision.com,SecurePass123!,Engineering,VP Engineering,1,Active
+2,Michael Chen,michael.chen@techvision.com,SecurePass123!,Product,Director of Product,1,Active
+3,Emily Rodriguez,emily.rodriguez@techvision.com,SecurePass123!,Human Resources,HR Director,1,Active
+4,David Kim,david.kim@globalfinance.com,SecurePass123!,Operations,Chief Operations Officer,2,Active
+5,Jessica Martinez,jessica.martinez@globalfinance.com,SecurePass123!,Finance,CFO,2,Active
+6,Robert Taylor,robert.taylor@globalfinance.com,SecurePass123!,Compliance,Compliance Director,2,Active
+7,Amanda White,amanda.white@healthcare.com,SecurePass123!,Medical Services,Chief Medical Officer,3,Active
+8,Christopher Lee,christopher.lee@healthcare.com,SecurePass123!,Administration,Hospital Administrator,3,Active
+9,Jennifer Brown,jennifer.brown@edutech.com,SecurePass123!,Academic Affairs,Dean of Students,4,Active
+10,Daniel Garcia,daniel.garcia@edutech.com,SecurePass123!,Technology,IT Director,4,Active
+11,Michelle Wilson,michelle.wilson@greenenergy.com,SecurePass123!,Renewable Energy,VP Renewable Projects,5,Active
+12,James Anderson,james.anderson@greenenergy.com,SecurePass123!,Research,Director of R&D,5,Active
+13,Laura Thompson,laura.thompson@retaildynamics.com,SecurePass123!,Store Operations,Regional Manager,6,Active
+14,Kevin Martinez,kevin.martinez@retaildynamics.com,SecurePass123!,Supply Chain,Supply Chain Director,6,Active
+15,Rachel Davis,rachel.davis@mfgpro.com,SecurePass123!,Production,Plant Manager,7,Active
+16,Thomas Moore,thomas.moore@mfgpro.com,SecurePass123!,Quality Assurance,QA Director,7,Active
+17,Nicole Jackson,nicole.jackson@consultingllc.com,SecurePass123!,Strategy,Managing Partner,8,Active
+18,Brandon Clark,brandon.clark@consultingllc.com,SecurePass123!,Client Services,Director of Client Relations,8,Active
+19,Stephanie Lewis,stephanie.lewis@mediasolutions.com,SecurePass123!,Content,Content Director,9,Active
+20,Andrew Robinson,andrew.robinson@mediasolutions.com,SecurePass123!,Digital Marketing,Marketing Director,9,Active
+21,Christina Walker,christina.walker@legalassoc.com,SecurePass123!,Corporate Law,Senior Partner,10,Active
+22,Matthew Hall,matthew.hall@legalassoc.com,SecurePass123!,Litigation,Litigation Director,10,Active
+23,Elizabeth Allen,elizabeth.allen@realestate.com,SecurePass123!,Commercial Properties,VP Commercial,11,Active
+24,Joshua Young,joshua.young@realestate.com,SecurePass123!,Residential,Director of Residential Sales,11,Active
+25,Samantha King,samantha.king@foodservices.com,SecurePass123!,Culinary Operations,Executive Chef,12,Active
+26,Ryan Wright,ryan.wright@foodservices.com,SecurePass123!,Restaurant Management,General Manager,12,Active
+27,Ashley Scott,ashley.scott@transportsys.com,SecurePass123!,Logistics,Logistics Director,13,Active
+28,Justin Green,justin.green@transportsys.com,SecurePass123!,Fleet Management,Fleet Operations Manager,13,Active
+29,Megan Adams,megan.adams@biotechinno.com,SecurePass123!,Research,Chief Science Officer,14,Active
+30,Tyler Baker,tyler.baker@biotechinno.com,SecurePass123!,Clinical Trials,Clinical Director,14,Active
+31,Rebecca Nelson,rebecca.nelson@inspartners.com,SecurePass123!,Underwriting,VP Underwriting,15,Active
+32,Eric Carter,eric.carter@inspartners.com,SecurePass123!,Claims,Claims Director,15,Active
