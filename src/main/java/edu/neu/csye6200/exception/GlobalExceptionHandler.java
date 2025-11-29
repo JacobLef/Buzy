@@ -10,6 +10,59 @@ import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+  @ExceptionHandler(InvalidCredentialsException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(
+      InvalidCredentialsException e
+  ) {
+    ErrorResponse res = new ErrorResponse(
+        LocalDateTime.now(),
+        HttpStatus.UNAUTHORIZED.value(),
+        "Unauthorized",
+        e.getMessage()
+    );
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
+  }
+
+  @ExceptionHandler(InvalidTokenException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidTokenException(
+      InvalidTokenException e
+  ) {
+    ErrorResponse res = new ErrorResponse(
+        LocalDateTime.now(),
+        HttpStatus.UNAUTHORIZED.value(),
+        "Unauthorized",
+        e.getMessage()
+    );
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
+  }
+
+  @ExceptionHandler(UserDisabledException.class)
+  public ResponseEntity<ErrorResponse> handleUserDisabledException(
+      UserDisabledException e
+  ) {
+    ErrorResponse res = new ErrorResponse(
+        LocalDateTime.now(),
+        HttpStatus.FORBIDDEN.value(),
+        "Forbidden",
+        e.getMessage()
+    );
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+  }
+
+  @ExceptionHandler(UserNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleUserNotFoundException(
+      UserNotFoundException e
+  ) {
+    ErrorResponse res = new ErrorResponse(
+        LocalDateTime.now(),
+        HttpStatus.NOT_FOUND.value(),
+        "Not Found",
+        e.getMessage()
+    );
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+  }
+
   @ExceptionHandler(EmployerNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleEmployerNotFoundException(
       EmployerNotFoundException e
@@ -30,7 +83,7 @@ public class GlobalExceptionHandler {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.NOT_FOUND.value(),
-        "Not found",
+        "Not Found",
         e.getMessage()
     );
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
@@ -43,7 +96,7 @@ public class GlobalExceptionHandler {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.NOT_FOUND.value(),
-        "Not found",
+        "Not Found",
         e.getMessage()
     );
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
@@ -59,7 +112,7 @@ public class GlobalExceptionHandler {
         "Bad Request",
         e.getMessage()
     );
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
