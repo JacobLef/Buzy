@@ -18,26 +18,23 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tester class for CSVParser objects.
  */
 public class CSVParserTest {
-  private static final String business;
-  private static final String employees;
-  private static final String training;
-  private static final CSVParser csvParser = new CSVParserImpl();
 
-  static {
-    business = "src/test/java/edu/neu/csye6200/util/tester_csv/business-test.csv";
-    employees = "src/test/java/edu/neu/csye6200/util/tester_csv/employees-test.csv";
-    training = "src/test/java/edu/neu/csye6200/util/tester_csv/training-test.csv";
-  }
+  private static final String BUSINESS_CSV = "src/test/java/edu/neu/csye6200/util/tester_csv/business-test.csv";
+  private static final String EMPLOYERS_CSV = "src/test/java/edu/neu/csye6200/util/tester_csv/employers-test.csv";
+  private static final String EMPLOYEES_CSV = "src/test/java/edu/neu/csye6200/util/tester_csv/employees-test.csv";
+  private static final String TRAINING_CSV = "src/test/java/edu/neu/csye6200/util/tester_csv/training-test.csv";
+
+  private static final CSVParser csvParser = new CSVParserImpl();
 
   @Test
   public void testParseBusinessCSV() {
     List<Map<String, String>> businesses = null;
     try {
       businesses = csvParser.parse(
-          new BufferedReader(new FileReader(business))
+          new BufferedReader(new FileReader(BUSINESS_CSV))
       );
     } catch (FileNotFoundException e) {
-      Assertions.fail("Cannot find file path: " + business);
+      Assertions.fail("Cannot find file path: " + BUSINESS_CSV);
     }
 
     assertNotNull(businesses);
@@ -62,40 +59,66 @@ public class CSVParserTest {
   }
 
   @Test
-  public void testParseEmployeesCSV() {
-    List<Map<String, String>> people = null;
+  public void testParseEmployersCSV() {
+    List<Map<String, String>> employers = null;
     try {
-      people = csvParser.parse(
-          new BufferedReader(new FileReader(employees))
+      employers = csvParser.parse(
+          new BufferedReader(new FileReader(EMPLOYERS_CSV))
       );
     } catch (FileNotFoundException e) {
-      Assertions.fail("Cannot find file path: " + employees);
+      Assertions.fail("Cannot find file path: " + EMPLOYERS_CSV);
     }
-    assertNotNull(people);
-    assertEquals(7, people.size());
 
-    Map<String, String> employer1 = people.get(0);
+    assertNotNull(employers);
+    assertEquals(3, employers.size());
+
+    Map<String, String> employer1 = employers.get(0);
     assertEquals("1", employer1.get("id"));
-    assertEquals("Employer", employer1.get("person_type"));
     assertEquals("Sarah Chen", employer1.get("name"));
     assertEquals("sarah.chen@techstart.com", employer1.get("email"));
-    assertEquals("1", employer1.get("business_id"));
+    assertEquals("150000", employer1.get("salary"));
+    assertEquals("1", employer1.get("company_id"));
     assertEquals("Engineering", employer1.get("department"));
     assertEquals("CTO", employer1.get("title"));
-    assertTrue(employer1.get("salary").isEmpty() || employer1.get("salary") == null);
+    assertEquals("2018-03-15", employer1.get("hire_date"));
+    assertEquals("Active", employer1.get("status"));
 
-    Map<String, String> employee1 = people.get(1);
+    Map<String, String> employer2 = employers.get(1);
+    assertEquals("4", employer2.get("id"));
+    assertEquals("Jennifer Walsh", employer2.get("name"));
+    assertEquals("Chief Medical Officer", employer2.get("title"));
+    assertEquals("140000", employer2.get("salary"));
+  }
+
+  @Test
+  public void testParseEmployeesCSV() {
+    List<Map<String, String>> employees = null;
+    try {
+      employees = csvParser.parse(
+          new BufferedReader(new FileReader(EMPLOYEES_CSV))
+      );
+    } catch (FileNotFoundException e) {
+      Assertions.fail("Cannot find file path: " + EMPLOYEES_CSV);
+    }
+
+    assertNotNull(employees);
+    assertEquals(4, employees.size());
+
+    Map<String, String> employee1 = employees.get(0);
     assertEquals("2", employee1.get("id"));
-    assertEquals("Employee", employee1.get("person_type"));
     assertEquals("Michael Rodriguez", employee1.get("name"));
+    assertEquals("michael.r@techstart.com", employee1.get("email"));
     assertEquals("95000", employee1.get("salary"));
     assertEquals("1", employee1.get("manager_id"));
     assertEquals("2020-06-15", employee1.get("hire_date"));
     assertEquals("Senior Software Engineer", employee1.get("position"));
     assertEquals("Active", employee1.get("status"));
 
-    assertTrue(employee1.get("department").isEmpty() || employee1.get("department") == null);
-    assertTrue(employee1.get("title").isEmpty() || employee1.get("title") == null);
+    Map<String, String> employee2 = employees.get(1);
+    assertEquals("3", employee2.get("id"));
+    assertEquals("Emily Thompson", employee2.get("name"));
+    assertEquals("75000", employee2.get("salary"));
+    assertEquals("Junior Developer", employee2.get("position"));
   }
 
   @Test
@@ -103,10 +126,10 @@ public class CSVParserTest {
     List<Map<String, String>> trainings = null;
     try {
       trainings = csvParser.parse(
-          new BufferedReader(new FileReader(training))
+          new BufferedReader(new FileReader(TRAINING_CSV))
       );
     } catch (FileNotFoundException e) {
-      Assertions.fail("Cannot find file path: " + training);
+      Assertions.fail("Cannot find file path: " + TRAINING_CSV);
     }
 
     assertNotNull(trainings);
@@ -125,7 +148,6 @@ public class CSVParserTest {
     assertEquals("3", training3.get("id"));
     assertEquals("Java Programming", training3.get("training_name"));
     assertEquals("false", training3.get("is_required"));
-
     assertEquals("2023-11-05", training3.get("completion_date"));
     assertEquals("2024-11-05", training3.get("expiry_date"));
 
@@ -135,25 +157,41 @@ public class CSVParserTest {
   }
 
   @Test
-  public void testParseEmptyFields() {
-    List<Map<String, String>> people = null;
+  public void testEmployerHasSalaryAndHireDate() {
+    List<Map<String, String>> employers = null;
     try {
-      people = csvParser.parse(
-          new BufferedReader(new FileReader(employees))
+      employers = csvParser.parse(
+          new BufferedReader(new FileReader(EMPLOYERS_CSV))
       );
     } catch (FileNotFoundException e) {
-      Assertions.fail("Cannot find file path: " + employees);
+      Assertions.fail("Cannot find file path: " + EMPLOYERS_CSV);
     }
 
-    Map<String, String> employer = people.get(0);
-    assertEquals("Employer", employer.get("person_type"));
-    assertTrue(employer.get("salary") == null || employer.get("salary").isEmpty());
-    assertTrue(employer.get("manager_id") == null || employer.get("manager_id").isEmpty());
+    for (Map<String, String> employer : employers) {
+      assertNotNull(employer.get("salary"), "Employer should have salary");
+      assertFalse(employer.get("salary").isEmpty(), "Employer salary should not be empty");
+      assertNotNull(employer.get("hire_date"), "Employer should have hire_date");
+      assertFalse(employer.get("hire_date").isEmpty(), "Employer hire_date should not be empty");
+    }
+  }
 
-    Map<String, String> employee = people.get(1);
-    assertEquals("Employee", employee.get("person_type"));
-    assertTrue(employee.get("department") == null || employee.get("department").isEmpty());
-    assertTrue(employee.get("title") == null || employee.get("title").isEmpty());
+  @Test
+  public void testEmployeeHasSalaryAndHireDate() {
+    List<Map<String, String>> employees = null;
+    try {
+      employees = csvParser.parse(
+          new BufferedReader(new FileReader(EMPLOYEES_CSV))
+      );
+    } catch (FileNotFoundException e) {
+      Assertions.fail("Cannot find file path: " + EMPLOYEES_CSV);
+    }
+
+    for (Map<String, String> employee : employees) {
+      assertNotNull(employee.get("salary"), "Employee should have salary");
+      assertFalse(employee.get("salary").isEmpty(), "Employee salary should not be empty");
+      assertNotNull(employee.get("hire_date"), "Employee should have hire_date");
+      assertFalse(employee.get("hire_date").isEmpty(), "Employee hire_date should not be empty");
+    }
   }
 
   @Test
@@ -161,10 +199,10 @@ public class CSVParserTest {
     List<Map<String, String>> businesses = null;
     try {
       businesses = csvParser.parse(
-          new BufferedReader(new FileReader(business))
+          new BufferedReader(new FileReader(BUSINESS_CSV))
       );
     } catch (FileNotFoundException e) {
-      Assertions.fail("Cannot find file path: " + business);
+      Assertions.fail("Cannot find file path: " + BUSINESS_CSV);
     }
 
     Map<String, String> firstBusiness = businesses.get(0);
@@ -178,26 +216,22 @@ public class CSVParserTest {
   @Test
   public void testCSVRowCount() {
     List<Map<String, String>> businesses = null;
-    List<Map<String, String>> people = null;
+    List<Map<String, String>> employers = null;
+    List<Map<String, String>> employees = null;
     List<Map<String, String>> trainings = null;
 
     try {
-      businesses = csvParser.parse(
-          new BufferedReader(new FileReader(business))
-      );
-      people = csvParser.parse(
-          new BufferedReader(new FileReader(employees))
-      );
-      trainings = csvParser.parse(
-          new BufferedReader(new FileReader(training))
-      );
+      businesses = csvParser.parse(new BufferedReader(new FileReader(BUSINESS_CSV)));
+      employers = csvParser.parse(new BufferedReader(new FileReader(EMPLOYERS_CSV)));
+      employees = csvParser.parse(new BufferedReader(new FileReader(EMPLOYEES_CSV)));
+      trainings = csvParser.parse(new BufferedReader(new FileReader(TRAINING_CSV)));
     } catch (IOException e) {
-      Assertions.fail("Cannot find file path of one of: " + business
-          + ", " + employees + ", " + training);
+      Assertions.fail("Cannot find one of the CSV files");
     }
 
     assertEquals(3, businesses.size(), "Should have 3 businesses");
-    assertEquals(7, people.size(), "Should have 7 people");
+    assertEquals(3, employers.size(), "Should have 3 employers");
+    assertEquals(4, employees.size(), "Should have 4 employees");
     assertEquals(10, trainings.size(), "Should have 10 trainings");
   }
 }

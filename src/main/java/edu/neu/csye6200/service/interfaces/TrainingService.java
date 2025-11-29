@@ -7,20 +7,32 @@ import java.util.List;
 public interface TrainingService {
 
     /**
-     * Add a new training record for a given employee.
-     * Called by TrainingController -> POST /api/training/{employeeId}
+     * Add a new training record for a person (Employee or Employer).
      */
-    TrainingDTO addTraining(Long employeeId, TrainingDTO dto);
+    TrainingDTO addTraining(Long personId, TrainingDTO dto);
 
     /**
-     * Get all trainings completed by a specific person.
-     * Called by TrainingController -> GET /api/training/person/{personId}
+     * Get all trainings for a person.
      */
     List<TrainingDTO> getTrainingsByPerson(Long personId);
 
     /**
-     * Check expiration status for all trainings of a person.
-     * Called by TrainingController -> GET /api/training/check/{personId}
+     * Get expired trainings for a person.
      */
-    List<TrainingDTO> checkExpiredTrainings(Long personId);
+    List<TrainingDTO> getExpiredTrainings(Long personId);
+
+    /**
+     * Get a training by its ID.
+     */
+    TrainingDTO getTrainingById(Long trainingId);
+
+    /**
+     * Update an existing training.
+     */
+    TrainingDTO updateTraining(Long trainingId, TrainingDTO dto);
+
+    /**
+     * Delete a training by its ID.
+     */
+    void deleteTraining(Long trainingId);
 }

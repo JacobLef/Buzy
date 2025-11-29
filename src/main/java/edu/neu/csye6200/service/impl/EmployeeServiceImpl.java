@@ -2,62 +2,65 @@ package edu.neu.csye6200.service.impl;
 
 import edu.neu.csye6200.dto.request.CreateEmployeeRequest;
 import edu.neu.csye6200.dto.request.UpdateEmployeeRequest;
-import edu.neu.csye6200.exception.BusinessNotFoundException;
 import edu.neu.csye6200.exception.EmployeeNotFoundException;
-import edu.neu.csye6200.exception.EmployerNotFoundException;
-import edu.neu.csye6200.factory.BusinessPersonFactory;
 import edu.neu.csye6200.model.domain.Company;
 import edu.neu.csye6200.model.domain.Employee;
 import edu.neu.csye6200.model.domain.Employer;
-import edu.neu.csye6200.model.domain.PersonStatus;
 import edu.neu.csye6200.repository.BusinessRepository;
 import edu.neu.csye6200.repository.EmployeeRepository;
 import edu.neu.csye6200.repository.EmployerRepository;
 import edu.neu.csye6200.service.interfaces.EmployeeService;
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.neu.csye6200.model.domain.PersonStatus;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 @Service
+@Transactional
 public class EmployeeServiceImpl implements EmployeeService {
 
-  @Autowired
-  private EmployeeRepository employeeRepository;
+  private final EmployeeRepository employeeRepository;
+  private final EmployerRepository employerRepository;
+  private final BusinessRepository businessRepository;
 
-  @Autowired
-  private EmployerRepository employerRepository;
-
-  @Autowired
-  private BusinessRepository businessRepository;
+  public EmployeeServiceImpl(
+      EmployeeRepository employeeRepository,
+      EmployerRepository employerRepository,
+      BusinessRepository businessRepository
+  ) {
+    this.employeeRepository = employeeRepository;
+    this.employerRepository = employerRepository;
+    this.businessRepository = businessRepository;
+  }
 
   @Override
-  @Transactional
-  public Employee createEmployee(CreateEmployeeRequest req) {
-    Employee employee = BusinessPersonFactory.createEmployee(
-        req.name(),
-        req.email(),
-        req.password(),
-        req.salary(),
-        req.position()
+  public Employee createEmployee(CreateEmployeeRequest request) {
+    Employee employee = new Employee(
+        request.name(),
+        request.email(),
+        request.password(),
+        request.salary(),
+        request.position()
     );
 
-    if (req.hireDate() != null) {
-      employee.setHireDate(req.hireDate());
+    if (request.hireDate() != null) {
+      employee.setHireDate(request.hireDate());
     }
 
-    Company business = businessRepository.findById(req.businessId())
-        .orElseThrow(() -> new BusinessNotFoundException(req.businessId()));
-    employee.setCompany(business);
+    if (request.companyId() != null) {
+      Company company = businessRepository.findById(request.companyId())
+          .orElseThrow(() -> new RuntimeException("Company not found with id: " + request.companyId()));
+      employee.setCompany(company);
+    }
 
-    if (req.managerId() != null) {
-      Employer manager = employerRepository.findById(req.managerId())
-          .orElseThrow(() -> new EmployerNotFoundException(req.managerId()));
+    if (request.managerId() != null) {
+      Employer manager = employerRepository.findById(request.managerId())
+          .orElseThrow(() -> new RuntimeException("Manager not found with id: " + request.managerId()));
       employee.setManager(manager);
-      manager.addManagedEmployee(employee);
     }
 
     return employeeRepository.save(employee);
@@ -76,61 +79,52 @@ public class EmployeeServiceImpl implements EmployeeService {
   }
 
   @Override
-  @Transactional
-  public Employee updateEmployee(Long id, UpdateEmployeeRequest req) {
+  public Employee updateEmployee(Long id, UpdateEmployeeRequest request) {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> new EmployeeNotFoundException(id));
 
-    if (req.name() != null) {
-      employee.setName(req.name());
+    if (request.name() != null) {
+      employee.setName(request.name());
     }
-    if (req.email() != null) {
-      employee.setEmail(req.email());
+    if (request.email() != null) {
+      employee.setEmail(request.email());
     }
-    if (req.password() != null) {
-      employee.setPassword(req.password());
+    if (request.password() != null) {
+      employee.setPassword(request.password());
     }
-    if (req.salary() != null) {
-      employee.setSalary(req.salary());
+    if (request.salary() != null) {
+      employee.setSalary(request.salary());
     }
-    if (req.position() != null) {
-      employee.setPosition(req.position());
+    if (request.position() != null) {
+      employee.setPosition(request.position());
     }
-    if (req.status() != null) {
-      employee.setStatus(PersonStatus.valueOf(req.status()));
+    if (request.hireDate() != null) {
+      employee.setHireDate(request.hireDate());
     }
-    if (req.managerId() != null) {
-      Employer manager = employerRepository.findById(req.managerId())
-          .orElseThrow(() -> new EmployerNotFoundException(req.managerId()));
-
-      if (employee.getManager() != null) {
-        employee.getManager().removeManagedEmployee(employee);
-      }
-
+    if (request.managerId() != null) {
+      Employer manager = employerRepository.findById(request.managerId())
+          .orElseThrow(() -> new RuntimeException("Manager not found with id: " + request.managerId()));
       employee.setManager(manager);
-      manager.addManagedEmployee(employee);
+    }
+    if (request.status() != null) {
+      employee.setStatus(request.status());
     }
 
     return employeeRepository.save(employee);
   }
 
   @Override
-  @Transactional
   public void deleteEmployee(Long id) {
-    Employee employee = employeeRepository.findById(id)
-        .orElseThrow(() -> new EmployeeNotFoundException(id));
-
-    if (employee.getManager() != null) {
-      employee.getManager().removeManagedEmployee(employee);
+    if (!employeeRepository.existsById(id)) {
+      throw new EmployeeNotFoundException(id);
     }
-
-    employeeRepository.delete(employee);
+    employeeRepository.deleteById(id);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<Employee> getEmployeesByBusiness(Long businessId) {
-    return employeeRepository.findByBusinessId(businessId);
+  public List<Employee> getEmployeesByBusiness(Long companyId) {
+    return employeeRepository.findByCompanyId(companyId);
   }
 
   @Override
@@ -140,77 +134,53 @@ public class EmployeeServiceImpl implements EmployeeService {
   }
 
   @Override
-  @Transactional
   public Employee assignManager(Long employeeId, Long managerId) {
     Employee employee = employeeRepository.findById(employeeId)
         .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
 
     Employer manager = employerRepository.findById(managerId)
-        .orElseThrow(() -> new EmployerNotFoundException(managerId));
-
-    if (!employee.getCompany().equals(manager.getCompany())) {
-      throw new IllegalArgumentException("Employee and manager must be in the same business");
-    }
-
-    if (employee.getManager() != null) {
-      employee.getManager().removeManagedEmployee(employee);
-    }
+        .orElseThrow(() -> new RuntimeException("Manager not found with id: " + managerId));
 
     employee.setManager(manager);
-    manager.addManagedEmployee(employee);
-
-    employeeRepository.save(employee);
-    employerRepository.save(manager);
-
-    return employee;
+    return employeeRepository.save(employee);
   }
 
   @Override
-  @Transactional
+  public Employee updateSalary(Long id, Double salary) {
+    if (salary < 0) {
+      throw new IllegalArgumentException("Salary cannot be negative");
+    }
+
+    Employee employee = employeeRepository.findById(id)
+        .orElseThrow(() -> new EmployeeNotFoundException(id));
+
+    employee.setSalary(salary);
+    return employeeRepository.save(employee);
+  }
+
+  @Override
+  public Employee giveBonus(Long id, Double bonus) {
+    if (bonus < 0) {
+      throw new IllegalArgumentException("Bonus amount cannot be negative");
+    }
+
+    Employee employee = employeeRepository.findById(id)
+        .orElseThrow(() -> new EmployeeNotFoundException(id));
+
+    employee.setSalary(employee.getSalary() + bonus);
+    return employeeRepository.save(employee);
+  }
+
+  @Override
   public Employee removeManager(Long employeeId) {
     Employee employee = employeeRepository.findById(employeeId)
         .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
 
-    if (employee.getManager() != null) {
-      Employer oldManager = employee.getManager();
-      oldManager.removeManagedEmployee(employee);
-      employee.setManager(null);
-      employerRepository.save(oldManager);
-    }
-
+    employee.setManager(null);
     return employeeRepository.save(employee);
   }
 
   @Override
-  @Transactional
-  public Employee updateSalary(Long employeeId, Double newSalary) {
-    Employee employee = employeeRepository.findById(employeeId)
-        .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
-
-    if (newSalary < 0) {
-      throw new IllegalArgumentException("Salary cannot be negative");
-    }
-
-    employee.setSalary(newSalary);
-    return employeeRepository.save(employee);
-  }
-
-  @Override
-  @Transactional
-  public Employee giveBonus(Long employeeId, Double bonusAmount) {
-    Employee employee = employeeRepository.findById(employeeId)
-        .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
-
-    if (bonusAmount < 0) {
-      throw new IllegalArgumentException("Bonus amount cannot be negative");
-    }
-
-    employee.setSalary(employee.getSalary() + bonusAmount);
-    return employeeRepository.save(employee);
-  }
-
-  @Override
-  @Transactional
   public Employee updatePosition(Long employeeId, String newPosition) {
     Employee employee = employeeRepository.findById(employeeId)
         .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
@@ -220,7 +190,6 @@ public class EmployeeServiceImpl implements EmployeeService {
   }
 
   @Override
-  @Transactional
   public Employee updateStatus(Long employeeId, String status) {
     Employee employee = employeeRepository.findById(employeeId)
         .orElseThrow(() -> new EmployeeNotFoundException(employeeId));

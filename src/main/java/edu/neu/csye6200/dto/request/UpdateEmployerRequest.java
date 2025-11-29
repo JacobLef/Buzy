@@ -1,15 +1,16 @@
 package edu.neu.csye6200.dto.request;
 
-/**
- * Request record for updating an existing employer.
- * All fields are optional (can be null).
- */
+import edu.neu.csye6200.model.domain.PersonStatus;
+
+import java.time.LocalDate;
+
 public record UpdateEmployerRequest(
     String name,
     String email,
     String password,
+    Double salary,
     String department,
     String title,
-    String status
-) {
-}
+    LocalDate hireDate,
+    PersonStatus status
+) {}

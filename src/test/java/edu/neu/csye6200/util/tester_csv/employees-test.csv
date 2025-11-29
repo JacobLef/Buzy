@@ -1,8 +1,5 @@
-id,person_type,name,email,password,business_id,salary,manager_id,hire_date,position,status,department,title
-1,Employer,Sarah Chen,sarah.chen@techstart.com,password123,1,,,,,Active,Engineering,CTO
-2,Employee,Michael Rodriguez,michael.rodriguez@techstart.com,password456,1,95000,1,2020-06-15,Senior Software Engineer,Active,,,
-3,Employee,Emily Johnson,emily.johnson@techstart.com,password789,1,78000,1,2021-03-20,Software Engineer,Active,,,
-4,Employer,Maria Garcia,maria.garcia@healthcareplus.com,password111,3,,,,,Active,Medical,Chief Medical Officer
-5,Employee,Daniel Brown,daniel.brown@healthcareplus.com,password222,3,125000,4,2018-05-20,Senior Physician,Active,,,
-6,Employer,John Anderson,john.anderson@financepro.com,password333,3,,,,,Active,Finance,CFO
-7,Employee,Michelle Thomas,michelle.thomas@financepro.com,password444,3,115000,6,2017-09-12,Senior Financial Analyst,Active,,,
+id,name,email,password,salary,position,company_id,manager_id,hire_date,status
+2,Michael Rodriguez,michael.r@techstart.com,password123,95000,Senior Software Engineer,1,1,2020-06-15,Active
+3,Emily Thompson,emily.t@techstart.com,password123,75000,Junior Developer,1,1,2022-01-10,Active
+5,Robert Martinez,robert.m@healthcare.com,password123,85000,Nurse Practitioner,2,4,2021-03-22,Active
+7,Amanda Foster,amanda.f@financepro.com,password123,90000,Financial Analyst,3,6,2020-11-05,Active

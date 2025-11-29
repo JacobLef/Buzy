@@ -2,14 +2,19 @@ package edu.neu.csye6200.model.domain;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * Abstract base class for all company persons ({@link Employee} and {@link Employer}).
- * Contains common fields and methods shared by both types.
+ * Uses JOINED inheritance - each subclass has its own table with a foreign key to this table.
  */
-@MappedSuperclass
+@Entity
+@Table(name = "business_person")
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "person_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class BusinessPerson {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   protected Long id;
@@ -27,11 +32,18 @@ public abstract class BusinessPerson {
   @JoinColumn(name = "company_id")
   protected Company company;
 
+  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   protected PersonStatus status;
 
-  @Column(name = "created_at")
-  protected final LocalDateTime createdAt;
+  @Column(nullable = false)
+  protected Double salary;
+
+  @Column(name = "hire_date")
+  protected LocalDate hireDate;
+
+  @Column(name = "created_at", updatable = false)
+  protected LocalDateTime createdAt;
 
   @Column(name = "updated_at")
   protected LocalDateTime updatedAt;
@@ -40,20 +52,17 @@ public abstract class BusinessPerson {
     this.createdAt = LocalDateTime.now();
     this.updatedAt = LocalDateTime.now();
     this.status = PersonStatus.Active;
+    this.hireDate = LocalDate.now();
   }
 
-  public BusinessPerson(String name, String email, String password) {
+  public BusinessPerson(String name, String email, String password, Double salary) {
     this();
     this.name = name;
     this.email = email;
     this.password = password;
+    this.salary = salary;
   }
 
-  /**
-   * Abstract method that subclasses must implement such that they can define their specific type
-   * (that is, as an Employee or Employer).
-   * @return "Employee" or "Employer".
-   */
   public abstract String getPersonType();
 
   public Long getId() {
@@ -109,12 +118,37 @@ public abstract class BusinessPerson {
     this.updatedAt = LocalDateTime.now();
   }
 
+  public Double getSalary() {
+    return salary;
+  }
+
+  public void setSalary(Double salary) {
+    this.salary = salary;
+    this.updatedAt = LocalDateTime.now();
+  }
+
+  public LocalDate getHireDate() {
+    return hireDate;
+  }
+
+  public void setHireDate(LocalDate hireDate) {
+    this.hireDate = hireDate;
+    this.updatedAt = LocalDateTime.now();
+  }
+
   public LocalDateTime getCreatedAt() {
     return createdAt;
   }
 
   public LocalDateTime getUpdatedAt() {
     return updatedAt;
+  }
+
+  public int getYearsOfService() {
+    if (hireDate == null) {
+      return 0;
+    }
+    return LocalDate.now().getYear() - hireDate.getYear();
   }
 
   @PreUpdate
@@ -128,6 +162,8 @@ public abstract class BusinessPerson {
         "id=" + id +
         ", name='" + name + '\'' +
         ", email='" + email + '\'' +
+        ", salary=" + salary +
+        ", hireDate=" + hireDate +
         ", status='" + status + '\'' +
         '}';
   }

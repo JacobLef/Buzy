@@ -2,37 +2,28 @@ package edu.neu.csye6200.model.domain;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
-
 /**
  * Employee entity representing an employee within a business.
  */
 @Entity
 @Table(name = "employee")
+@DiscriminatorValue("EMPLOYEE")
 public class Employee extends BusinessPerson {
+
   @Column(nullable = false)
-  private Double salary;
+  private String position;
 
   @ManyToOne
   @JoinColumn(name = "manager_id")
   private Employer manager;
 
-  @Column(name = "hire_date")
-  private LocalDate hireDate;
-
-  @Column(nullable = false)
-  private String position;
-
   public Employee() {
     super();
-    this.hireDate = LocalDate.now();
   }
 
   public Employee(String name, String email, String password, Double salary, String position) {
-    super(name, email, password);
-    this.salary = salary;
+    super(name, email, password, salary);
     this.position = position;
-    this.hireDate = LocalDate.now();
   }
 
   @Override
@@ -40,50 +31,22 @@ public class Employee extends BusinessPerson {
     return "Employee";
   }
 
-  public Double getSalary() {
-    return salary;
-  }
-
-  public void setSalary(Double salary) {
-    this.salary = salary;
-  }
-
-  public Employer getManager() {
-    return this.manager;
-  }
-
-  public void setManager(Employer manager) {
-    this.manager = manager;
-  }
-
-  public LocalDate getHireDate() {
-    return hireDate;
-  }
-
-  public void setHireDate(LocalDate hireDate) {
-    this.hireDate = hireDate;
-  }
-
   public String getPosition() {
-    return this.position;
+    return position;
   }
 
   public void setPosition(String position) {
     this.position = position;
   }
 
-  /**
-   * Calculate the number of years for which this Employee has worked at their company.
-   * @return the integer representation of this calculation.
-   */
-  public int getYearsOfService() {
-    return LocalDate.now().getYear() - hireDate.getYear();
+  public Employer getManager() {
+    return manager;
   }
 
-  /**
-   * Determines if this Employee has a manager.
-   * @return true if it is the case and false otherwise.
-   */
+  public void setManager(Employer manager) {
+    this.manager = manager;
+  }
+
   public boolean hasManager() {
     return manager != null;
   }
@@ -95,8 +58,8 @@ public class Employee extends BusinessPerson {
         ", name='" + getName() + '\'' +
         ", email='" + getEmail() + '\'' +
         ", position='" + position + '\'' +
-        ", salary=" + salary +
-        ", hireDate=" + hireDate +
+        ", salary=" + getSalary() +
+        ", hireDate=" + getHireDate() +
         ", manager=" + (manager != null ? manager.getName() : "None") +
         ", status='" + getStatus() + '\'' +
         '}';

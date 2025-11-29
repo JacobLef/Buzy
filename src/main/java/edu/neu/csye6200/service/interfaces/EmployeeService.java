@@ -14,7 +14,6 @@ import java.util.Optional;
  * 
  * @author Team 10
  */
-@Service
 public interface EmployeeService {
   /**
    * Creates a new employee.

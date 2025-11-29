@@ -4,15 +4,16 @@ import edu.neu.csye6200.model.domain.Company;
 import edu.neu.csye6200.model.domain.Employee;
 import edu.neu.csye6200.model.domain.Employer;
 import edu.neu.csye6200.model.domain.Training;
+import edu.neu.csye6200.model.domain.BusinessPerson;
 import edu.neu.csye6200.model.domain.PersonStatus;
 import edu.neu.csye6200.repository.BusinessRepository;
 import edu.neu.csye6200.repository.EmployeeRepository;
 import edu.neu.csye6200.repository.EmployerRepository;
 import edu.neu.csye6200.repository.TrainingRepository;
+import edu.neu.csye6200.repository.BusinessPersonRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -21,49 +22,39 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-/**
- * Given the repositories, the Database seeder seeds the database with initial values for a
- * production demo. This class runs at startup of the application.
- *
- * @author jacoblefkowitz
- */
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
   private static final CSVParser CSV_PARSER = new CSVParserImpl();
-  private static final TableSeederFactory SEED_FACTORY = new TableSeederFactory();
   private static final StringConverter CONVERTER = new StringConverterImpl();
   private static final String CSV_PREFIX = "data/csv";
 
   @Value("${app.seed.enabled:true}")
   private boolean seedEnabled;
 
-  private final List<TableSeeder<?>> seeders;
-
   private final BusinessRepository businessRepo;
+  private final EmployeeRepository employeeRepo;
   private final EmployerRepository employerRepo;
+  private final TrainingRepository trainingRepo;
+  private final BusinessPersonRepository businessPersonRepo;
 
-  private final Map<Long, Company> businessCache = new HashMap<>();
+  private final Map<Long, Company> companyCache = new HashMap<>();
   private final Map<Long, Employer> employerCache = new HashMap<>();
+  private final Map<Long, Employee> employeeCache = new HashMap<>();
 
   public DatabaseSeeder(
       BusinessRepository businessRepo,
       EmployeeRepository employeeRepo,
       EmployerRepository employerRepo,
-      TrainingRepository trainingRepo
+      TrainingRepository trainingRepo,
+      BusinessPersonRepository businessPersonRepo
   ) {
     this.businessRepo = businessRepo;
+    this.employeeRepo = employeeRepo;
     this.employerRepo = employerRepo;
-
-    this.seeders = List.of(
-        SEED_FACTORY.create(CSV_PREFIX + "/businesses.csv", businessRepo, this::mapToBusiness),
-        SEED_FACTORY.create(CSV_PREFIX + "/employers.csv", employerRepo, this::mapToEmployer),
-        SEED_FACTORY.create(CSV_PREFIX + "/employees.csv", employeeRepo, this::mapToEmployee),
-        SEED_FACTORY.create(CSV_PREFIX + "/trainings.csv", trainingRepo, this::mapToTraining)
-    );
+    this.trainingRepo = trainingRepo;
+    this.businessPersonRepo = businessPersonRepo;
   }
 
   @Override
@@ -74,28 +65,106 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     System.out.println("Starting database seeding...");
-    for (TableSeeder<?> seeder : seeders) {
-      seeder.seed();
-    }
+    seedCompanies();
+    seedEmployers();
+    seedEmployees();
+    seedTrainings();
     System.out.println("Database seeding completed");
   }
 
-  private Company mapToBusiness(Map<String, String> row) {
-    Company company = Company.builder()
+  private void seedCompanies() {
+    if (businessRepo.count() > 0) {
+      System.out.println("Skipping companies - table already has data");
+      loadExistingCompanies();
+      return;
+    }
+
+    try {
+      BufferedReader reader = new BufferedReader(
+          new InputStreamReader(
+              new ClassPathResource(CSV_PREFIX + "/businesses.csv").getInputStream()
+          )
+      );
+
+      List<Map<String, String>> rows = CSV_PARSER.parse(reader);
+
+      if (rows != null && !rows.isEmpty()) {
+        int count = 0;
+        for (Map<String, String> row : rows) {
+          Long csvId = CONVERTER.toLong(row.get("id"));
+          Company company = mapToCompany(row);
+          Company saved = businessRepo.save(company);
+
+          if (csvId != null) {
+            companyCache.put(csvId, saved);
+          }
+          count++;
+        }
+        System.out.println("Seeded " + count + " companies");
+      }
+    } catch (Exception e) {
+      System.err.println("Failed to seed companies: " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
+  private void loadExistingCompanies() {
+    List<Company> companies = businessRepo.findAll();
+    for (Company company : companies) {
+      companyCache.put(company.getId(), company);
+    }
+  }
+
+  private Company mapToCompany(Map<String, String> row) {
+    return Company.builder()
         .name(CONVERTER.toString(row.get("name")))
         .address(CONVERTER.toString(row.get("address")))
         .industry(CONVERTER.toString(row.get("industry")))
         .foundedDate(CONVERTER.toLocalDate(row.get("founded_date")))
         .build();
+  }
 
-    if (row.containsKey("id")) {
-      Long id = CONVERTER.toLong(row.get("id"));
-      if (id != null) {
-        businessCache.put(id, company);
-      }
+  private void seedEmployers() {
+    if (employerRepo.count() > 0) {
+      System.out.println("Skipping employers - table already has data");
+      loadExistingEmployers();
+      return;
     }
 
-    return company;
+    try {
+      BufferedReader reader = new BufferedReader(
+          new InputStreamReader(
+              new ClassPathResource(CSV_PREFIX + "/employers.csv").getInputStream()
+          )
+      );
+
+      List<Map<String, String>> rows = CSV_PARSER.parse(reader);
+
+      if (rows != null && !rows.isEmpty()) {
+        int count = 0;
+        for (Map<String, String> row : rows) {
+          Long csvId = CONVERTER.toLong(row.get("id"));
+          Employer employer = mapToEmployer(row);
+          Employer saved = employerRepo.save(employer);
+
+          if (csvId != null) {
+            employerCache.put(csvId, saved);
+          }
+          count++;
+        }
+        System.out.println("Seeded " + count + " employers");
+      }
+    } catch (Exception e) {
+      System.err.println("Failed to seed employers: " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
+  private void loadExistingEmployers() {
+    List<Employer> employers = employerRepo.findAll();
+    for (Employer employer : employers) {
+      employerCache.put(employer.getId(), employer);
+    }
   }
 
   private Employer mapToEmployer(Map<String, String> row) {
@@ -103,34 +172,76 @@ public class DatabaseSeeder implements CommandLineRunner {
         CONVERTER.toString(row.get("name")),
         CONVERTER.toString(row.get("email")),
         CONVERTER.toString(row.get("password")),
+        CONVERTER.toDouble(row.get("salary")),
         CONVERTER.toString(row.get("department")),
         CONVERTER.toString(row.get("title"))
     );
 
+    LocalDate hireDate = CONVERTER.toLocalDate(row.get("hire_date"));
+    if (hireDate != null) {
+      employer.setHireDate(hireDate);
+    }
+
     Long companyId = CONVERTER.toLong(row.get("company_id"));
     if (companyId != null) {
-      Company company = businessCache.get(companyId);
-      if (company == null) {
-        company = businessRepo.findById(companyId).orElse(null);
-      }
+      Company company = companyCache.get(companyId);
       if (company != null) {
         employer.setCompany(company);
       }
     }
 
     String status = CONVERTER.toString(row.get("status"));
-    if (status != null) {
-      employer.setStatus(PersonStatus.valueOf(status));
-    }
-
-    if (row.containsKey("id")) {
-      Long id = CONVERTER.toLong(row.get("id"));
-      if (id != null) {
-        employerCache.put(id, employer);
+    if (status != null && !status.isEmpty()) {
+      try {
+        employer.setStatus(PersonStatus.valueOf(status));
+      } catch (IllegalArgumentException e) {
+        System.err.println("Invalid status: " + status);
       }
     }
 
     return employer;
+  }
+
+  private void seedEmployees() {
+    if (employeeRepo.count() > 0) {
+      System.out.println("Skipping employees - table already has data");
+      loadExistingEmployees();
+      return;
+    }
+
+    try {
+      BufferedReader reader = new BufferedReader(
+          new InputStreamReader(
+              new ClassPathResource(CSV_PREFIX + "/employees.csv").getInputStream()
+          )
+      );
+
+      List<Map<String, String>> rows = CSV_PARSER.parse(reader);
+
+      if (rows != null && !rows.isEmpty()) {
+        int count = 0;
+        for (Map<String, String> row : rows) {
+          Long csvId = CONVERTER.toLong(row.get("id"));
+          Employee employee = mapToEmployee(row);
+          Employee saved = employeeRepo.save(employee);
+
+          if (csvId != null) {
+            employeeCache.put(csvId, saved);
+          }
+          count++;
+        }
+        System.out.println("Seeded " + count + " employees");
+      }
+    } catch (Exception e) {
+      System.err.println("Failed to seed employees: " + e.getMessage());
+    }
+  }
+
+  private void loadExistingEmployees() {
+    List<Employee> employees = employeeRepo.findAll();
+    for (Employee employee : employees) {
+      employeeCache.put(employee.getId(), employee);
+    }
   }
 
   private Employee mapToEmployee(Map<String, String> row) {
@@ -149,10 +260,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     Long companyId = CONVERTER.toLong(row.get("company_id"));
     if (companyId != null) {
-      Company company = businessCache.get(companyId);
-      if (company == null) {
-        company = businessRepo.findById(companyId).orElse(null);
-      }
+      Company company = companyCache.get(companyId);
       if (company != null) {
         employee.setCompany(company);
       }
@@ -161,87 +269,86 @@ public class DatabaseSeeder implements CommandLineRunner {
     Long managerId = CONVERTER.toLong(row.get("manager_id"));
     if (managerId != null) {
       Employer manager = employerCache.get(managerId);
-      if (manager == null) {
-        manager = employerRepo.findById(managerId).orElse(null);
-      }
       if (manager != null) {
         employee.setManager(manager);
       }
     }
 
     String status = CONVERTER.toString(row.get("status"));
-    if (status != null) {
-      employee.setStatus(PersonStatus.valueOf(status));
+    if (status != null && !status.isEmpty()) {
+      try {
+        employee.setStatus(PersonStatus.valueOf(status));
+      } catch (IllegalArgumentException e) {
+        System.err.println("Invalid status: " + status);
+      }
     }
 
     return employee;
   }
 
-  private Training mapToTraining(Map<String, String> row) {
-    Training training = new Training(
-        CONVERTER.toString(row.get("training_name")),
-        CONVERTER.toString(row.get("description")),
-        CONVERTER.toLocalDate(row.get("completion_date")),
-        CONVERTER.toLocalDate(row.get("expiry_date")),
-        CONVERTER.toBoolean(row.get("is_required"))
-    );
+  private void seedTrainings() {
+    if (trainingRepo.count() > 0) {
+      System.out.println("Skipping trainings - table already has data");
+      return;
+    }
 
-    return training;
-  }
+    try {
+      BufferedReader reader = new BufferedReader(
+          new InputStreamReader(
+              new ClassPathResource(CSV_PREFIX + "/trainings.csv").getInputStream()
+          )
+      );
 
-  /**
-   * Data structure used to store the information needed to seed a table properly. Any given
-   * table seeder, acting more like a C-like struct data-structure with attached function
-   * members, must define the functionality required to properly seed the correct repository in
-   * this application.
-   * @param csvPath the path to the CSV file whose information is used to seed the given repository.
-   * @param repository the repository that will be seeded.
-   * @param mapper the function that will convert the parsed CSV file's information into the
-   *               appropriate Domain object model.
-   * @param <T> the type of Domain object model which this TableSeeder will seed with.
-   */
-  private record TableSeeder<T>(
-      String csvPath,
-      JpaRepository<T, ?> repository,
-      Function<Map<String, String>, T> mapper
-  ) {
-    public void seed() {
-      if (repository.count() > 0) {
-        System.out.println("Skipping " + csvPath + " - table already has data");
-        return;
-      }
+      List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
-      try {
-        BufferedReader reader = new BufferedReader(
-            new InputStreamReader(
-                new ClassPathResource(csvPath).getInputStream()
-            )
-        );
+      if (rows != null && !rows.isEmpty()) {
+        int count = 0;
+        int skipped = 0;
 
-        List<Map<String, String>> rows = CSV_PARSER.parse(reader);
+        for (Map<String, String> row : rows) {
+          Training training = new Training(
+              CONVERTER.toString(row.get("training_name")),
+              CONVERTER.toString(row.get("description")),
+              CONVERTER.toLocalDate(row.get("completion_date")),
+              CONVERTER.toLocalDate(row.get("expiry_date")),
+              CONVERTER.toBoolean(row.get("is_required"))
+          );
 
-        if (rows != null && !rows.isEmpty()) {
-          List<T> entities = rows.stream()
-              .map(mapper)
-              .collect(Collectors.toUnmodifiableList());
-          repository.saveAll(entities);
-          System.out.println("Seeded " + entities.size() + " records from " + csvPath);
-        } else {
-          System.out.println("No data found in " + csvPath);
+          Long personId = CONVERTER.toLong(row.get("person_id"));
+          if (personId != null) {
+            BusinessPerson person = findPersonById(personId);
+
+            if (person != null) {
+              training.setPerson(person);
+              trainingRepo.save(training);
+              count++;
+            } else {
+              System.err.println("Person not found for training, person_id: " + personId);
+              skipped++;
+            }
+          } else {
+            trainingRepo.save(training);
+            count++;
+          }
         }
-      } catch (Exception e) {
-        System.err.println("Failed to seed from " + csvPath + ": " + e.getMessage());
+        System.out.println("Seeded " + count + " trainings" + (skipped > 0 ? " (skipped " + skipped + ")" : ""));
       }
+    } catch (Exception e) {
+      System.err.println("Failed to seed trainings: " + e.getMessage());
     }
   }
 
-  private static class TableSeederFactory {
-    public <T> TableSeeder<T> create(
-        String csvPath,
-        JpaRepository<T, ?> repo,
-        Function<Map<String, String>, T> mapper
-    ) {
-      return new TableSeeder<>(csvPath, repo, mapper);
+  private BusinessPerson findPersonById(Long personId) {
+    Employee employee = employeeCache.get(personId);
+    if (employee != null) {
+      return employee;
     }
+
+    Employer employer = employerCache.get(personId);
+    if (employer != null) {
+      return employer;
+    }
+
+    return businessPersonRepo.findById(personId).orElse(null);
   }
 }

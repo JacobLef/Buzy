@@ -32,100 +32,72 @@ public class EmployeeController {
   }
 
   @PostMapping
-  public ResponseEntity<EmployeeDTO> createEmployee(
-      @RequestBody CreateEmployeeRequest req
-  ) {
+  public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody CreateEmployeeRequest req) {
     Employee employee = employeeService.createEmployee(req);
     EmployeeDTO dto = DTO_FACTORY.createDTO(employee);
-    return new ResponseEntity<>(dto, HttpStatus.CREATED);
+    return ResponseEntity.status(HttpStatus.CREATED).body(dto);
   }
 
-  @PostMapping("/{id}")
-  public ResponseEntity<EmployeeDTO> updateEmployee(
-      @PathVariable Long id,
-      @RequestBody UpdateEmployeeRequest req
-  ) {
-    Employee employee = employeeService.updateEmployee(id, req);
-    EmployeeDTO dto = DTO_FACTORY.createDTO(employee);
-    return new ResponseEntity<>(dto, HttpStatus.OK);
-  }
-
-  @PostMapping("/{id}")
-  public ResponseEntity<Void> deleteEmployee(
-      @PathVariable Long id
-  ) {
-    employeeService.deleteEmployee(id);
-    return ResponseEntity.noContent().build();
-  }
-
-  @PostMapping("/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long id) {
     Optional<Employee> employee = employeeService.getEmployee(id);
     if (employee.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
-
     EmployeeDTO dto = DTO_FACTORY.createDTO(employee.get());
     return ResponseEntity.ok(dto);
   }
 
-  @PostMapping("/{id}/manager")
-  public ResponseEntity<EmployeeDTO> assignManager(
-      @PathVariable Long id,
-      @RequestParam Long managerId
-  ) {
-    Employee employee = employeeService.assignManager(managerId, id);
-    EmployeeDTO dto = DTO_FACTORY.createDTO(employee);
-    return ResponseEntity.ok(dto);
-  }
-
-  @PostMapping("/{id}/salary")
-  public ResponseEntity<EmployeeDTO> assignSalary(
-      @PathVariable Long id,
-      @RequestParam Double salary
-  ) {
-    Employee employee = employeeService.updateSalary(id, salary);
-    EmployeeDTO dto = DTO_FACTORY.createDTO(employee);
-    return ResponseEntity.ok(dto);
-  }
-
-  @PostMapping("/{id}/bonus")
-  public ResponseEntity<EmployeeDTO> assignBonus(
-      @PathVariable Long id,
-      @RequestParam Double bonus
-  ) {
-    Employee employee = employeeService.giveBonus(id, bonus);
-    EmployeeDTO dto = DTO_FACTORY.createDTO(employee);
-    return ResponseEntity.ok(dto);
-  }
-
-
-  @PostMapping
+  @GetMapping
   public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
     List<Employee> employees = employeeService.getAllEmployees();
     List<EmployeeDTO> dtos = employees.stream()
         .map(DTO_FACTORY::createDTO)
-        .collect(Collectors.toUnmodifiableList());
-    return ResponseEntity.ok().body(dtos);
+        .collect(Collectors.toList());
+    return ResponseEntity.ok(dtos);
   }
 
-  @PostMapping("/business/{businessId}")
+  @PutMapping("/{id}")
+  public ResponseEntity<EmployeeDTO> updateEmployee(
+      @PathVariable Long id,
+      @RequestBody UpdateEmployeeRequest req) {
+    Employee employee = employeeService.updateEmployee(id, req);
+    EmployeeDTO dto = DTO_FACTORY.createDTO(employee);
+    return ResponseEntity.ok(dto);
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+    employeeService.deleteEmployee(id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/business/{businessId}")
   public ResponseEntity<List<EmployeeDTO>> getEmployeesByBusinessId(
-      @PathVariable Long businessId
-  ) {
+      @PathVariable Long businessId) {
     List<Employee> employees = employeeService.getEmployeesByBusiness(businessId);
     List<EmployeeDTO> dtos = employees.stream()
         .map(DTO_FACTORY::createDTO)
-        .collect(Collectors.toUnmodifiableList());
-    return ResponseEntity.ok().body(dtos);
+        .collect(Collectors.toList());
+    return ResponseEntity.ok(dtos);
   }
 
-  @PostMapping("/manager/{managerId}")
-  public ResponseEntity<List<EmployeeDTO>> getEmployeesByManager(@PathVariable Long managerId) {
+  @GetMapping("/manager/{managerId}")
+  public ResponseEntity<List<EmployeeDTO>> getEmployeesByManager(
+      @PathVariable Long managerId) {
     List<Employee> employees = employeeService.getEmployeesByManager(managerId);
     List<EmployeeDTO> dtos = employees.stream()
         .map(DTO_FACTORY::createDTO)
-        .collect(Collectors.toUnmodifiableList());
-    return ResponseEntity.ok().body(dtos);
+        .collect(Collectors.toList());
+    return ResponseEntity.ok(dtos);
+  }
+
+  @PutMapping("/{id}/manager")
+  public ResponseEntity<EmployeeDTO> assignManager(
+      @PathVariable Long id,
+      @RequestParam Long managerId) {
+    Employee employee = employeeService.assignManager(id, managerId);
+    EmployeeDTO dto = DTO_FACTORY.createDTO(employee);
+    return ResponseEntity.ok(dto);
   }
 }

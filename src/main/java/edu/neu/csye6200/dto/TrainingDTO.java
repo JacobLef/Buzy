@@ -18,6 +18,7 @@ public class TrainingDTO {
     private final boolean expired;
     private final Long personId;
     private final String personName;
+    private final String personType;
     private final LocalDateTime createdAt;
 
     private TrainingDTO(Builder builder) {
@@ -30,6 +31,7 @@ public class TrainingDTO {
         this.expired = builder.expired;
         this.personId = builder.personId;
         this.personName = builder.personName;
+        this.personType = builder.personType;
         this.createdAt = builder.createdAt;
     }
 
@@ -69,7 +71,11 @@ public class TrainingDTO {
         return personName;
     }
 
-    public LocalDateTime getCreatedAt() {//read
+    public String getPersonType() {
+        return personType;
+    }
+
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
@@ -77,9 +83,6 @@ public class TrainingDTO {
         return new Builder();
     }
 
-    /**
-     * Builder Class
-     */
     public static class Builder {
         private Long id;
         private String trainingName;
@@ -90,9 +93,10 @@ public class TrainingDTO {
         private boolean expired;
         private Long personId;
         private String personName;
+        private String personType;
         private LocalDateTime createdAt;
 
-        public Builder withId(Long id) {//write
+        public Builder withId(Long id) {
             this.id = id;
             return this;
         }
@@ -134,6 +138,11 @@ public class TrainingDTO {
 
         public Builder withPersonName(String personName) {
             this.personName = personName;
+            return this;
+        }
+
+        public Builder withPersonType(String personType) {
+            this.personType = personType;
             return this;
         }
 

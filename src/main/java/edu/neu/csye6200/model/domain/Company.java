@@ -16,7 +16,7 @@ import java.util.Map;
  * @author Qing Mi
  */
 @Entity
-@Table(name = "business")
+@Table(name = "company")
 public class Company implements Business {
 
   @Id
@@ -41,10 +41,10 @@ public class Company implements Business {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
-  @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Employee> employees = new ArrayList<>();
 
-  @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Employer> employers = new ArrayList<>();
 
 

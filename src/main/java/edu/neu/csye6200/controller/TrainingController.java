@@ -18,16 +18,14 @@ public class TrainingController {
     this.trainingService = trainingService;
   }
 
-
-  @PostMapping("/{employeeId}")
+  @PostMapping("/person/{personId}")
   public ResponseEntity<TrainingDTO> addTraining(
-      @PathVariable Long employeeId,
+      @PathVariable Long personId,
       @RequestBody TrainingDTO dto
   ) {
-    TrainingDTO created = trainingService.addTraining(employeeId, dto);
-    return ResponseEntity.status(201).body(created);  // 201 Created
+    TrainingDTO created = trainingService.addTraining(personId, dto);
+    return ResponseEntity.status(201).body(created);
   }
-
 
   @GetMapping("/person/{personId}")
   public ResponseEntity<List<TrainingDTO>> getTrainingsByPerson(@PathVariable Long personId) {
@@ -35,9 +33,30 @@ public class TrainingController {
     return ResponseEntity.ok(trainings);
   }
 
-  @GetMapping("/check/{personId}")
-  public ResponseEntity<List<TrainingDTO>> checkExpiredTrainings(@PathVariable Long personId) {
-    List<TrainingDTO> trainings = trainingService.checkExpiredTrainings(personId);
+  @GetMapping("/person/{personId}/expired")
+  public ResponseEntity<List<TrainingDTO>> getExpiredTrainings(@PathVariable Long personId) {
+    List<TrainingDTO> trainings = trainingService.getExpiredTrainings(personId);
     return ResponseEntity.ok(trainings);
+  }
+
+  @GetMapping("/{trainingId}")
+  public ResponseEntity<TrainingDTO> getTrainingById(@PathVariable Long trainingId) {
+    TrainingDTO training = trainingService.getTrainingById(trainingId);
+    return ResponseEntity.ok(training);
+  }
+
+  @PutMapping("/{trainingId}")
+  public ResponseEntity<TrainingDTO> updateTraining(
+      @PathVariable Long trainingId,
+      @RequestBody TrainingDTO dto
+  ) {
+    TrainingDTO updated = trainingService.updateTraining(trainingId, dto);
+    return ResponseEntity.ok(updated);
+  }
+
+  @DeleteMapping("/{trainingId}")
+  public ResponseEntity<Void> deleteTraining(@PathVariable Long trainingId) {
+    trainingService.deleteTraining(trainingId);
+    return ResponseEntity.noContent().build();
   }
 }

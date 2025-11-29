@@ -8,6 +8,7 @@ import edu.neu.csye6200.model.domain.Employer;
  * employers, with the goal of abstracting away the construction process of these objects.
  */
 public class BusinessPersonFactory {
+
   /**
    * Create an Employee with respect to the provided parameters (excluding a manager).
    */
@@ -46,9 +47,29 @@ public class BusinessPersonFactory {
       String name,
       String email,
       String password,
+      Double salary,
       String department,
       String title
   ) {
-    return new Employer(name, email, password, department, title);
+    return new Employer(name, email, password, salary, department, title);
+  }
+
+  /**
+   * Create an Employer with managed employees.
+   */
+  public static Employer createEmployer(
+      String name,
+      String email,
+      String password,
+      Double salary,
+      String department,
+      String title,
+      Employee... employees
+  ) {
+    Employer employer = new Employer(name, email, password, salary, department, title);
+    for (Employee employee : employees) {
+      employer.addManagedEmployee(employee);
+    }
+    return employer;
   }
 }

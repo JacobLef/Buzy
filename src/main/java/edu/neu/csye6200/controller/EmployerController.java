@@ -17,15 +17,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * REST Controller through which the frontend interacts solely with. Primary point of entrance
- * for all Employer request based API calls.
- *
- * @author jacoblefkowitz
- */
 @RestController
 @RequestMapping("/api/employers")
 public class EmployerController {
+
   private final EmployerService employerService;
   private static final DTOFactory DTO_FACTORY = new DTOFactory();
 
@@ -35,20 +30,20 @@ public class EmployerController {
   }
 
   @PostMapping
-  public ResponseEntity<EmployerDTO> createEmployee(@RequestBody CreateEmployerRequest req) {
-    return ResponseEntity.ok(DTO_FACTORY.createDTO(employerService.createEmployer(req)));
+  public ResponseEntity<EmployerDTO> createEmployer(@RequestBody CreateEmployerRequest req) {
+    return ResponseEntity.status(201).body(DTO_FACTORY.createDTO(employerService.createEmployer(req)));
   }
 
-  @PostMapping("/{id}")
+  @GetMapping("/{id}")
   public ResponseEntity<EmployerDTO> getEmployer(@PathVariable Long id) {
     Optional<Employer> employer = employerService.getEmployer(id);
     return employer.map(
-        value -> ResponseEntity.ok(DTO_FACTORY.createDTO(value)))
+            value -> ResponseEntity.ok(DTO_FACTORY.createDTO(value)))
         .orElseGet(() -> ResponseEntity.notFound().build()
-    );
+        );
   }
 
-  @PostMapping
+  @GetMapping
   public ResponseEntity<List<EmployerDTO>> getAllEmployers() {
     List<Employer> employers = employerService.getAllEmployers();
     List<EmployerDTO> dtos = employers.stream()
@@ -57,7 +52,7 @@ public class EmployerController {
     return ResponseEntity.ok(dtos);
   }
 
-  @PostMapping("/{id}")
+  @PutMapping("/{id}")
   public ResponseEntity<EmployerDTO> updateEmployer(
       @PathVariable Long id,
       @RequestBody UpdateEmployerRequest req
@@ -67,13 +62,13 @@ public class EmployerController {
     return ResponseEntity.ok(dto);
   }
 
-  @PostMapping("/{id}")
-  public ResponseEntity<EmployerDTO> deleteEmployer(@PathVariable Long id) {
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteEmployer(@PathVariable Long id) {
     employerService.deleteEmployer(id);
     return ResponseEntity.noContent().build();
   }
 
-  @PostMapping("/business/{businessId}")
+  @GetMapping("/business/{businessId}")
   public ResponseEntity<List<EmployerDTO>> getEmployersByBusiness(
       @PathVariable Long businessId
   ) {
@@ -84,7 +79,7 @@ public class EmployerController {
     return ResponseEntity.ok(dtos);
   }
 
-  @PostMapping("/department/{department}")
+  @GetMapping("/department/{department}")
   public ResponseEntity<List<EmployerDTO>> getEmployersByDepartment(
       @PathVariable String department
   ) {
@@ -95,7 +90,7 @@ public class EmployerController {
     return ResponseEntity.ok(dtos);
   }
 
-  @PostMapping("/{id}/direct-reports")
+  @GetMapping("/{id}/direct-reports")
   public ResponseEntity<Set<EmployeeDTO>> getDirectReports(@PathVariable Long id) {
     Set<Employee> drs = employerService.getDirectReports(id);
     Set<EmployeeDTO> dtos = drs.stream()

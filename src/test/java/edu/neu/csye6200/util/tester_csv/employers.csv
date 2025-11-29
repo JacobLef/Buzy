@@ -1,0 +1,4 @@
+id,name,email,password,salary,department,title,company_id,hire_date,status
+1,Sarah Chen,sarah.chen@techstart.com,password123,150000,Engineering,CTO,1,2018-03-15,Active
+4,Jennifer Walsh,jennifer.walsh@healthcare.com,password123,140000,Medical,Chief Medical Officer,2,2019-01-10,Active
+6,David Kim,david.kim@financepro.com,password123,160000,Finance,CFO,3,2017-06-20,Active

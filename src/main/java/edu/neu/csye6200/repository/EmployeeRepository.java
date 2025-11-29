@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-  List<Employee> findByBusinessId(Long businessId);
+  List<Employee> findByCompanyId(Long companyId);
 
   @Query("SELECT e FROM Employee e WHERE e.manager.id = :managerId")
   List<Employee> findByManagerId(@Param("managerId") Long managerId);
@@ -39,6 +39,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
   @Query("SELECT e FROM Employee e WHERE e.manager IS NULL")
   List<Employee> findEmployeesWithoutManager();
 
-  @Query("SELECT e FROM Employee e WHERE e.company.id = :businessId AND e.status = 'Active'")
-  List<Employee> findActiveEmployeesByBusiness(@Param("businessId") Long businessId);
+  @Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.status = 'Active'")
+  List<Employee> findActiveEmployeesByBusiness(@Param("companyId") Long companyId);
 }
