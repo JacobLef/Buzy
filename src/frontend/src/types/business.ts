@@ -1,4 +1,3 @@
-// Company response (from CompanyDTO)
 export interface Company {
   id: number;
   name: string;

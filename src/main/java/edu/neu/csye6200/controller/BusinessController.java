@@ -20,23 +20,24 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/businesses")
 public class BusinessController {
-    
+
     private final BusinessService businessService;
     private static final DTOFactory DTO_FACTORY = new DTOFactory();
-    
+
     @Autowired
     public BusinessController(BusinessService businessService) {
         this.businessService = businessService;
     }
-    
-    // Spring boot will automatically map the request body to the CreateBusinessRequest object
+
+    // Spring boot will automatically map the request body to the
+    // CreateBusinessRequest object
     // example: POST /api/businesses HTTP/1.1
     // Content-Type: application/json
     // {
-    //     "name": "Acme Inc.",
-    //     "address": "123 Main St, Anytown, USA",
-    //     "industry": "Technology",
-    //     "foundedDate": "2020-01-01"
+    // "name": "Acme Inc.",
+    // "address": "123 Main St, Anytown, USA",
+    // "industry": "Technology",
+    // "foundedDate": "2020-01-01"
     // }
     @PostMapping
     public ResponseEntity<CompanyDTO> createBusiness(@RequestBody CreateBusinessRequest request) {
@@ -44,7 +45,7 @@ public class BusinessController {
         CompanyDTO dto = DTO_FACTORY.createDTO(createdBusiness);
         return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<CompanyDTO> updateBusiness(
             @PathVariable Long id,
@@ -53,27 +54,26 @@ public class BusinessController {
         CompanyDTO dto = DTO_FACTORY.createDTO(updatedBusiness);
         return ResponseEntity.ok(dto);
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBusiness(@PathVariable Long id) {
-            businessService.deleteBusiness(id);
+        businessService.deleteBusiness(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<CompanyDTO> getBusiness(@PathVariable Long id) {
-            Company business = businessService.getBusiness(id);
+        Company business = businessService.getBusiness(id);
         CompanyDTO dto = DTO_FACTORY.createDTO(business);
         return ResponseEntity.ok(dto);
     }
-    
+
     @GetMapping
     public ResponseEntity<List<CompanyDTO>> getAllBusinesses() {
-            List<Company> businesses = businessService.getAllBusinesses();
+        List<Company> businesses = businessService.getAllBusinesses();
         List<CompanyDTO> dtos = businesses.stream()
                 .map(DTO_FACTORY::createDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
 }
-
