@@ -103,13 +103,19 @@ classDiagram
 
     class Paycheck {
         -Long id
+        -Employee employee
         -double grossPay
+        -Double bonus
         -double taxDeduction
         -double insuranceDeduction
         -double netPay
-        -Date payDate
-        -Employee employee
+        -LocalDate payDate
+        -String payPeriod
+        -LocalDateTime createdAt
         +calculateNetPay()
+        +getEmployee()
+        +setEmployee()
+        +getEmployeeId()
     }
 
 %% Strategy Pattern
@@ -198,13 +204,83 @@ classDiagram
         -String message
     }
 
+    class PaycheckDTO {
+        <<record>>
+        -Long id
+        -Long employeeId
+        -String employeeName
+        -Double grossPay
+        -Double bonus
+        -Double taxDeduction
+        -Double insuranceDeduction
+        -Double totalDeductions
+        -Double netPay
+        -LocalDate payDate
+        -String taxStrategyUsed
+    }
+
+    class PayrollSummaryDTO {
+        <<record>>
+        -Long businessId
+        -String businessName
+        -LocalDate startDate
+        -LocalDate endDate
+        -Integer totalPaychecks
+        -Integer totalEmployees
+        -Double totalGrossPay
+        -Double totalBonus
+        -Double totalTaxDeductions
+        -Double totalInsuranceDeductions
+        -Double totalDeductions
+        -Double totalNetPay
+        -Double averageGrossPay
+        -Double averageNetPay
+        -Double averageTaxRate
+        -Double averageInsuranceRate
+    }
+
+    class DistributeBonusRequest {
+        <<record>>
+        -Long businessId
+        -Double bonusAmount
+        -List~Long~ employeeIds
+        -String department
+        -String description
+    }
+
+    class BonusDistributionResponse {
+        <<record>>
+        -Long businessId
+        -String businessName
+        -Integer totalEmployeesProcessed
+        -Integer successfulPaychecks
+        -Integer failedPaychecks
+        -Double totalGrossPaid
+        -Double totalNetPaid
+        -Double totalTaxDeducted
+        -Double totalInsuranceDeducted
+        -List~PaycheckDTO~ paychecks
+        -List~String~ errors
+        +success(businessId, businessName, paychecks) BonusDistributionResponse
+    }
+
 %% Services
     class PayrollService {
         <<service>>
+        -EmployeeService employeeService
+        -PaycheckRepository paycheckRepository
+        -BusinessRepository businessRepository
         -TaxCalculationStrategy taxStrategy
-        +calculatePayroll(employee)
-        +distributeBonuses(employees)
+        -double insuranceRate
+        +calculatePayroll(employeeId) PaycheckDTO
+        +calculatePayrollWithAdditionalPay(employeeId, additionalPay) PaycheckDTO
+        +distributeBonuses(request) List~PaycheckDTO~
         +setTaxStrategy(strategy)
+        +getCurrentTaxStrategyName() String
+        +getPayrollHistory(employeeId) List~PaycheckDTO~
+        +getPayrollHistory(employeeId, startDate, endDate) List~PaycheckDTO~
+        +getPayrollSummary(businessId, startDate, endDate) PayrollSummaryDTO
+        +updatePaycheck(paycheckId, grossPay, bonus, taxDeduction, insuranceDeduction) PaycheckDTO
     }
 
     class EmployeeService {
@@ -294,8 +370,14 @@ classDiagram
     class PayrollController {
         <<RestController>>
         -PayrollService payrollService
-        +calculatePayroll(employeeId)
-        +distributeBonuses(businessId)
+        -BusinessService businessService
+        +calculatePayroll(employeeId, additionalPay) ResponseEntity~PaycheckDTO~ "POST /api/payroll/calculate/{employeeId}"
+        +distributeBonuses(request) ResponseEntity~BonusDistributionResponse~ "POST /api/payroll/bonuses"
+        +getCurrentTaxStrategy() ResponseEntity~String~ "GET /api/payroll/tax-strategy"
+        +getPayrollHistory(employeeId) ResponseEntity~List~PaycheckDTO~~ "GET /api/payroll/history/{employeeId}"
+        +getPayrollHistoryByDateRange(employeeId, startDate, endDate) ResponseEntity~List~PaycheckDTO~~ "GET /api/payroll/history/{employeeId}/range"
+        +getPayrollSummary(businessId, startDate, endDate) ResponseEntity~PayrollSummaryDTO~ "GET /api/payroll/summary/{businessId}"
+        +updatePaycheck(paycheckId, grossPay, bonus, taxDeduction, insuranceDeduction) ResponseEntity~PaycheckDTO~ "PUT /api/payroll/paycheck/{paycheckId}"
     }
 
     class TrainingController {
@@ -361,6 +443,16 @@ classDiagram
         +findExpiredTrainings()
     }
 
+    class PaycheckRepository {
+        <<Repository>>
+        +save(paycheck)
+        +findById(id)
+        +findByEmployeeId(employeeId)
+        +findByPayDateBetween(startDate, endDate)
+        +findByEmployeeIdAndDateRange(employeeId, startDate, endDate)
+        +findByBusinessIdAndDateRange(businessId, startDate, endDate)
+    }
+
 %% Exceptions
     class GlobalExceptionHandler {
         <<RestControllerAdvice>>
@@ -396,6 +488,22 @@ classDiagram
         +InvalidBusinessException(message, cause)
     }
 
+    class ResourceNotFoundException {
+        <<Exception>>
+        +ResourceNotFoundException(resource, field, value)
+    }
+
+    class PayrollCalculationException {
+        <<Exception>>
+        +PayrollCalculationException(message, employeeId)
+        +PayrollCalculationException(message, employeeId, cause)
+    }
+
+    class BusinessValidationException {
+        <<Exception>>
+        +BusinessValidationException(message)
+    }
+
 %% Relationships - Inheritance
     BusinessPerson <|-- Employee
     BusinessPerson <|-- Employer
@@ -408,6 +516,9 @@ classDiagram
     RuntimeException <|.. EmployeeNotFoundException
     RuntimeException <|.. BusinessNotFoundException
     RuntimeException <|.. InvalidBusinessException
+    RuntimeException <|.. ResourceNotFoundException
+    RuntimeException <|.. PayrollCalculationException
+    RuntimeException <|.. BusinessValidationException
 
 %% Relationships - Associations
     Employee --> Employer : managed by
@@ -418,6 +529,9 @@ classDiagram
     GlobalExceptionHandler --> EmployeeNotFoundException : handled by
     GlobalExceptionHandler --> BusinessNotFoundException : handled by
     GlobalExceptionHandler --> InvalidBusinessException : handled by
+    GlobalExceptionHandler --> ResourceNotFoundException : handled by
+    GlobalExceptionHandler --> PayrollCalculationException : handled by
+    GlobalExceptionHandler --> BusinessValidationException : handled by
 
 %% Services use Repositories
     EmployeeService --> EmployeeRepository
@@ -428,16 +542,29 @@ classDiagram
     EmployerService --> BusinessRepository
     BusinessService --> BusinessRepository
     TrainingService --> TrainingRepository
+    PayrollService --> PaycheckRepository
+    PayrollService --> BusinessRepository
 
 %% Services use Strategies
     PayrollService --> TaxCalculationStrategy
+
+%% Services use other Services
+    PayrollService --> EmployeeService
 
 %% Controllers use Services
     EmployeeController --> EmployeeService
     EmployerController --> EmployerService
     PayrollController --> PayrollService
+    PayrollController --> BusinessService
     TrainingController --> TrainingService
     BusinessController --> BusinessService
+
+%% Services return DTOs
+    PayrollService ..> PaycheckDTO : returns
+    PayrollService ..> PayrollSummaryDTO : returns
+    PayrollController ..> PaycheckDTO : returns
+    PayrollController ..> PayrollSummaryDTO : returns
+    PayrollController ..> BonusDistributionResponse : returns
 
 %% Factory creates BusinessPersons
     BusinessPersonFactory ..> Employee : creates

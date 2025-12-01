@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
 
@@ -123,6 +124,48 @@ public class GlobalExceptionHandler {
         LocalDateTime.now(),
         HttpStatus.BAD_REQUEST.value(),
         "Bad Request",
+        e.getMessage()
+    );
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+  }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
+      ResourceNotFoundException e, 
+      WebRequest request
+  ) {
+    ErrorResponse res = new ErrorResponse(
+        LocalDateTime.now(),
+        HttpStatus.NOT_FOUND.value(),
+        request.getDescription(false).replace("uri=", ""),
+        e.getMessage()
+    );
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+  }
+
+  @ExceptionHandler(PayrollCalculationException.class)
+  public ResponseEntity<ErrorResponse> handlePayrollCalculationException(
+      PayrollCalculationException e, 
+      WebRequest request
+  ) {
+    ErrorResponse res = new ErrorResponse(
+        LocalDateTime.now(),
+        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+        request.getDescription(false).replace("uri=", ""),
+        "Payroll calculation failed: " + e.getMessage()
+    );
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+  }
+
+  @ExceptionHandler(BusinessValidationException.class)
+  public ResponseEntity<ErrorResponse> handleBusinessValidationException(
+      BusinessValidationException e,
+      WebRequest request
+  ) {
+    ErrorResponse res = new ErrorResponse(
+        LocalDateTime.now(),
+        HttpStatus.BAD_REQUEST.value(),
+        request.getDescription(false).replace("uri=", ""),
         e.getMessage()
     );
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);

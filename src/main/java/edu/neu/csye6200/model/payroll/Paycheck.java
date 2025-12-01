@@ -1,11 +1,14 @@
 package edu.neu.csye6200.model.payroll;
 
+import edu.neu.csye6200.model.domain.Employee;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * Paycheck entity representing a paycheck record for an employee.
+ * 
+ * @author Qing Mi
  */
 @Entity
 @Table(name = "paycheck")
@@ -15,13 +18,9 @@ public class Paycheck {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(name = "employee_id", nullable = false)
-    private Long employeeId;
-    
-    // TODO: Replace employeeId with Employee entity relation when Employee class is implemented
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "employee_id", nullable = false)
-    // private Employee employee;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", nullable = false)
+    private Employee employee;
     
     @Column(name = "gross_pay", nullable = false)
     private double grossPay;
@@ -50,9 +49,9 @@ public class Paycheck {
     public Paycheck() {
     }
     
-    public Paycheck(Long employeeId, double grossPay, double taxDeduction, 
+    public Paycheck(Employee employee, double grossPay, double taxDeduction, 
                    double insuranceDeduction, LocalDate payDate) {
-        this.employeeId = employeeId;
+        this.employee = employee;
         this.grossPay = grossPay;
         this.taxDeduction = taxDeduction;
         this.insuranceDeduction = insuranceDeduction;
@@ -85,12 +84,21 @@ public class Paycheck {
         this.id = id;
     }
     
-    public Long getEmployeeId() {
-        return employeeId;
+    public Employee getEmployee() {
+        return employee;
     }
     
-    public void setEmployeeId(Long employeeId) {
-        this.employeeId = employeeId;
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
+    
+    /**
+     * Get employee ID from the employee relationship
+     * 
+     * @return Employee ID or null if employee is not set
+     */
+    public Long getEmployeeId() {
+        return employee != null ? employee.getId() : null;
     }
     
     public double getGrossPay() {

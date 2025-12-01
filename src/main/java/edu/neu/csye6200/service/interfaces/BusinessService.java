@@ -1,5 +1,7 @@
 package edu.neu.csye6200.service.interfaces;
 
+import edu.neu.csye6200.dto.request.CreateBusinessRequest;
+import edu.neu.csye6200.dto.request.UpdateBusinessRequest;
 import edu.neu.csye6200.model.domain.Company;
 import java.util.List;
 
@@ -8,9 +10,9 @@ import java.util.List;
  */
 public interface BusinessService {
     
-    Company createBusiness(Company company);
+    Company createBusiness(CreateBusinessRequest request);
     
-    Company updateBusiness(Long id, Company company);
+    Company updateBusiness(Long id, UpdateBusinessRequest request);
     
     void deleteBusiness(Long id);
     

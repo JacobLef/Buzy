@@ -11,5 +11,7 @@ package edu.neu.csye6200.strategy.tax;
  */
 public interface TaxCalculationStrategy {
     double calculateTax(double grossPay);
+    
+    String getStrategyName();
 }
 

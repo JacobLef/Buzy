@@ -98,5 +98,10 @@ public class ProgressiveTaxStrategy implements TaxCalculationStrategy {
     public Map<Double, Double> getTaxBrackets() {
         return new TreeMap<>(taxBrackets); 
     }
+    
+    @Override
+    public String getStrategyName() {
+        return "Progressive Tax Strategy";
+    }
 }
 

@@ -1,20 +1,18 @@
 package edu.neu.csye6200;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
 /**
  * Driver class for the Spring Boot application
- * @author Amit Singh Tomar, Qing Mi
+ * Delegates to BusinessManagementApplication as the main Spring Boot entry point
  * 
+ * @author Amit Singh Tomar
  */
-@SpringBootApplication
 public class Driver {
 
 	public static void main(String[] args) {
 		System.out.println("============Spring Boot Application Start===================\n\n");
 		
-		SpringApplication.run(Driver.class, args);
+		
+		BusinessManagementApplication.main(args);
 		
 		System.out.println("\n\n============Spring Boot Application Running===================");
 	}

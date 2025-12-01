@@ -55,11 +55,11 @@ erDiagram
 
     PAYCHECK {
         bigint id PK
-        bigint employee_id FK
-        decimal gross_pay
+        bigint employee_id FK "References EMPLOYEE via @ManyToOne"
+        decimal gross_pay "Base salary"
+        decimal bonus 
         decimal tax_deduction
         decimal insurance_deduction
-        decimal bonus
         decimal net_pay
         date pay_date
         varchar pay_period

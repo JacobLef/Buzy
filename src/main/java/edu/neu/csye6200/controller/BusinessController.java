@@ -1,5 +1,9 @@
 package edu.neu.csye6200.controller;
 
+import edu.neu.csye6200.dto.CompanyDTO;
+import edu.neu.csye6200.dto.request.CreateBusinessRequest;
+import edu.neu.csye6200.dto.request.UpdateBusinessRequest;
+import edu.neu.csye6200.factory.DTOFactory;
 import edu.neu.csye6200.model.domain.Company;
 import edu.neu.csye6200.service.interfaces.BusinessService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * REST Controller for business management operations
@@ -19,13 +22,14 @@ import java.util.Map;
 public class BusinessController {
     
     private final BusinessService businessService;
+    private static final DTOFactory DTO_FACTORY = new DTOFactory();
     
     @Autowired
     public BusinessController(BusinessService businessService) {
         this.businessService = businessService;
     }
     
-    // Spring boot will automatically map the request body to the company object
+    // Spring boot will automatically map the request body to the CreateBusinessRequest object
     // example: POST /api/businesses HTTP/1.1
     // Content-Type: application/json
     // {
@@ -35,87 +39,41 @@ public class BusinessController {
     //     "foundedDate": "2020-01-01"
     // }
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createBusiness(@RequestBody Company company) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            Company createdBusiness = businessService.createBusiness(company);
-            response.put("status", "success");
-            response.put("message", "Business created successfully");
-            response.put("data", createdBusiness);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (Exception e) {
-            response.put("status", "error");
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+    public ResponseEntity<CompanyDTO> createBusiness(@RequestBody CreateBusinessRequest request) {
+        Company createdBusiness = businessService.createBusiness(request);
+        CompanyDTO dto = DTO_FACTORY.createDTO(createdBusiness);
+        return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> updateBusiness(
+    public ResponseEntity<CompanyDTO> updateBusiness(
             @PathVariable Long id,
-            @RequestBody Company company) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            Company updatedBusiness = businessService.updateBusiness(id, company);
-            response.put("status", "success");
-            response.put("message", "Business updated successfully");
-            response.put("data", updatedBusiness);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            response.put("status", "error");
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (Exception e) {
-            response.put("status", "error");
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+            @RequestBody UpdateBusinessRequest request) {
+        Company updatedBusiness = businessService.updateBusiness(id, request);
+        CompanyDTO dto = DTO_FACTORY.createDTO(updatedBusiness);
+        return ResponseEntity.ok(dto);
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> deleteBusiness(@PathVariable Long id) {
-        Map<String, String> response = new HashMap<>();
-        try {
+    public ResponseEntity<Void> deleteBusiness(@PathVariable Long id) {
             businessService.deleteBusiness(id);
-            response.put("status", "success");
-            response.put("message", "Business deleted successfully");
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            response.put("status", "error");
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
+        return ResponseEntity.noContent().build();
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getBusiness(@PathVariable Long id) {
-        Map<String, Object> response = new HashMap<>();
-        try {
+    public ResponseEntity<CompanyDTO> getBusiness(@PathVariable Long id) {
             Company business = businessService.getBusiness(id);
-            response.put("status", "success");
-            response.put("data", business);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            response.put("status", "error");
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
+        CompanyDTO dto = DTO_FACTORY.createDTO(business);
+        return ResponseEntity.ok(dto);
     }
     
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getAllBusinesses() {
-        Map<String, Object> response = new HashMap<>();
-        try {
+    public ResponseEntity<List<CompanyDTO>> getAllBusinesses() {
             List<Company> businesses = businessService.getAllBusinesses();
-            response.put("status", "success");
-            response.put("data", businesses);
-            response.put("count", businesses.size());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("status", "error");
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        List<CompanyDTO> dtos = businesses.stream()
+                .map(DTO_FACTORY::createDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 }
 

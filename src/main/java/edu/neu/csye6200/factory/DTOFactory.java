@@ -1,12 +1,22 @@
 package edu.neu.csye6200.factory;
 
+import edu.neu.csye6200.dto.CompanyDTO;
 import edu.neu.csye6200.dto.EmployeeDTO;
 import edu.neu.csye6200.dto.EmployerDTO;
 import edu.neu.csye6200.dto.TrainingDTO;
+import edu.neu.csye6200.dto.response.PaycheckDTO;
+import edu.neu.csye6200.model.domain.Company;
 import edu.neu.csye6200.model.domain.Employee;
 import edu.neu.csye6200.model.domain.Employer;
 import edu.neu.csye6200.model.domain.Training;
+import edu.neu.csye6200.model.payroll.Paycheck;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Factory class for Data Type Object creation.
+ */
 public class DTOFactory {
 
   public EmployeeDTO createDTO(Employee employee) {
@@ -74,5 +84,48 @@ public class DTOFactory {
     }
 
     return builder.build();
+  }
+
+  public CompanyDTO createDTO(Company company) {
+    List<Long> employeeIds = company.getEmployeesOnly().stream()
+        .map(Employee::getId)
+        .collect(Collectors.toList());
+    
+    List<Long> employerIds = company.getEmployersOnly().stream()
+        .map(Employer::getId)
+        .collect(Collectors.toList());
+
+    return CompanyDTO.builder()
+        .withId(company.getId())
+        .withName(company.getName())
+        .withAddress(company.getAddress())
+        .withIndustry(company.getIndustry())
+        .withFoundedDate(company.getFoundedDate())
+        .createdAt(company.getCreatedAt())
+        .updatedAt(company.getUpdatedAt())
+        .withTotalEmployees(company.getEmployeesOnly().size())
+        .withTotalEmployers(company.getEmployersOnly().size())
+        .withTotalPersons(company.getTotalPersonsCount())
+        .withEmployeeIds(employeeIds)
+        .withEmployerIds(employerIds)
+        .build();
+  }
+
+  public PaycheckDTO createDTO(Paycheck paycheck, Employee employee, String taxStrategyName) {
+    double totalDeductions = paycheck.getTaxDeduction() + paycheck.getInsuranceDeduction();
+    
+    return new PaycheckDTO(
+        paycheck.getId(),
+        paycheck.getEmployeeId(),
+        employee.getName(),
+        paycheck.getGrossPay(),           // Base salary
+        paycheck.getBonus(),              // Bonus amount (null if regular payroll)
+        paycheck.getTaxDeduction(),
+        paycheck.getInsuranceDeduction(),
+        totalDeductions,
+        paycheck.getNetPay(),
+        paycheck.getPayDate(),
+        taxStrategyName
+    );
   }
 }

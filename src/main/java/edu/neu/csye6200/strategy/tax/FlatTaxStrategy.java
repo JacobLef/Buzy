@@ -34,5 +34,10 @@ public class FlatTaxStrategy implements TaxCalculationStrategy {
     public double getTaxRate() {
         return taxRate;
     }
+    
+    @Override
+    public String getStrategyName() {
+        return "Flat Tax Strategy";
+    }
 }
 

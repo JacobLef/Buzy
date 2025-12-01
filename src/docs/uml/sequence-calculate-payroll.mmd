@@ -22,29 +22,35 @@ sequenceDiagram
     ER->>DB: SELECT * FROM employee WHERE id=?
     DB-->>ER: Employee record
     ER-->>ES: Employee object
-    deactivate ER
+    deactivate ER·
     ES-->>PS: Employee
     deactivate ES
 
-    PS->>PS: grossPay = employee.getSalary()
+    PS->>PS: baseSalary = employee.getSalary()
+    PS->>PS: calculateRegularPayroll(employee)
 
-    PS->>TS: calculateTax(grossPay)
+    PS->>TS: calculateTax(baseSalary)
     activate TS
     TS-->>PS: taxAmount
     deactivate TS
 
-    PS->>PS: insuranceDeduction = calculateInsurance()
+    PS->>PS: insuranceDeduction = calculateInsuranceDeduction(baseSalary)
+    Note over PS: Uses configurable insuranceRate from properties
     PS->>PS: netPay = grossPay - taxAmount - insuranceDeduction
+    PS->>PS: bonus = null (regular payroll)
 
-    PS->>PS: createPaycheck(employee, grossPay, taxAmount, insuranceDeduction, netPay)
+    PS->>PS: createPaycheck(employee, baseSalary, taxAmount, insuranceDeduction, payDate)
+    Note over PS: Paycheck uses @ManyToOne Employee relationship
 
     PS->>PCR: save(paycheck)
     activate PCR
-    PCR->>DB: INSERT INTO paycheck
+    PCR->>DB: INSERT INTO paycheck (employee_id, gross_pay, bonus, tax_deduction, insurance_deduction, net_pay, pay_date)
     DB-->>PCR: Paycheck record created
-    PCR-->>PS: Saved paycheck
+    PCR-->>PS: Saved Paycheck entity
     deactivate PCR
 
+    PS->>PS: convertToDTO(savedPaycheck, employee)
+    PS->>PS: Create PaycheckDTO with employee name and tax strategy name
     PS-->>PR: PaycheckDTO
     deactivate PS
     PR-->>Employer: 200 OK - Paycheck details

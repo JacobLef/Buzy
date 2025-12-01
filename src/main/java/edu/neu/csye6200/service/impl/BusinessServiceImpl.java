@@ -1,5 +1,7 @@
 package edu.neu.csye6200.service.impl;
 
+import edu.neu.csye6200.dto.request.CreateBusinessRequest;
+import edu.neu.csye6200.dto.request.UpdateBusinessRequest;
 import edu.neu.csye6200.model.domain.Company;
 import edu.neu.csye6200.repository.BusinessRepository;
 import edu.neu.csye6200.service.interfaces.BusinessService;
@@ -25,19 +27,33 @@ public class BusinessServiceImpl implements BusinessService {
     }
     
     @Override
-    public Company createBusiness(Company company) {
+    public Company createBusiness(CreateBusinessRequest request) {
+        Company company = Company.builder()
+                .name(request.name())
+                .address(request.address())
+                .industry(request.industry())
+                .foundedDate(request.foundedDate())
+                .build();
         return businessRepository.save(company);
     }
     
     @Override
-    public Company updateBusiness(Long id, Company company) {
+    public Company updateBusiness(Long id, UpdateBusinessRequest request) {
         Optional<Company> existingCompany = businessRepository.findById(id);
         if (existingCompany.isPresent()) {
             Company companyToUpdate = existingCompany.get();
-            companyToUpdate.setName(company.getName());
-            companyToUpdate.setAddress(company.getAddress());
-            companyToUpdate.setIndustry(company.getIndustry());
-            companyToUpdate.setFoundedDate(company.getFoundedDate());
+            if (request.name() != null) {
+                companyToUpdate.setName(request.name());
+            }
+            if (request.address() != null) {
+                companyToUpdate.setAddress(request.address());
+            }
+            if (request.industry() != null) {
+                companyToUpdate.setIndustry(request.industry());
+            }
+            if (request.foundedDate() != null) {
+                companyToUpdate.setFoundedDate(request.foundedDate());
+            }
             return businessRepository.save(companyToUpdate);
         }
         throw new RuntimeException("Business not found with id: " + id);
