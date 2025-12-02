@@ -4,18 +4,23 @@ import edu.neu.csye6200.dto.request.DistributeBonusRequest;
 import edu.neu.csye6200.dto.response.BonusDistributionResponse;
 import edu.neu.csye6200.dto.response.PaycheckDTO;
 import edu.neu.csye6200.dto.response.PayrollSummaryDTO;
+import edu.neu.csye6200.model.payroll.PaycheckStatus;
 import edu.neu.csye6200.service.interfaces.BusinessService;
 import edu.neu.csye6200.service.interfaces.PayrollService;
+import edu.neu.csye6200.strategy.tax.TaxCalculationStrategy;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST Controller for payroll operations
@@ -31,13 +36,34 @@ public class PayrollController {
     
     private final PayrollService payrollService;
     private final BusinessService businessService;
+    private final TaxCalculationStrategy flatTaxStrategy;
+    private final TaxCalculationStrategy progressiveTaxStrategy;
     
     /**
      * Constructor injection - Spring provides PayrollService and BusinessService implementations
      */
-    public PayrollController(PayrollService payrollService, BusinessService businessService) {
+    public PayrollController(
+            PayrollService payrollService, 
+            BusinessService businessService,
+            @Qualifier("flatTaxStrategy") TaxCalculationStrategy flatTaxStrategy,
+            @Qualifier("progressiveTaxStrategy") TaxCalculationStrategy progressiveTaxStrategy) {
         this.payrollService = payrollService;
         this.businessService = businessService;
+        this.flatTaxStrategy = flatTaxStrategy;
+        this.progressiveTaxStrategy = progressiveTaxStrategy;
+        
+        // Log initialization
+        if (flatTaxStrategy == null) {
+            logger.error("CRITICAL: flatTaxStrategy bean is null! Check TaxStrategyConfig.");
+        } else {
+            logger.info("PayrollController initialized with flatTaxStrategy: {}", flatTaxStrategy.getStrategyName());
+        }
+        
+        if (progressiveTaxStrategy == null) {
+            logger.error("CRITICAL: progressiveTaxStrategy bean is null! Check TaxStrategyConfig.");
+        } else {
+            logger.info("PayrollController initialized with progressiveTaxStrategy: {}", progressiveTaxStrategy.getStrategyName());
+        }
     }
     
     /**
@@ -77,6 +103,31 @@ public class PayrollController {
             
             return new ResponseEntity<>(dto, HttpStatus.CREATED);
         }
+    }
+    
+    /**
+     * Preview payroll calculation without saving to database
+     * 
+     * GET /api/payroll/preview/{employeeId}
+     * GET /api/payroll/preview/{employeeId}?additionalPay=1000
+     * 
+     * @param employeeId ID of the employee
+     * @param additionalPay Optional additional amount to add to base salary (bonus, overtime, etc.)
+     * @return PaycheckDTO with calculated gross, deductions, and net pay (not saved)
+     */
+    @GetMapping("/preview/{employeeId}")
+    public ResponseEntity<PaycheckDTO> previewPayroll(
+        @PathVariable Long employeeId,
+        @RequestParam(required = false) Double additionalPay
+    ) {
+        logger.info("Received payroll preview request for employee ID: {} with additional pay: ${}",
+            employeeId, additionalPay != null ? additionalPay : 0.0);
+        
+        PaycheckDTO dto = payrollService.previewPayroll(employeeId, additionalPay);
+        
+        logger.info("Payroll preview calculated successfully for employee ID: {}", employeeId);
+        
+        return ResponseEntity.ok(dto);
     }
     
     /**
@@ -128,8 +179,106 @@ public class PayrollController {
      */
     @GetMapping("/tax-strategy")
     public ResponseEntity<String> getCurrentTaxStrategy() {
-        String strategyName = payrollService.getCurrentTaxStrategyName();
-        return ResponseEntity.ok(strategyName);
+        try {
+            String strategyName = payrollService.getCurrentTaxStrategyName();
+            if (strategyName == null || strategyName.isEmpty()) {
+                logger.warn("Tax strategy name is null or empty, returning default");
+                return ResponseEntity.ok("Flat Tax Strategy");
+            }
+            return ResponseEntity.ok(strategyName);
+        } catch (Exception e) {
+            logger.error("Error getting current tax strategy", e);
+            return ResponseEntity.ok("Flat Tax Strategy");
+        }
+    }
+    
+    /**
+     * Get available tax strategies
+     * 
+     * GET /api/payroll/tax-strategies
+     * 
+     * @return List of available tax strategy names
+     */
+    @GetMapping("/tax-strategies")
+    public ResponseEntity<Map<String, String>> getAvailableTaxStrategies() {
+        try {
+            Map<String, String> strategies = new HashMap<>();
+            if (flatTaxStrategy != null) {
+                strategies.put("flatTaxStrategy", flatTaxStrategy.getStrategyName());
+            } else {
+                strategies.put("flatTaxStrategy", "Flat Tax Strategy");
+            }
+            if (progressiveTaxStrategy != null) {
+                strategies.put("progressiveTaxStrategy", progressiveTaxStrategy.getStrategyName());
+            } else {
+                strategies.put("progressiveTaxStrategy", "Progressive Tax Strategy");
+            }
+            return ResponseEntity.ok(strategies);
+        } catch (Exception e) {
+            logger.error("Error getting available tax strategies", e);
+            // Return default strategies on error
+            Map<String, String> defaultStrategies = new HashMap<>();
+            defaultStrategies.put("flatTaxStrategy", "Flat Tax Strategy");
+            defaultStrategies.put("progressiveTaxStrategy", "Progressive Tax Strategy");
+            return ResponseEntity.ok(defaultStrategies);
+        }
+    }
+    
+    /**
+     * Switch tax strategy
+     * 
+     * PUT /api/payroll/tax-strategy?strategy=flatTaxStrategy
+     * PUT /api/payroll/tax-strategy?strategy=progressiveTaxStrategy
+     * 
+     * @param strategy Strategy name: "flatTaxStrategy" or "progressiveTaxStrategy"
+     * @return Success message with new strategy name
+     */
+    @PutMapping("/tax-strategy")
+    public ResponseEntity<Map<String, String>> switchTaxStrategy(@RequestParam String strategy) {
+        try {
+            logger.info("Switching tax strategy to: {}", strategy);
+            
+            TaxCalculationStrategy selectedStrategy;
+            switch (strategy.toLowerCase()) {
+                case "flattaxstrategy":
+                case "flat":
+                    if (flatTaxStrategy == null) {
+                        Map<String, String> error = new HashMap<>();
+                        error.put("error", "Flat tax strategy is not available");
+                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+                    }
+                    selectedStrategy = flatTaxStrategy;
+                    break;
+                case "progressivetaxstrategy":
+                case "progressive":
+                    if (progressiveTaxStrategy == null) {
+                        Map<String, String> error = new HashMap<>();
+                        error.put("error", "Progressive tax strategy is not available");
+                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+                    }
+                    selectedStrategy = progressiveTaxStrategy;
+                    break;
+                default:
+                    Map<String, String> error = new HashMap<>();
+                    error.put("error", "Invalid strategy. Use 'flatTaxStrategy' or 'progressiveTaxStrategy'");
+                    return ResponseEntity.badRequest().body(error);
+            }
+            
+            payrollService.setTaxStrategy(selectedStrategy);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Tax strategy updated successfully");
+            response.put("strategy", selectedStrategy.getStrategyName());
+            
+            logger.info("Tax strategy switched successfully to: {}", selectedStrategy.getStrategyName());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error switching tax strategy", e);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to switch tax strategy: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
     
     /**
@@ -240,6 +389,49 @@ public class PayrollController {
             paycheckId, grossPay, bonus, taxDeduction, insuranceDeduction);
         
         logger.info("Paycheck ID: {} updated successfully", paycheckId);
+        
+        return ResponseEntity.ok(updated);
+    }
+    
+    /**
+     * Delete a paycheck
+     * Only allowed if status is DRAFT
+     * 
+     * DELETE /api/payroll/paycheck/{paycheckId}
+     * 
+     * @param paycheckId ID of the paycheck to delete
+     * @return 204 No Content if successful
+     */
+    @DeleteMapping("/paycheck/{paycheckId}")
+    public ResponseEntity<Void> deletePaycheck(@PathVariable Long paycheckId) {
+        logger.info("Deleting paycheck ID: {}", paycheckId);
+        
+        payrollService.deletePaycheck(paycheckId);
+        
+        logger.info("Paycheck ID: {} deleted successfully", paycheckId);
+        
+        return ResponseEntity.noContent().build();
+    }
+    
+    /**
+     * Update paycheck status
+     * 
+     * PUT /api/payroll/paycheck/{paycheckId}/status?status=PAID
+     * 
+     * @param paycheckId ID of the paycheck
+     * @param status New status (DRAFT, PENDING, PAID, VOIDED)
+     * @return Updated PaycheckDTO
+     */
+    @PutMapping("/paycheck/{paycheckId}/status")
+    public ResponseEntity<PaycheckDTO> updatePaycheckStatus(
+        @PathVariable Long paycheckId,
+        @RequestParam PaycheckStatus status
+    ) {
+        logger.info("Updating paycheck ID: {} status to: {}", paycheckId, status);
+        
+        PaycheckDTO updated = payrollService.updatePaycheckStatus(paycheckId, status);
+        
+        logger.info("Paycheck ID: {} status updated successfully", paycheckId);
         
         return ResponseEntity.ok(updated);
     }

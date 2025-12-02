@@ -6,14 +6,18 @@ import edu.neu.csye6200.model.domain.Employer;
 import edu.neu.csye6200.model.domain.Training;
 import edu.neu.csye6200.model.domain.BusinessPerson;
 import edu.neu.csye6200.model.domain.PersonStatus;
+import edu.neu.csye6200.model.domain.User;
+import edu.neu.csye6200.model.domain.UserRole;
 import edu.neu.csye6200.repository.BusinessRepository;
 import edu.neu.csye6200.repository.EmployeeRepository;
 import edu.neu.csye6200.repository.EmployerRepository;
 import edu.neu.csye6200.repository.TrainingRepository;
 import edu.neu.csye6200.repository.BusinessPersonRepository;
+import edu.neu.csye6200.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -38,6 +42,8 @@ public class DatabaseSeeder implements CommandLineRunner {
   private final EmployerRepository employerRepo;
   private final TrainingRepository trainingRepo;
   private final BusinessPersonRepository businessPersonRepo;
+  private final UserRepository userRepo;
+  private final PasswordEncoder passwordEncoder;
 
   private final Map<Long, Company> companyCache = new HashMap<>();
   private final Map<Long, Employer> employerCache = new HashMap<>();
@@ -48,13 +54,17 @@ public class DatabaseSeeder implements CommandLineRunner {
       EmployeeRepository employeeRepo,
       EmployerRepository employerRepo,
       TrainingRepository trainingRepo,
-      BusinessPersonRepository businessPersonRepo
+      BusinessPersonRepository businessPersonRepo,
+      UserRepository userRepo,
+      PasswordEncoder passwordEncoder
   ) {
     this.businessRepo = businessRepo;
     this.employeeRepo = employeeRepo;
     this.employerRepo = employerRepo;
     this.trainingRepo = trainingRepo;
     this.businessPersonRepo = businessPersonRepo;
+    this.userRepo = userRepo;
+    this.passwordEncoder = passwordEncoder;
   }
 
   @Override
@@ -68,6 +78,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     seedCompanies();
     seedEmployers();
     seedEmployees();
+    seedUsers();
     seedTrainings();
     System.out.println("Database seeding completed");
   }
@@ -350,5 +361,51 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     return businessPersonRepo.findById(personId).orElse(null);
+  }
+
+  private void seedUsers() {
+    if (userRepo.count() > 0) {
+      System.out.println("Skipping users - table already has data");
+      return;
+    }
+
+    try {
+      int userCount = 0;
+      
+      // Create User accounts for all Employers
+      List<Employer> employers = employerRepo.findAll();
+      for (Employer employer : employers) {
+        if (!userRepo.existsByEmail(employer.getEmail())) {
+          User user = new User();
+          user.setEmail(employer.getEmail());
+          user.setPassword(passwordEncoder.encode(employer.getPassword()));
+          user.setRole(UserRole.EMPLOYER);
+          user.setBusinessPerson(employer);
+          user.setEnabled(true);
+          userRepo.save(user);
+          userCount++;
+        }
+      }
+      
+      // Create User accounts for all Employees
+      List<Employee> employees = employeeRepo.findAll();
+      for (Employee employee : employees) {
+        if (!userRepo.existsByEmail(employee.getEmail())) {
+          User user = new User();
+          user.setEmail(employee.getEmail());
+          user.setPassword(passwordEncoder.encode(employee.getPassword()));
+          user.setRole(UserRole.EMPLOYEE);
+          user.setBusinessPerson(employee);
+          user.setEnabled(true);
+          userRepo.save(user);
+          userCount++;
+        }
+      }
+      
+      System.out.println("Seeded " + userCount + " user accounts");
+    } catch (Exception e) {
+      System.err.println("Failed to seed users: " + e.getMessage());
+      e.printStackTrace();
+    }
   }
 }

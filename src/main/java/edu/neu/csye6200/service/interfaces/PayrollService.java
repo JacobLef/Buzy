@@ -3,6 +3,7 @@ package edu.neu.csye6200.service.interfaces;
 import edu.neu.csye6200.dto.request.DistributeBonusRequest;
 import edu.neu.csye6200.dto.response.PaycheckDTO;
 import edu.neu.csye6200.dto.response.PayrollSummaryDTO;
+import edu.neu.csye6200.model.payroll.PaycheckStatus;
 import edu.neu.csye6200.strategy.tax.TaxCalculationStrategy;
 import java.time.LocalDate;
 import java.util.List;
@@ -35,6 +36,18 @@ public interface PayrollService {
      * @throws PayrollCalculationException if calculation fails
      */
     PaycheckDTO calculatePayrollWithAdditionalPay(Long employeeId, Double additionalPay);
+    
+    /**
+     * Preview payroll calculation without saving to database
+     * Used for displaying preview before user confirms
+     * 
+     * @param employeeId ID of the employee
+     * @param additionalPay Optional additional pay (bonus, overtime, etc.)
+     * @return PaycheckDTO with calculated gross, deductions, and net pay (not saved)
+     * @throws ResourceNotFoundException if employee not found
+     * @throws PayrollCalculationException if calculation fails
+     */
+    PaycheckDTO previewPayroll(Long employeeId, Double additionalPay);
     
     /**
      * Distribute bonuses to employees in a business
@@ -95,6 +108,7 @@ public interface PayrollService {
     
     /**
      * Update/correct an existing paycheck
+     * Only allowed if status is DRAFT
      * 
      * @param paycheckId ID of the paycheck to update
      * @param grossPay Updated gross pay (optional)
@@ -103,8 +117,29 @@ public interface PayrollService {
      * @param insuranceDeduction Updated insurance deduction (optional)
      * @return Updated PaycheckDTO
      * @throws ResourceNotFoundException if paycheck not found
-     * @throws PayrollCalculationException if update fails
+     * @throws PayrollCalculationException if update fails or paycheck is not in DRAFT status
      */
     PaycheckDTO updatePaycheck(Long paycheckId, Double grossPay, Double bonus, 
                                Double taxDeduction, Double insuranceDeduction);
+    
+    /**
+     * Delete a paycheck
+     * Only allowed if status is DRAFT
+     * 
+     * @param paycheckId ID of the paycheck to delete
+     * @throws ResourceNotFoundException if paycheck not found
+     * @throws PayrollCalculationException if paycheck is not in DRAFT status
+     */
+    void deletePaycheck(Long paycheckId);
+    
+    /**
+     * Update paycheck status
+     * 
+     * @param paycheckId ID of the paycheck
+     * @param newStatus New status to set
+     * @return Updated PaycheckDTO
+     * @throws ResourceNotFoundException if paycheck not found
+     * @throws PayrollCalculationException if status transition is invalid
+     */
+    PaycheckDTO updatePaycheckStatus(Long paycheckId, PaycheckStatus newStatus);
 }

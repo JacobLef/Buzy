@@ -416,7 +416,7 @@ class PayrollServiceImplTest {
     @DisplayName("Should filter employees by department when distributing bonuses")
     void testDistributeBonuses_ByDepartment_Success() {
         // Given
-        Employer manager = new Employer("Manager", "manager@example.com", "password", "Engineering", "Manager");
+        Employer manager = new Employer("Manager", "manager@example.com", "password", 80000.0, "Engineering", "Manager");
         manager.setId(10L);
         
         Employee employee2 = new Employee("Jane Smith", "jane@example.com", "password123", 60000.0, "Developer");

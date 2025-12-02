@@ -22,11 +22,12 @@ import java.util.stream.Collectors;
 public class BusinessController {
 
     private final BusinessService businessService;
-    private static final DTOFactory DTO_FACTORY = new DTOFactory();
-
+    private final DTOFactory dtoFactory;
+    
     @Autowired
-    public BusinessController(BusinessService businessService) {
+    public BusinessController(BusinessService businessService, DTOFactory dtoFactory) {
         this.businessService = businessService;
+        this.dtoFactory = dtoFactory;
     }
 
     // Spring boot will automatically map the request body to the
@@ -42,7 +43,7 @@ public class BusinessController {
     @PostMapping
     public ResponseEntity<CompanyDTO> createBusiness(@RequestBody CreateBusinessRequest request) {
         Company createdBusiness = businessService.createBusiness(request);
-        CompanyDTO dto = DTO_FACTORY.createDTO(createdBusiness);
+        CompanyDTO dto = dtoFactory.createDTO(createdBusiness);
         return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 
@@ -51,7 +52,7 @@ public class BusinessController {
             @PathVariable Long id,
             @RequestBody UpdateBusinessRequest request) {
         Company updatedBusiness = businessService.updateBusiness(id, request);
-        CompanyDTO dto = DTO_FACTORY.createDTO(updatedBusiness);
+        CompanyDTO dto = dtoFactory.createDTO(updatedBusiness);
         return ResponseEntity.ok(dto);
     }
 
@@ -64,7 +65,7 @@ public class BusinessController {
     @GetMapping("/{id}")
     public ResponseEntity<CompanyDTO> getBusiness(@PathVariable Long id) {
         Company business = businessService.getBusiness(id);
-        CompanyDTO dto = DTO_FACTORY.createDTO(business);
+        CompanyDTO dto = dtoFactory.createDTO(business);
         return ResponseEntity.ok(dto);
     }
 
@@ -72,7 +73,7 @@ public class BusinessController {
     public ResponseEntity<List<CompanyDTO>> getAllBusinesses() {
         List<Company> businesses = businessService.getAllBusinesses();
         List<CompanyDTO> dtos = businesses.stream()
-                .map(DTO_FACTORY::createDTO)
+                .map(dtoFactory::createDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }

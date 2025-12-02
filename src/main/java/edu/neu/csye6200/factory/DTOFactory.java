@@ -13,10 +13,12 @@ import edu.neu.csye6200.model.payroll.Paycheck;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
 /**
  * Factory class for Data Type Object creation.
  */
+@Component
 public class DTOFactory {
 
   public EmployeeDTO createDTO(Employee employee) {
@@ -125,7 +127,8 @@ public class DTOFactory {
         totalDeductions,
         paycheck.getNetPay(),
         paycheck.getPayDate(),
-        taxStrategyName
+        taxStrategyName,
+        paycheck.getStatus()              // Status: DRAFT, PENDING, PAID, VOIDED
     );
   }
 }
