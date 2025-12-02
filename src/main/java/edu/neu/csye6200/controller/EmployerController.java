@@ -22,23 +22,24 @@ import java.util.stream.Collectors;
 public class EmployerController {
 
   private final EmployerService employerService;
-  private static final DTOFactory DTO_FACTORY = new DTOFactory();
+  private final DTOFactory dtoFactory;
 
   @Autowired
-  public EmployerController(EmployerService employerService) {
+  public EmployerController(EmployerService employerService, DTOFactory dtoFactory) {
     this.employerService = employerService;
+    this.dtoFactory = dtoFactory;
   }
 
   @PostMapping
   public ResponseEntity<EmployerDTO> createEmployer(@RequestBody CreateEmployerRequest req) {
-    return ResponseEntity.status(201).body(DTO_FACTORY.createDTO(employerService.createEmployer(req)));
+    return ResponseEntity.status(201).body(dtoFactory.createDTO(employerService.createEmployer(req)));
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<EmployerDTO> getEmployer(@PathVariable Long id) {
     Optional<Employer> employer = employerService.getEmployer(id);
     return employer.map(
-            value -> ResponseEntity.ok(DTO_FACTORY.createDTO(value)))
+            value -> ResponseEntity.ok(dtoFactory.createDTO(value)))
         .orElseGet(() -> ResponseEntity.notFound().build()
         );
   }
@@ -47,7 +48,7 @@ public class EmployerController {
   public ResponseEntity<List<EmployerDTO>> getAllEmployers() {
     List<Employer> employers = employerService.getAllEmployers();
     List<EmployerDTO> dtos = employers.stream()
-        .map(DTO_FACTORY::createDTO)
+        .map(dtoFactory::createDTO)
         .collect(Collectors.toUnmodifiableList());
     return ResponseEntity.ok(dtos);
   }
@@ -58,7 +59,7 @@ public class EmployerController {
       @RequestBody UpdateEmployerRequest req
   ) {
     Employer employer = employerService.updateEmployer(id, req);
-    EmployerDTO dto = DTO_FACTORY.createDTO(employer);
+    EmployerDTO dto = dtoFactory.createDTO(employer);
     return ResponseEntity.ok(dto);
   }
 
@@ -74,7 +75,7 @@ public class EmployerController {
   ) {
     List<Employer> employers = employerService.getEmployersByBusiness(businessId);
     List<EmployerDTO> dtos = employers.stream()
-        .map(DTO_FACTORY::createDTO)
+        .map(dtoFactory::createDTO)
         .collect(Collectors.toUnmodifiableList());
     return ResponseEntity.ok(dtos);
   }
@@ -85,7 +86,7 @@ public class EmployerController {
   ) {
     List<Employer> employers = employerService.getEmployersByDepartment(department);
     List<EmployerDTO> dtos = employers.stream()
-        .map(DTO_FACTORY::createDTO)
+        .map(dtoFactory::createDTO)
         .collect(Collectors.toUnmodifiableList());
     return ResponseEntity.ok(dtos);
   }
@@ -94,7 +95,7 @@ public class EmployerController {
   public ResponseEntity<Set<EmployeeDTO>> getDirectReports(@PathVariable Long id) {
     Set<Employee> drs = employerService.getDirectReports(id);
     Set<EmployeeDTO> dtos = drs.stream()
-        .map(DTO_FACTORY::createDTO)
+        .map(dtoFactory::createDTO)
         .collect(Collectors.toUnmodifiableSet());
     return ResponseEntity.ok(dtos);
   }

@@ -6,6 +6,9 @@ import edu.neu.csye6200.service.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Authentication controller.
  * Handles login and token refresh.
@@ -61,5 +64,17 @@ public class AuthController {
       return ResponseEntity.ok(true);
     }
     return ResponseEntity.status(401).body(false);
+  }
+
+  /**
+   * Health check endpoint.
+   * GET /api/auth/health
+   */
+  @GetMapping("/health")
+  public ResponseEntity<Map<String, String>> health() {
+    Map<String, String> response = new HashMap<>();
+    response.put("status", "UP");
+    response.put("service", "Authentication Service");
+    return ResponseEntity.ok(response);
   }
 }
