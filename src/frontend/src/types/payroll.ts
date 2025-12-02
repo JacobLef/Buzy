@@ -1,3 +1,5 @@
+export type PaycheckStatus = "DRAFT" | "PENDING" | "PAID" | "VOIDED";
+
 export interface Paycheck {
   id: number;
   employeeId: number;
@@ -10,6 +12,7 @@ export interface Paycheck {
   netPay: number;
   payDate: string;
   taxStrategyUsed: string;
+  status: PaycheckStatus;
 }
 
 export interface BonusDistributionResponse {

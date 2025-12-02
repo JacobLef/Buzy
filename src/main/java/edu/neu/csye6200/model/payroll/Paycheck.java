@@ -46,6 +46,10 @@ public class Paycheck {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private PaycheckStatus status = PaycheckStatus.DRAFT;
+    
     public Paycheck() {
     }
     
@@ -57,6 +61,7 @@ public class Paycheck {
         this.insuranceDeduction = insuranceDeduction;
         this.payDate = payDate;
         this.createdAt = LocalDateTime.now();
+        this.status = PaycheckStatus.DRAFT;
         this.netPay = calculateNetPay();
     }
     
@@ -64,6 +69,9 @@ public class Paycheck {
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = PaycheckStatus.DRAFT;
         }
         if (netPay == 0.0 && grossPay > 0) {
             netPay = calculateNetPay();
@@ -167,6 +175,14 @@ public class Paycheck {
     
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    public PaycheckStatus getStatus() {
+        return status;
+    }
+    
+    public void setStatus(PaycheckStatus status) {
+        this.status = status;
     }
 }
 

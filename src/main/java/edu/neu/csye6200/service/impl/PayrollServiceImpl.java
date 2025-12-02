@@ -10,6 +10,7 @@ import edu.neu.csye6200.exception.ResourceNotFoundException;
 import edu.neu.csye6200.model.domain.Company;
 import edu.neu.csye6200.model.domain.Employee;
 import edu.neu.csye6200.model.payroll.Paycheck;
+import edu.neu.csye6200.model.payroll.PaycheckStatus;
 import edu.neu.csye6200.repository.PaycheckRepository;
 import edu.neu.csye6200.repository.BusinessRepository;
 import edu.neu.csye6200.service.interfaces.PayrollService;
@@ -79,6 +80,10 @@ public class PayrollServiceImpl implements PayrollService {
      */
     @PostConstruct
     public void init() {
+        if (taxStrategy == null) {
+            logger.error("CRITICAL: Tax strategy is null after initialization! This should not happen.");
+            throw new IllegalStateException("Tax strategy bean was not properly injected. Check TaxStrategyConfig.");
+        }
         logger.info("PayrollService initialized with tax strategy: {} and insurance rate: {}%", 
             taxStrategy.getStrategyName(), insuranceRate * 100);
     }
@@ -222,6 +227,49 @@ public class PayrollServiceImpl implements PayrollService {
     }
     
     @Override
+    public PaycheckDTO previewPayroll(Long employeeId, Double additionalPay) {
+        // Validate input
+        if (employeeId == null) {
+            throw new IllegalArgumentException("Employee ID cannot be null");
+        }
+        
+        if (additionalPay != null && additionalPay < 0) {
+            throw new IllegalArgumentException("Additional pay cannot be negative");
+        }
+        
+        logger.debug("Previewing payroll for employee ID: {} with additional pay: {}", 
+            employeeId, additionalPay);
+        
+        // Fetch employee via EmployeeService 
+        Employee employee = employeeService.getEmployee(employeeId)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
+        
+        // Calculate payroll without saving
+        try {
+            Paycheck paycheck;
+            if (additionalPay == null || additionalPay == 0.0) {
+                paycheck = calculateRegularPayroll(employee);
+            } else {
+                paycheck = calculatePayrollWithBonus(employee, additionalPay);
+            }
+            
+            // Convert to DTO without saving to database
+            logger.debug("Payroll preview calculated for employee {}: Net Pay = ${}", 
+                employee.getName(), paycheck.getNetPay());
+            
+            return convertToDTO(paycheck, employee);
+            
+        } catch (Exception e) {
+            logger.error("Failed to preview payroll for employee ID: {}", employeeId, e);
+            throw new PayrollCalculationException(
+                "Failed to preview payroll: " + e.getMessage(), 
+                employeeId, 
+                e
+            );
+        }
+    }
+    
+    @Override
     public void setTaxStrategy(TaxCalculationStrategy strategy) {
         if (strategy == null) {
             throw new IllegalArgumentException("Tax strategy cannot be null");
@@ -236,6 +284,10 @@ public class PayrollServiceImpl implements PayrollService {
     
     @Override
     public String getCurrentTaxStrategyName() {
+        if (taxStrategy == null) {
+            logger.warn("Tax strategy is null, returning default strategy name");
+            return "Flat Tax Strategy";
+        }
         return taxStrategy.getStrategyName();
     }
     
@@ -257,6 +309,10 @@ public class PayrollServiceImpl implements PayrollService {
         }
         
         double baseSalary = employee.getSalary();
+        if (taxStrategy == null) {
+            logger.error("Tax strategy is null in calculateRegularPayroll");
+            throw new IllegalStateException("Tax strategy is not initialized. Cannot calculate payroll.");
+        }
         double taxDeduction = taxStrategy.calculateTax(baseSalary);
         double insuranceDeduction = calculateInsuranceDeduction(baseSalary);
         
@@ -303,6 +359,10 @@ public class PayrollServiceImpl implements PayrollService {
         double totalGrossPay = baseSalary + bonusAmount;
         
         // Tax and insurance calculated on total (base salary + bonus)
+        if (taxStrategy == null) {
+            logger.error("Tax strategy is null in calculatePayrollWithBonus");
+            throw new IllegalStateException("Tax strategy is not initialized. Cannot calculate payroll.");
+        }
         double taxDeduction = taxStrategy.calculateTax(totalGrossPay);
         double insuranceDeduction = calculateInsuranceDeduction(totalGrossPay);
         
@@ -499,6 +559,15 @@ public class PayrollServiceImpl implements PayrollService {
         Paycheck paycheck = paycheckRepository.findById(paycheckId)
             .orElseThrow(() -> new ResourceNotFoundException("Paycheck", "id", paycheckId));
         
+        // Only allow updates if status is DRAFT
+        if (paycheck.getStatus() != PaycheckStatus.DRAFT) {
+            throw new PayrollCalculationException(
+                "Cannot update paycheck with status: " + paycheck.getStatus() + ". Only DRAFT paychecks can be updated.",
+                paycheckId,
+                null
+            );
+        }
+        
         Employee employee = paycheck.getEmployee();
         if (employee == null) {
             employee = employeeService.getEmployee(paycheck.getEmployeeId())
@@ -524,6 +593,10 @@ public class PayrollServiceImpl implements PayrollService {
             paycheck.setTaxDeduction(taxDeduction);
         } else if (recalculateTax) {
             // Recalculate tax based on total (grossPay + bonus)
+            if (taxStrategy == null) {
+                logger.error("Tax strategy is null in updatePaycheck");
+                throw new IllegalStateException("Tax strategy is not initialized. Cannot update paycheck.");
+            }
             double totalGross = paycheck.getGrossPay() + (paycheck.getBonus() != null ? paycheck.getBonus() : 0.0);
             paycheck.setTaxDeduction(taxStrategy.calculateTax(totalGross));
         }
@@ -545,6 +618,68 @@ public class PayrollServiceImpl implements PayrollService {
         return convertToDTO(updatedPaycheck, employee);
     }
     
+    @Override
+    @Transactional
+    public void deletePaycheck(Long paycheckId) {
+        logger.info("Deleting paycheck ID: {}", paycheckId);
+        
+        Paycheck paycheck = paycheckRepository.findById(paycheckId)
+            .orElseThrow(() -> new ResourceNotFoundException("Paycheck", "id", paycheckId));
+        
+        // Only allow deletion if status is DRAFT
+        if (paycheck.getStatus() != PaycheckStatus.DRAFT) {
+            throw new PayrollCalculationException(
+                "Cannot delete paycheck with status: " + paycheck.getStatus() + ". Only DRAFT paychecks can be deleted.",
+                paycheckId,
+                null
+            );
+        }
+        
+        paycheckRepository.delete(paycheck);
+        logger.info("Paycheck ID: {} deleted successfully", paycheckId);
+    }
+    
+    @Override
+    @Transactional
+    public PaycheckDTO updatePaycheckStatus(Long paycheckId, PaycheckStatus newStatus) {
+        logger.info("Updating paycheck ID: {} status to: {}", paycheckId, newStatus);
+        
+        Paycheck paycheck = paycheckRepository.findById(paycheckId)
+            .orElseThrow(() -> new ResourceNotFoundException("Paycheck", "id", paycheckId));
+        
+        PaycheckStatus currentStatus = paycheck.getStatus();
+        
+        // Validate status transitions
+        if (currentStatus == PaycheckStatus.PAID && newStatus != PaycheckStatus.VOIDED) {
+            throw new PayrollCalculationException(
+                "Cannot change status from PAID to " + newStatus + ". Only VOIDED is allowed.",
+                paycheckId,
+                null
+            );
+        }
+        
+        if (currentStatus == PaycheckStatus.VOIDED) {
+            throw new PayrollCalculationException(
+                "Cannot change status of VOIDED paycheck.",
+                paycheckId,
+                null
+            );
+        }
+        
+        paycheck.setStatus(newStatus);
+        Paycheck updatedPaycheck = paycheckRepository.save(paycheck);
+        
+        Employee employee = updatedPaycheck.getEmployee();
+        if (employee == null) {
+            employee = employeeService.getEmployee(updatedPaycheck.getEmployeeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", updatedPaycheck.getEmployeeId()));
+        }
+        
+        logger.info("Paycheck ID: {} status updated from {} to {}", paycheckId, currentStatus, newStatus);
+        
+        return convertToDTO(updatedPaycheck, employee);
+    }
+    
     /**
      * Convert Paycheck entity to PaycheckDTO using DTOFactory
      * 
@@ -553,6 +688,9 @@ public class PayrollServiceImpl implements PayrollService {
      * @return PaycheckDTO for API response
      */
     private PaycheckDTO convertToDTO(Paycheck paycheck, Employee employee) {
-        return dtoFactory.createDTO(paycheck, employee, taxStrategy.getStrategyName());
+        String strategyName = (taxStrategy != null) 
+            ? taxStrategy.getStrategyName() 
+            : "Flat Tax Strategy";
+        return dtoFactory.createDTO(paycheck, employee, strategyName);
     }
 }

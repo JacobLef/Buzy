@@ -1,5 +1,6 @@
 package edu.neu.csye6200.dto.response;
 
+import edu.neu.csye6200.model.payroll.PaycheckStatus;
 import java.time.LocalDate;
 
 /**
@@ -18,12 +19,17 @@ public record PaycheckDTO(
     Double totalDeductions,
     Double netPay,
     LocalDate payDate,
-    String taxStrategyUsed
+    String taxStrategyUsed,
+    PaycheckStatus status         // Status: DRAFT, PENDING, PAID, VOIDED
 ) {
     public PaycheckDTO {
         // Calculate totalDeductions if not provided
         if (totalDeductions == null) {
             totalDeductions = taxDeduction + insuranceDeduction;
+        }
+        // Default status to DRAFT if not provided
+        if (status == null) {
+            status = PaycheckStatus.DRAFT;
         }
     }
 }
