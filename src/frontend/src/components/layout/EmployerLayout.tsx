@@ -112,9 +112,7 @@ export default function EmployerLayout() {
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 overflow-y-auto bg-white scroll-smooth relative">
-        <div className="p-8 max-w-7xl mx-auto">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
     </div>
   );
