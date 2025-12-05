@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { login } from "../api/auth";
 import type { AuthResponse } from "../types/auth";
 
@@ -107,6 +107,22 @@ function Login() {
                                 disabled={isLoading}
                             />
                         </div>
+                    </div>
+
+                    {/* Sign up links */}
+                    <div className="flex flex-col items-center gap-2">
+                        <Link
+                            to="/signup/employee"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                            Sign up as employee
+                        </Link>
+                        <Link
+                            to="/signup/employer"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                            Sign up as employer
+                        </Link>
                     </div>
 
                     <button
