@@ -9,16 +9,16 @@ import {
   Edit3,
   X,
   Save,
-  UserCheck
+  Users
 } from 'lucide-react';
 import { useProfile } from '../../hooks/useProfile';
 import { Card, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import type { Employee, UpdateEmployeeRequest } from '../../types/employee';
+import type { Employer, UpdateEmployerRequest } from '../../types/employer';
 import { PersonStatus } from '../../types/person_status';
 
-export default function EmployeeProfile() {
+export default function EmployerProfile() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const { 
     profile, 
@@ -29,35 +29,33 @@ export default function EmployeeProfile() {
     saveProfile, 
     toggleEditing, 
     cancelEditing 
-  } = useProfile(user.businessPersonId, 'EMPLOYEE');
+  } = useProfile(user.businessPersonId, 'EMPLOYER');
 
-  const employee = profile as Employee | null;
+  const employer = profile as Employer | null;
 
-  const [formData, setFormData] = useState<UpdateEmployeeRequest>({
+  const [formData, setFormData] = useState<UpdateEmployerRequest>({
     name: '',
     email: '',
-    password: '',
     salary: 0,
-    position: '',
-    managerId: 0,
+    department: '',
+    title: '',
     hireDate: '',
     status: PersonStatus.ACTIVE,
   });
 
   useEffect(() => {
-    if (employee && editing) {
+    if (employer && editing) {
       setFormData({
-        name: employee.name,
-        email: employee.email,
-        password: '',
-        salary: employee.salary,
-        position: employee.position,
-        managerId: employee.managerId || 0,
-        hireDate: employee.hireDate,
-        status: employee.status,
+        name: employer.name,
+        email: employer.email,
+        salary: employer.salary,
+        department: employer.department,
+        title: employer.title,
+        hireDate: employer.hireDate,
+        status: employer.status,
       });
     }
-  }, [employee, editing]);
+  }, [employer, editing]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -91,7 +89,7 @@ export default function EmployeeProfile() {
     );
   }
 
-  if (!employee) {
+  if (!employer) {
     return (
       <div className="space-y-8 max-w-4xl mx-auto px-4 py-6">
         <div className="text-center py-12 text-gray-500">
@@ -140,21 +138,24 @@ export default function EmployeeProfile() {
       <Card>
         <CardHeader 
           title="Personal Information" 
-          subtitle="Your employee details and contact information"
+          subtitle="Your employer details and contact information"
         />
 
         {!editing ? (
-          /* View Mode */
           <div className="space-y-6">
             <div className="flex items-center gap-6 pb-6 border-b border-gray-100">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-                <User size={40} className="text-blue-600" />
+              <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center">
+                <User size={40} className="text-indigo-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">{employee.name}</h2>
-                <p className="text-gray-500">{employee.position}</p>
-                <div className="mt-2">
-                  {getStatusBadge(employee.status)}
+                <h2 className="text-2xl font-bold text-slate-900">{employer.name}</h2>
+                <p className="text-gray-500">{employer.title} • {employer.department}</p>
+                <div className="mt-2 flex items-center gap-2">
+                  {getStatusBadge(employer.status)}
+                  <Badge variant="blue">
+                    <Users size={12} className="mr-1" />
+                    {employer.directReportsCount} Direct Reports
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -166,7 +167,7 @@ export default function EmployeeProfile() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Email</p>
-                  <p className="text-sm font-medium text-slate-900">{employee.email}</p>
+                  <p className="text-sm font-medium text-slate-900">{employer.email}</p>
                 </div>
               </div>
 
@@ -176,7 +177,7 @@ export default function EmployeeProfile() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Company</p>
-                  <p className="text-sm font-medium text-slate-900">{employee.companyName}</p>
+                  <p className="text-sm font-medium text-slate-900">{employer.companyName}</p>
                 </div>
               </div>
 
@@ -185,18 +186,18 @@ export default function EmployeeProfile() {
                   <Briefcase size={20} className="text-gray-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Position</p>
-                  <p className="text-sm font-medium text-slate-900">{employee.position}</p>
+                  <p className="text-sm text-gray-500">Title</p>
+                  <p className="text-sm font-medium text-slate-900">{employer.title}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-gray-100 rounded-lg">
-                  <UserCheck size={20} className="text-gray-600" />
+                  <Users size={20} className="text-gray-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Manager</p>
-                  <p className="text-sm font-medium text-slate-900">{employee.managerName || 'N/A'}</p>
+                  <p className="text-sm text-gray-500">Department</p>
+                  <p className="text-sm font-medium text-slate-900">{employer.department}</p>
                 </div>
               </div>
 
@@ -206,7 +207,7 @@ export default function EmployeeProfile() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Salary</p>
-                  <p className="text-sm font-medium text-slate-900">${employee.salary.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-slate-900">${employer.salary.toLocaleString()}</p>
                 </div>
               </div>
 
@@ -217,7 +218,7 @@ export default function EmployeeProfile() {
                 <div>
                   <p className="text-sm text-gray-500">Hire Date</p>
                   <p className="text-sm font-medium text-slate-900">
-                    {new Date(employee.hireDate).toLocaleDateString('en-US', {
+                    {new Date(employer.hireDate).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
@@ -258,26 +259,25 @@ export default function EmployeeProfile() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
+                  Title
                 </label>
                 <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
+                  type="text"
+                  name="title"
+                  value={formData.title}
                   onChange={handleInputChange}
-                  placeholder="Leave blank to keep current"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Position
+                  Department
                 </label>
                 <input
                   type="text"
-                  name="position"
-                  value={formData.position}
+                  name="department"
+                  value={formData.department}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
