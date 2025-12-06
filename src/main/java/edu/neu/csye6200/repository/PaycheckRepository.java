@@ -48,4 +48,14 @@ public interface PaycheckRepository extends JpaRepository<Paycheck, Long> {
         LocalDate startDate,
         LocalDate endDate
     );
+    
+    /**
+     * Find paychecks for employees in a business after a specific date
+     */
+    @Query("SELECT p FROM Paycheck p WHERE p.employee.company.id = :businessId " +
+           "AND p.payDate >= :date")
+    List<Paycheck> findByBusinessIdAndPayDateAfter(
+        Long businessId,
+        LocalDate date
+    );
 }

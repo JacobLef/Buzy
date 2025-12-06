@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { Calculator, ArrowRight, DollarSign, CheckCircle } from 'lucide-react';
+import { Calculator, DollarSign, CheckCircle } from 'lucide-react';
 import type { Paycheck } from '../../types/payroll';
 import type { Employee } from '../../types/employee';
 
@@ -37,8 +37,6 @@ export const PayrollCalculator = ({
       setBonus("");
     }
   };
-
-  const selectedEmployee = employees.find(e => e.id === Number(selectedId));
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -149,3 +149,13 @@ id,training_name,description,completion_date,expiry_date,person_id,is_required
 148,Route Optimization,Logistics planning software,2024-02-25,2025-02-25,168,false
 149,Workplace Safety Fundamentals,Basic safety protocols and emergency procedures,2024-03-22,2025-03-22,169,true
 150,GIS Mapping for Transportation,Geographic information systems,2024-02-28,2025-02-28,169,false
+151,Annual Safety Review,Year-end safety compliance review,2025-11-15,2025-12-10,100,true
+152,Information Security Update,Quarterly security awareness update,2025-11-20,2025-12-12,101,true
+153,Workplace Safety Fundamentals,Basic safety protocols and emergency procedures,2025-11-25,2025-12-09,102,true
+154,Code Review Best Practices,Software engineering standards,2025-11-18,2025-12-11,103,true
+155,Financial Compliance Training,Year-end financial compliance,2025-11-22,2025-12-13,110,true
+156,HIPAA Compliance Renewal,Healthcare privacy regulations renewal,2025-11-28,2025-12-14,118,true
+157,Workplace Safety Fundamentals,Basic safety protocols and emergency procedures,2025-11-30,2025-12-15,128,true
+158,Energy Efficiency Standards Update,Green building certifications update,2025-11-25,2025-12-10,129,true
+159,Retail Management Review,Quarterly retail operations review,2025-11-20,2025-12-12,133,true
+160,Manufacturing Safety Standards,Industrial safety compliance renewal,2025-11-22,2025-12-11,138,true

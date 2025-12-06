@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
 import { FileText, Download, Search, CheckCircle, Trash2, X } from 'lucide-react';
 import type { Paycheck, PaycheckStatus } from '../../types/payroll';
 

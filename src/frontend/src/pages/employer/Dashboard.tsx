@@ -78,7 +78,6 @@ export default function EmployerDashboard() {
           value={stats.totalEmployees} 
           icon={<Users size={24} />} 
           color="blue"
-          trend={{ value: 12, isPositive: true, label: "vs last month" }}
         />
         <StatCard 
           title="Total Employers" 
@@ -91,14 +90,12 @@ export default function EmployerDashboard() {
           value={`$${stats.monthlyPayroll.toLocaleString()}`} 
           icon={<DollarSign size={24} />} 
           color="green"
-          trend={{ value: 5, isPositive: true, label: "vs last month", showPercent: true }}
         />
         <StatCard 
           title="Pending Trainings" 
           value={stats.pendingTrainings} 
           icon={<GraduationCap size={24} />} 
           color="orange"
-          trend={{ value: 2, isPositive: false, label: "Needs attention" }}
         />
       </div>
 

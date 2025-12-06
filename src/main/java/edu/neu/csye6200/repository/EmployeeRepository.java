@@ -41,4 +41,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
   @Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.status = 'Active'")
   List<Employee> findActiveEmployeesByBusiness(@Param("companyId") Long companyId);
+  
+  /**
+   * Find employees hired after a date for a specific business
+   */
+  @Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.hireDate >= :date")
+  List<Employee> findByCompanyIdAndHireDateAfter(
+      @Param("companyId") Long companyId,
+      @Param("date") LocalDate date
+  );
 }
