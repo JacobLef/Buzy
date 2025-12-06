@@ -6,7 +6,7 @@
 ![Use Case Diagram](uml/images/Use-Case-Diagram-OOD.png)
 
 ## Class Diagram
-![Class Diagram](uml/images/Class-Diagram-OOD.png)
+![Class Diagram](uml/images/ClassDiagramOOD.png)
 
 ## ER Diagram
 ![ER Diagram](uml/images/ER-Diagram-OOD.png)
