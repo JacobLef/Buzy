@@ -20,25 +20,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
   List<Employee> findByPosition(String position);
 
-  List<Employee> findByStatus(PersonStatus status);
-
-  Optional<Employee> findByEmail(String email);
-
   List<Employee> findByNameContainingIgnoreCase(String name);
 
-  List<Employee> findBySalaryBetween(Double minSalary, Double maxSalary);
-
-  List<Employee> findBySalaryGreaterThan(Double salary);
-
   List<Employee> findByHireDateAfter(LocalDate date);
-
-  List<Employee> findByHireDateBefore(LocalDate date);
-
-  List<Employee> findByHireDateBetween(LocalDate startDate, LocalDate endDate);
-
-  @Query("SELECT e FROM Employee e WHERE e.manager IS NULL")
-  List<Employee> findEmployeesWithoutManager();
-
-  @Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.status = 'Active'")
-  List<Employee> findActiveEmployeesByBusiness(@Param("companyId") Long companyId);
 }
