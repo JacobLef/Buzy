@@ -123,6 +123,12 @@ function Login() {
                         >
                             Sign up as employer
                         </Link>
+                        <Link
+                            to="/create-company"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                            Create a Company
+                        </Link>
                     </div>
 
                     <button

@@ -4,6 +4,7 @@ import Landing from "../pages/Landing";
 import Login from "../pages/Login";
 import SignupEmployee from "../pages/SignupEmployee";
 import SignupEmployer from "../pages/SignupEmployer";
+import CreateCompany from "../pages/CreateCompany";
 
 import EmployeeDashboard from "../pages/employee/Dashboard";
 import EmployeeProfile from "../pages/employee/Profile";
@@ -54,7 +55,10 @@ export const router = createBrowserRouter([
     path: "/signup/employer",
     element: <SignupEmployer />,
   },
-
+  {
+    path: "/create-company",
+    element: <CreateCompany />
+  },
   {
     element: <ProtectedRoute allowedRoles={["EMPLOYEE"]} />,
     children: [

@@ -3,7 +3,7 @@ import type {
   Company, 
   CreateBusinessRequest, 
   UpdateBusinessRequest 
-} from "../types/business" 
+} from "../types/business";
 
 export const createBusiness = (data: CreateBusinessRequest) => 
   api.post<Company>("/api/businesses", data);
