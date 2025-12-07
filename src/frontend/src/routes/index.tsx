@@ -21,6 +21,7 @@ import CompanySettings from "../pages/employer/Company";
 
 import EmployeeLayout from "../components/layout/EmployeeLayout";
 import EmployerLayout from "../components/layout/EmployerLayout";
+import EmployerProfile from "../pages/employer/Profile";
 
 const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
   const token = localStorage.getItem("token");
@@ -112,6 +113,10 @@ export const router = createBrowserRouter([
           {
             path: "/employer/training",
             element: <TrainingManagement />,
+          },
+          {
+            path: "/employer/profile",
+            element: <EmployerProfile />,
           },
           {
             path: "/employer/payroll",
