@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Calculator, DollarSign, CheckCircle } from 'lucide-react';
@@ -10,17 +10,38 @@ interface PayrollCalculatorProps {
   onCalculate: (employeeId: number, additionalPay?: number) => Promise<Paycheck | null>;
   onGenerate: (employeeId: number, additionalPay?: number) => Promise<boolean>;
   isLoading: boolean;
+  preselectedEmployeeId?: number;
 }
 
 export const PayrollCalculator = ({ 
   employees, 
   onCalculate, 
   onGenerate, 
-  isLoading 
+  isLoading,
+  preselectedEmployeeId
 }: PayrollCalculatorProps) => {
   const [selectedId, setSelectedId] = useState<string>("");
   const [bonus, setBonus] = useState<string>("");
   const [preview, setPreview] = useState<Paycheck | null>(null);
+  const [hasAutoCalculated, setHasAutoCalculated] = useState(false);
+
+  // Auto-select and calculate when preselectedEmployeeId is provided
+  useEffect(() => {
+    if (preselectedEmployeeId && employees.length > 0 && !hasAutoCalculated) {
+      const employeeExists = employees.some(emp => emp.id === preselectedEmployeeId);
+      if (employeeExists) {
+        setSelectedId(String(preselectedEmployeeId));
+        setHasAutoCalculated(true);
+        // Auto-calculate preview
+        const calculatePreview = async () => {
+          const result = await onCalculate(preselectedEmployeeId, bonus ? Number(bonus) : undefined);
+          setPreview(result);
+        };
+        calculatePreview();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preselectedEmployeeId, employees.length, hasAutoCalculated]);
 
   const handleCalc = async () => {
     if (!selectedId) return;

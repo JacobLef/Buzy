@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, ArrowLeft, Filter } from 'lucide-react';
 import { DepartmentCard } from '../../components/company/DepartmentCard';
 import { MindMapNode } from '../../components/company/MindMapNode';
 import { EmployeeModal } from '../../components/company/EmployeeModal';
+import { EmployeeForm } from '../../components/employee/EmployeeForm';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
 import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { buildOrgTree, flattenTree } from '../../utils/orgTreeBuilder';
-import { getEmployeesByBusiness } from '../../api/employees';
-import { getEmployersByBusiness } from '../../api/employers';
-import { getEmployer } from '../../api/employers';
+import { getEmployeesByBusiness, updateEmployee } from '../../api/employees';
+import { getEmployersByBusiness, getEmployer } from '../../api/employers';
 import type { EmployeeNode, DepartmentSummary } from '../../types/company';
-import type { Employee } from '../../types/employee';
+import type { Employee, UpdateEmployeeRequest } from '../../types/employee';
 import type { Employer } from '../../types/employer';
 
 /**
@@ -77,12 +79,21 @@ function extractDepartments(
 }
 
 export default function CompanyView() {
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmp, setSelectedEmp] = useState<EmployeeNode | null>(null);
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [employers, setEmployers] = useState<Employer[]>([]);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [editingPerson, setEditingPerson] = useState<Employee | Employer | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPersonEmployer, setIsPersonEmployer] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [companyId, setCompanyId] = useState<number | null>(null);
+  
+  // Get highlightEmployer from URL query params
+  const highlightEmployerId = searchParams.get('highlightEmployer');
 
   // Fetch data from backend
   useEffect(() => {
@@ -113,6 +124,7 @@ export default function CompanyView() {
 
           setEmployees(employeesResponse.data);
           setEmployers(employersResponse.data);
+          setCompanyId(currentBusinessId);
         }
       } catch (error) {
         console.error('Failed to fetch company data:', error);
@@ -140,6 +152,18 @@ export default function CompanyView() {
     expandedPath,
     resetView,
   } = useCompanyNavigation(fullTree);
+
+  // Auto-highlight employer from URL query param
+  useEffect(() => {
+    if (highlightEmployerId && employers.length > 0 && fullTree) {
+      const employer = employers.find(emp => emp.id === Number(highlightEmployerId));
+      if (employer) {
+        // Use handleSearch to highlight the employer
+        handleSearch(employer.name);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightEmployerId, employers.length, fullTree]);
 
   // Extract departments from tree structure
   const departments = useMemo(() => {
@@ -346,7 +370,74 @@ export default function CompanyView() {
         employee={selectedEmp}
         mode="EMPLOYER"
         allPeople={allPeople}
+        onEdit={(employeeId) => {
+          // Find the person in employees or employers array
+          const employee = employees.find(emp => emp.id === employeeId);
+          const employer = employers.find(emp => emp.id === employeeId);
+          
+          if (employer) {
+            setEditingPerson(employer);
+            setIsPersonEmployer(true);
+            setIsEditModalOpen(true);
+          } else if (employee) {
+            setEditingPerson(employee);
+            setIsPersonEmployer(false);
+            setIsEditModalOpen(true);
+          }
+        }}
       />
+
+      {/* Edit Modal */}
+      {isEditModalOpen && editingPerson && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingPerson(null);
+          }}
+          title={`Edit ${isPersonEmployer ? 'Employer' : 'Employee'}`}
+          maxWidth="2xl"
+        >
+          {isPersonEmployer ? (
+            <div className="text-center py-8 text-gray-500">
+              Employer editing form coming soon. Please use the employer management page for now.
+            </div>
+          ) : (
+            <EmployeeForm
+              employee={editingPerson as Employee}
+              mode="edit"
+              companyId={companyId || undefined}
+              onSubmit={async (data) => {
+                setSaving(true);
+                try {
+                  await updateEmployee(editingPerson.id, data as UpdateEmployeeRequest);
+                  // Refresh data
+                  const [employeesResponse, employersResponse] = await Promise.all([
+                    getEmployeesByBusiness(companyId!),
+                    getEmployersByBusiness(companyId!),
+                  ]);
+                  setEmployees(employeesResponse.data);
+                  setEmployers(employersResponse.data);
+                  setIsEditModalOpen(false);
+                  setEditingPerson(null);
+                  setSelectedEmp(null);
+                } catch (error: unknown) {
+                  const err = error as { response?: { data?: { message?: string } } };
+                  console.error('Failed to update employee:', error);
+                  alert(err.response?.data?.message || 'Failed to update employee');
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              onCancel={() => {
+                setIsEditModalOpen(false);
+                setEditingPerson(null);
+              }}
+              saving={saving}
+            />
+          )}
+        </Modal>
+      )}
     </div>
   );
 }

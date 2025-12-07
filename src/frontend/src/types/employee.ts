@@ -30,7 +30,7 @@ export interface CreateEmployeeRequest {
 export interface UpdateEmployeeRequest {
   name: string,
   email: string,
-  password: string,
+  password?: string | null,
   salary: number,
   position: string,
   managerId: number,

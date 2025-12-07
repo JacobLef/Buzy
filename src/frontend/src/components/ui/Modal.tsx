@@ -8,6 +8,7 @@ interface ModalProps {
   children: React.ReactNode;
   title?: string;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  headerActions?: React.ReactNode;
 }
 
 export const Modal = ({ 
@@ -15,7 +16,8 @@ export const Modal = ({
   onClose, 
   children, 
   title,
-  maxWidth = 'md'
+  maxWidth = 'md',
+  headerActions
 }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -68,6 +70,8 @@ export const Modal = ({
                 {title}
               </h3>
             )}
+            <div className="flex items-center gap-2 ml-auto">
+              {headerActions}
             <button 
               onClick={onClose} 
               className="rounded-full p-1 hover:bg-slate-50 text-slate-400 hover:text-navy-900 transition-colors outline-none focus:ring-2 focus:ring-blue-500"
@@ -75,6 +79,7 @@ export const Modal = ({
             >
               <X size={20} />
             </button>
+            </div>
           </div>
 
           {/* Content */}

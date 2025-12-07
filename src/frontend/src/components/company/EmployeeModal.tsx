@@ -1,7 +1,7 @@
 import React from 'react';
 import type { EmployeeNode } from '../../types/company';
 import { Modal } from '../ui/Modal';
-import { Mail, Calendar, DollarSign, Building, User, Crown, Users } from 'lucide-react';
+import { Mail, Calendar, DollarSign, Building, User, Crown, Users, Edit3 } from 'lucide-react';
 
 interface EmployeeModalProps {
   isOpen: boolean;
@@ -9,6 +9,7 @@ interface EmployeeModalProps {
   employee: EmployeeNode | null;
   mode: 'EMPLOYER' | 'EMPLOYEE';
   allPeople?: EmployeeNode[];
+  onEdit?: (employeeId: number) => void;
 }
 
 export const EmployeeModal: React.FC<EmployeeModalProps> = ({
@@ -17,6 +18,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
   employee,
   mode,
   allPeople = [],
+  onEdit,
 }) => {
   if (!isOpen || !employee) return null;
 
@@ -41,6 +43,21 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
       onClose={onClose}
       title={`${employee.name} - ${employee.position}`}
       maxWidth="lg"
+      headerActions={
+        mode === 'EMPLOYER' && onEdit ? (
+          <button
+            onClick={() => {
+              if (onEdit) {
+                onEdit(employee.id);
+              }
+            }}
+            className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors text-blue-600 hover:text-blue-700"
+            title="Edit"
+          >
+            <Edit3 size={18} />
+          </button>
+        ) : undefined
+      }
     >
       <div className="space-y-6">
 

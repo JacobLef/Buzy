@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Calculator, DollarSign, Settings, CheckCircle, AlertCircle } from "lucide-react";
 import { usePayroll } from "../../hooks/usePayroll";
 import { PayrollCalculator } from "../../components/payroll/PayrollCalculator";
@@ -7,10 +8,14 @@ import { PayrollHistory } from "../../components/payroll/PayrollHistory";
 import type { DistributeBonusRequest } from "../../types/payroll";
 
 export default function PayrollManagement() {
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<"calculate" | "bonus">("calculate");
   const [businessId, setBusinessId] = useState<number | null>(null);
   const [showStrategyDropdown, setShowStrategyDropdown] = useState(false);
   const strategyDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Get employeeId from URL query params
+  const employeeIdFromUrl = searchParams.get('employeeId');
 
   const {
     taxStrategy,
@@ -210,6 +215,7 @@ export default function PayrollManagement() {
                 onCalculate={calculatePreview}
                 onGenerate={generatePaycheck}
                 isLoading={isLoading || isLoadingEmployees}
+                preselectedEmployeeId={employeeIdFromUrl ? Number(employeeIdFromUrl) : undefined}
               />
             ) : (
               <BonusDistribution

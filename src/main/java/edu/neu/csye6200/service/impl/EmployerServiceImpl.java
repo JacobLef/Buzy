@@ -3,15 +3,16 @@ package edu.neu.csye6200.service.impl;
 import edu.neu.csye6200.dto.request.CreateEmployerRequest;
 import edu.neu.csye6200.dto.request.UpdateEmployerRequest;
 import edu.neu.csye6200.exception.EmployerNotFoundException;
-import edu.neu.csye6200.model.domain.Business;
 import edu.neu.csye6200.model.domain.Company;
 import edu.neu.csye6200.model.domain.Employee;
 import edu.neu.csye6200.model.domain.Employer;
-import edu.neu.csye6200.repository.BusinessRepository;
+import edu.neu.csye6200.model.domain.User;
 import edu.neu.csye6200.repository.BusinessRepository;
 import edu.neu.csye6200.repository.EmployerRepository;
+import edu.neu.csye6200.repository.UserRepository;
 import edu.neu.csye6200.service.interfaces.EmployerService;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +26,19 @@ public class EmployerServiceImpl implements EmployerService {
 
   private final EmployerRepository employerRepository;
   private final BusinessRepository businessRepository;
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
   public EmployerServiceImpl(
       EmployerRepository employerRepository,
-      BusinessRepository businessRepository
+      BusinessRepository businessRepository,
+      UserRepository userRepository,
+      PasswordEncoder passwordEncoder
   ) {
     this.employerRepository = employerRepository;
     this.businessRepository = businessRepository;
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
   }
 
   @Override
@@ -75,15 +82,32 @@ public class EmployerServiceImpl implements EmployerService {
     Employer employer = employerRepository.findById(id)
         .orElseThrow(() -> new EmployerNotFoundException(id));
 
+    // Track if email changed to update User table
+    String oldEmail = employer.getEmail();
+    boolean emailChanged = false;
+
     if (request.name() != null) {
       employer.setName(request.name());
     }
-    if (request.email() != null) {
+    if (request.email() != null && !request.email().equals(oldEmail)) {
       employer.setEmail(request.email());
+      emailChanged = true;
     }
-    if (request.password() != null) {
-      employer.setPassword(request.password());
+    
+    // Handle password update: encrypt and sync with User table
+    if (request.password() != null && !request.password().trim().isEmpty()) {
+      String encryptedPassword = passwordEncoder.encode(request.password());
+      employer.setPassword(encryptedPassword);
+      
+      // Update User table password for authentication
+      Optional<User> userOpt = userRepository.findByBusinessPersonId(id);
+      if (userOpt.isPresent()) {
+        User user = userOpt.get();
+        user.setPassword(encryptedPassword);
+        userRepository.save(user);
     }
+    }
+    
     if (request.salary() != null) {
       employer.setSalary(request.salary());
     }
@@ -100,7 +124,19 @@ public class EmployerServiceImpl implements EmployerService {
       employer.setStatus(request.status());
     }
 
-    return employerRepository.save(employer);
+    Employer savedEmployer = employerRepository.save(employer);
+
+    // Update User table email if it changed
+    if (emailChanged) {
+      Optional<User> userOpt = userRepository.findByBusinessPersonId(id);
+      if (userOpt.isPresent()) {
+        User user = userOpt.get();
+        user.setEmail(request.email());
+        userRepository.save(user);
+      }
+    }
+
+    return savedEmployer;
   }
 
   @Override
