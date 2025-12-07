@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { useNavigate, Link } from "react-router-dom";
+import { login } from "../api/auth";
+import type { AuthResponse } from "../types/auth";
 
 /**
  * Login page component
