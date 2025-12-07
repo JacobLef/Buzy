@@ -115,7 +115,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         User user = userOpt.get();
         user.setPassword(encryptedPassword);
         userRepository.save(user);
-      }
+    }
     }
     
     if (request.salary() != null) {

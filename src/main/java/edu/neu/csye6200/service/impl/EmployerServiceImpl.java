@@ -105,7 +105,7 @@ public class EmployerServiceImpl implements EmployerService {
         User user = userOpt.get();
         user.setPassword(encryptedPassword);
         userRepository.save(user);
-      }
+    }
     }
     
     if (request.salary() != null) {

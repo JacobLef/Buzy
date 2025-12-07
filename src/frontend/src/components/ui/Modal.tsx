@@ -72,13 +72,13 @@ export const Modal = ({
             )}
             <div className="flex items-center gap-2 ml-auto">
               {headerActions}
-              <button 
-                onClick={onClose} 
-                className="rounded-full p-1 hover:bg-slate-50 text-slate-400 hover:text-navy-900 transition-colors outline-none focus:ring-2 focus:ring-blue-500"
-                aria-label="Close modal"
-              >
-                <X size={20} />
-              </button>
+            <button 
+              onClick={onClose} 
+              className="rounded-full p-1 hover:bg-slate-50 text-slate-400 hover:text-navy-900 transition-colors outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Close modal"
+            >
+              <X size={20} />
+            </button>
             </div>
           </div>
 
