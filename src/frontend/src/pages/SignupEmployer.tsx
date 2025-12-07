@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { signupEmployer } from "../api/auth";
 import type { AuthResponse } from "../types/auth";
 import type { CreateEmployerRequest } from "../types/employer";
+import { getAllBusinesses } from "../api/businesses";
+import type { Company } from "../types/business";
 
 export default function SignupEmployer() {
     const navigate = useNavigate();
@@ -19,6 +21,9 @@ export default function SignupEmployer() {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [companies, setCompanies] = useState<Company[]>([]);
+    const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
+    const [companyError, setCompanyError] = useState<string | null>(null);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -34,6 +39,29 @@ export default function SignupEmployer() {
                     : value,
         }));
     };
+
+    // Load companies
+    useEffect(() => {
+        const loadCompanies = async () => {
+            try {
+                setIsLoadingCompanies(true);
+                setCompanyError(null);
+                const response = await getAllBusinesses();
+                setCompanies(response.data);
+            } catch (err: any) {
+                console.error("Failed to load companies:", err);
+                setCompanyError(
+                    err.response?.data?.message ||
+                    err.response?.data?.error ||
+                    "Failed to load companies. Please refresh the page."
+                );
+            } finally {
+                setIsLoadingCompanies(false);
+            }
+        };
+
+        loadCompanies();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -268,19 +296,35 @@ export default function SignupEmployer() {
                                 htmlFor="companyId"
                                 className="block text-sm font-medium text-gray-700"
                             >
-                                Company ID <span className="text-red-500">*</span>
+                                Company <span className="text-red-500">*</span>
                             </label>
-                            <input
+                            <select
                                 id="companyId"
                                 name="companyId"
-                                type="number"
-                                required
                                 value={formData.companyId || ""}
                                 onChange={handleChange}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="1"
-                                disabled={isLoading}
-                            />
+                                required
+                                disabled={isLoading || isLoadingCompanies}
+                            >
+                                <option value="">Select a Company</option>
+                                {companies.map((company) => (
+                                    <option key={company.id} value={company.id}>
+                                        {company.name} ({company.industry})
+                                    </option>
+                                ))}
+                            </select>
+                            {isLoadingCompanies && (
+                                <p className="mt-1 text-sm text-gray-500">Loading companies...</p>
+                            )}
+                            {companyError && (
+                                <p className="mt-1 text-sm text-red-500">{companyError}</p>
+                            )}
+                            {!isLoadingCompanies && !companyError && companies.length === 0 && (
+                                <p className="mt-1 text-sm text-gray-500">
+                                    No companies available. Please create a company first.
+                                </p>
+                            )}
                         </div>
 
                         <div>
