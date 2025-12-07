@@ -9,14 +9,15 @@ import {
   Edit3,
   X,
   Save,
-  UserCheck
+  UserCheck,
+  Users
 } from 'lucide-react';
 import { useProfile } from '../../hooks/useProfile';
 import { Card, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { getEmployer } from '../../api/employers';
 import type { Employee, UpdateEmployeeRequest } from '../../types/employee';
-import { PersonStatus } from '../../types/person_status';
 
 export default function EmployeeProfile() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -32,44 +33,76 @@ export default function EmployeeProfile() {
   } = useProfile(user.businessPersonId, 'EMPLOYEE');
 
   const employee = profile as Employee | null;
+  const [department, setDepartment] = useState<string>('');
 
-  const [formData, setFormData] = useState<UpdateEmployeeRequest>({
+  const [formData, setFormData] = useState<Partial<UpdateEmployeeRequest>>({
     name: '',
     email: '',
     password: '',
-    salary: 0,
-    position: '',
-    managerId: 0,
-    hireDate: '',
-    status: PersonStatus.ACTIVE,
   });
 
+  // Load department from manager
   useEffect(() => {
-    if (employee && editing) {
+    const loadDepartment = async () => {
+      if (employee?.managerId) {
+        try {
+          const response = await getEmployer(employee.managerId);
+          setDepartment(response.data.department);
+        } catch (error) {
+          console.error('Failed to load department:', error);
+          setDepartment('General');
+        }
+      } else {
+        setDepartment('General');
+      }
+    };
+    if (employee) {
+      loadDepartment();
+    }
+  }, [employee]);
+
+  // Initialize form data when entering edit mode
+  useEffect(() => {
+    if (employee && editing && formData.name === '') {
       setFormData({
         name: employee.name,
         email: employee.email,
         password: '',
-        salary: employee.salary,
-        position: employee.position,
-        managerId: employee.managerId || 0,
-        hireDate: employee.hireDate,
-        status: employee.status,
+      });
+    } else if (!editing) {
+      // Reset form when exiting edit mode
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
       });
     }
-  }, [employee, editing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'salary' ? parseFloat(value) || 0 : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveProfile(formData);
+    // Only send name, email, and password (if provided)
+    const updateData: UpdateEmployeeRequest = {
+      name: formData.name || employee!.name,
+      email: formData.email || employee!.email,
+      // Only include password if it's not empty
+      ...(formData.password && formData.password.trim() !== '' ? { password: formData.password } : {}),
+      salary: employee!.salary,
+      position: employee!.position,
+      managerId: employee!.managerId || 0,
+      hireDate: employee!.hireDate,
+      status: employee!.status,
+    };
+    await saveProfile(updateData);
   };
 
   const getStatusBadge = (status: string) => {
@@ -192,6 +225,16 @@ export default function EmployeeProfile() {
 
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-gray-100 rounded-lg">
+                  <Users size={20} className="text-gray-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Department</p>
+                  <p className="text-sm font-medium text-slate-900">{department || 'Loading...'}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gray-100 rounded-lg">
                   <UserCheck size={20} className="text-gray-600" />
                 </div>
                 <div>
@@ -232,97 +275,45 @@ export default function EmployeeProfile() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
+                  Full Name *
                 </label>
                 <input
                   type="text"
                   name="name"
-                  value={formData.name}
+                  value={formData.name || ''}
                   onChange={handleInputChange}
+                  required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+                  Email *
                 </label>
                 <input
                   type="email"
                   name="email"
-                  value={formData.email}
+                  value={formData.email || ''}
                   onChange={handleInputChange}
+                  required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Password
                 </label>
                 <input
                   type="password"
                   name="password"
-                  value={formData.password}
+                  value={formData.password || ''}
                   onChange={handleInputChange}
                   placeholder="Leave blank to keep current"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Position
-                </label>
-                <input
-                  type="text"
-                  name="position"
-                  value={formData.position}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Salary
-                </label>
-                <input
-                  type="number"
-                  name="salary"
-                  value={formData.salary}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                >
-                  <option value={PersonStatus.ACTIVE}>Active</option>
-                  <option value={PersonStatus.INACTIVE}>Inactive</option>
-                  <option value={PersonStatus.ON_LEAVE}>On Leave</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hire Date
-                </label>
-                <input
-                  type="date"
-                  name="hireDate"
-                  value={formData.hireDate}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                />
+                <p className="mt-1 text-xs text-gray-500">Leave blank to keep your current password</p>
               </div>
             </div>
           </form>
