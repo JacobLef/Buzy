@@ -10,6 +10,7 @@ import EmployeeDashboard from "../pages/employee/Dashboard";
 import EmployeeProfile from "../pages/employee/Profile";
 import EmployeeTraining from "../pages/employee/Training";
 import EmployeePayroll from "../pages/employee/Payroll";
+import EmployeeCompany from "../pages/employee/CompanyDirectory";
 
 import EmployerDashboard from "../pages/employer/Dashboard";
 import EmployeeManagement from "../pages/employer/Employees";
@@ -80,6 +81,10 @@ export const router = createBrowserRouter([
           {
             path: "/employee/payroll",
             element: <EmployeePayroll />,
+          },
+          {
+            path: "/employee/company",
+            element: <EmployeeCompany />,
           },
         ],
       },

@@ -2,8 +2,12 @@ package edu.neu.csye6200.controller;
 
 import edu.neu.csye6200.dto.request.DistributeBonusRequest;
 import edu.neu.csye6200.dto.response.BonusDistributionResponse;
+import edu.neu.csye6200.dto.response.DeletePaycheckResponse;
 import edu.neu.csye6200.dto.response.PaycheckDTO;
 import edu.neu.csye6200.dto.response.PayrollSummaryDTO;
+import edu.neu.csye6200.dto.response.TaxStrategiesResponse;
+import edu.neu.csye6200.dto.response.TaxStrategyResponse;
+import edu.neu.csye6200.dto.response.TaxStrategySwitchResponse;
 import edu.neu.csye6200.model.payroll.PaycheckStatus;
 import edu.neu.csye6200.service.interfaces.BusinessService;
 import edu.neu.csye6200.service.interfaces.PayrollService;
@@ -175,20 +179,20 @@ public class PayrollController {
      * 
      * GET /api/payroll/tax-strategy
      * 
-     * @return Name/description of current tax strategy
+     * @return TaxStrategyResponse DTO with current tax strategy name
      */
     @GetMapping("/tax-strategy")
-    public ResponseEntity<String> getCurrentTaxStrategy() {
+    public ResponseEntity<TaxStrategyResponse> getCurrentTaxStrategy() {
         try {
             String strategyName = payrollService.getCurrentTaxStrategyName();
             if (strategyName == null || strategyName.isEmpty()) {
                 logger.warn("Tax strategy name is null or empty, returning default");
-                return ResponseEntity.ok("Flat Tax Strategy");
+                return ResponseEntity.ok(new TaxStrategyResponse("Flat Tax Strategy"));
             }
-            return ResponseEntity.ok(strategyName);
+            return ResponseEntity.ok(new TaxStrategyResponse(strategyName));
         } catch (Exception e) {
             logger.error("Error getting current tax strategy", e);
-            return ResponseEntity.ok("Flat Tax Strategy");
+            return ResponseEntity.ok(new TaxStrategyResponse("Flat Tax Strategy"));
         }
     }
     
@@ -197,10 +201,10 @@ public class PayrollController {
      * 
      * GET /api/payroll/tax-strategies
      * 
-     * @return List of available tax strategy names
+     * @return TaxStrategiesResponse DTO with available tax strategies
      */
     @GetMapping("/tax-strategies")
-    public ResponseEntity<Map<String, String>> getAvailableTaxStrategies() {
+    public ResponseEntity<TaxStrategiesResponse> getAvailableTaxStrategies() {
         try {
             Map<String, String> strategies = new HashMap<>();
             if (flatTaxStrategy != null) {
@@ -213,14 +217,14 @@ public class PayrollController {
             } else {
                 strategies.put("progressiveTaxStrategy", "Progressive Tax Strategy");
             }
-            return ResponseEntity.ok(strategies);
+            return ResponseEntity.ok(new TaxStrategiesResponse(strategies));
         } catch (Exception e) {
             logger.error("Error getting available tax strategies", e);
             // Return default strategies on error
             Map<String, String> defaultStrategies = new HashMap<>();
             defaultStrategies.put("flatTaxStrategy", "Flat Tax Strategy");
             defaultStrategies.put("progressiveTaxStrategy", "Progressive Tax Strategy");
-            return ResponseEntity.ok(defaultStrategies);
+            return ResponseEntity.ok(new TaxStrategiesResponse(defaultStrategies));
         }
     }
     
@@ -231,10 +235,10 @@ public class PayrollController {
      * PUT /api/payroll/tax-strategy?strategy=progressiveTaxStrategy
      * 
      * @param strategy Strategy name: "flatTaxStrategy" or "progressiveTaxStrategy"
-     * @return Success message with new strategy name
+     * @return TaxStrategySwitchResponse DTO with success message and strategy name, or error message
      */
     @PutMapping("/tax-strategy")
-    public ResponseEntity<Map<String, String>> switchTaxStrategy(@RequestParam String strategy) {
+    public ResponseEntity<TaxStrategySwitchResponse> switchTaxStrategy(@RequestParam String strategy) {
         try {
             logger.info("Switching tax strategy to: {}", strategy);
             
@@ -243,41 +247,38 @@ public class PayrollController {
                 case "flattaxstrategy":
                 case "flat":
                     if (flatTaxStrategy == null) {
-                        Map<String, String> error = new HashMap<>();
-                        error.put("error", "Flat tax strategy is not available");
-                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                            .body(TaxStrategySwitchResponse.error("Flat tax strategy is not available"));
                     }
                     selectedStrategy = flatTaxStrategy;
                     break;
                 case "progressivetaxstrategy":
                 case "progressive":
                     if (progressiveTaxStrategy == null) {
-                        Map<String, String> error = new HashMap<>();
-                        error.put("error", "Progressive tax strategy is not available");
-                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+                        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                            .body(TaxStrategySwitchResponse.error("Progressive tax strategy is not available"));
                     }
                     selectedStrategy = progressiveTaxStrategy;
                     break;
                 default:
-                    Map<String, String> error = new HashMap<>();
-                    error.put("error", "Invalid strategy. Use 'flatTaxStrategy' or 'progressiveTaxStrategy'");
-                    return ResponseEntity.badRequest().body(error);
+                    return ResponseEntity.badRequest()
+                        .body(TaxStrategySwitchResponse.error("Invalid strategy. Use 'flatTaxStrategy' or 'progressiveTaxStrategy'"));
             }
             
             payrollService.setTaxStrategy(selectedStrategy);
             
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Tax strategy updated successfully");
-            response.put("strategy", selectedStrategy.getStrategyName());
+            TaxStrategySwitchResponse response = TaxStrategySwitchResponse.success(
+                "Tax strategy updated successfully",
+                selectedStrategy.getStrategyName()
+            );
             
             logger.info("Tax strategy switched successfully to: {}", selectedStrategy.getStrategyName());
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error switching tax strategy", e);
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to switch tax strategy: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(TaxStrategySwitchResponse.error("Failed to switch tax strategy: " + e.getMessage()));
         }
     }
     
@@ -400,17 +401,23 @@ public class PayrollController {
      * DELETE /api/payroll/paycheck/{paycheckId}
      * 
      * @param paycheckId ID of the paycheck to delete
-     * @return 204 No Content if successful
+     * @return DeletePaycheckResponse DTO with success status and message
      */
     @DeleteMapping("/paycheck/{paycheckId}")
-    public ResponseEntity<Void> deletePaycheck(@PathVariable Long paycheckId) {
-        logger.info("Deleting paycheck ID: {}", paycheckId);
-        
-        payrollService.deletePaycheck(paycheckId);
-        
-        logger.info("Paycheck ID: {} deleted successfully", paycheckId);
-        
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<DeletePaycheckResponse> deletePaycheck(@PathVariable Long paycheckId) {
+        try {
+            logger.info("Deleting paycheck ID: {}", paycheckId);
+            
+            payrollService.deletePaycheck(paycheckId);
+            
+            logger.info("Paycheck ID: {} deleted successfully", paycheckId);
+            
+            return ResponseEntity.ok(DeletePaycheckResponse.success("Paycheck deleted successfully"));
+        } catch (Exception e) {
+            logger.error("Error deleting paycheck ID: {}", paycheckId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(DeletePaycheckResponse.error("Failed to delete paycheck: " + e.getMessage()));
+        }
     }
     
     /**

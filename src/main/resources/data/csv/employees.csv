@@ -82,3 +82,10 @@ id,name,email,password,salary,position,hire_date,manager_id,company_id,status
 180,Beckett Coleman,beckett.coleman@inspartners.com,SecurePass123!,78000.00,Senior Underwriter,2020-09-20,31,15,Active
 181,Magnolia Jenkins,magnolia.jenkins@inspartners.com,SecurePass123!,68000.00,Claims Adjuster,2021-11-15,32,15,Active
 182,Knox Perry,knox.perry@inspartners.com,SecurePass123!,70000.00,Claims Specialist,2022-02-10,32,15,Active
+183,Emma Watson,emma.watson@techvision.com,SecurePass123!,88000.00,Full Stack Developer,2025-11-10,1,1,Active
+184,James Wilson,james.wilson@techvision.com,SecurePass123!,75000.00,QA Engineer,2025-11-15,1,1,Active
+185,Olivia Brown,olivia.brown@globalfinance.com,SecurePass123!,92000.00,Senior Accountant,2025-11-20,5,2,Active
+186,Michael Davis,michael.davis@healthcare.com,SecurePass123!,85000.00,Registered Nurse,2025-11-25,7,3,Active
+187,Sophia Martinez,sophia.martinez@edutech.com,SecurePass123!,70000.00,Content Developer,2025-12-01,9,4,Active
+188,Daniel Taylor,daniel.taylor@greenenergy.com,SecurePass123!,80000.00,Energy Analyst,2025-12-05,11,5,Active
+189,Robert Anderson,robert.anderson@techvision.com,SecurePass123!,82000.00,Mobile Developer,2025-12-03,1,1,Active

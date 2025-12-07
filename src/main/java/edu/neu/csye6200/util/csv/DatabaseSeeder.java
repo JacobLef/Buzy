@@ -8,12 +8,15 @@ import edu.neu.csye6200.model.domain.BusinessPerson;
 import edu.neu.csye6200.model.domain.PersonStatus;
 import edu.neu.csye6200.model.domain.User;
 import edu.neu.csye6200.model.domain.UserRole;
+import edu.neu.csye6200.model.payroll.Paycheck;
+import edu.neu.csye6200.model.payroll.PaycheckStatus;
 import edu.neu.csye6200.repository.BusinessRepository;
 import edu.neu.csye6200.repository.EmployeeRepository;
 import edu.neu.csye6200.repository.EmployerRepository;
 import edu.neu.csye6200.repository.TrainingRepository;
 import edu.neu.csye6200.repository.BusinessPersonRepository;
 import edu.neu.csye6200.repository.UserRepository;
+import edu.neu.csye6200.repository.PaycheckRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +47,7 @@ public class DatabaseSeeder implements CommandLineRunner {
   private final TrainingRepository trainingRepo;
   private final BusinessPersonRepository businessPersonRepo;
   private final UserRepository userRepo;
+  private final PaycheckRepository paycheckRepo;
   private final PasswordEncoder passwordEncoder;
 
   private final Map<Long, Company> companyCache = new HashMap<>();
@@ -56,6 +61,7 @@ public class DatabaseSeeder implements CommandLineRunner {
       TrainingRepository trainingRepo,
       BusinessPersonRepository businessPersonRepo,
       UserRepository userRepo,
+      PaycheckRepository paycheckRepo,
       PasswordEncoder passwordEncoder
   ) {
     this.businessRepo = businessRepo;
@@ -64,6 +70,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     this.trainingRepo = trainingRepo;
     this.businessPersonRepo = businessPersonRepo;
     this.userRepo = userRepo;
+    this.paycheckRepo = paycheckRepo;
     this.passwordEncoder = passwordEncoder;
   }
 
@@ -80,6 +87,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     seedEmployees();
     seedUsers();
     seedTrainings();
+    seedPaychecks();
     System.out.println("Database seeding completed");
   }
 
@@ -405,6 +413,92 @@ public class DatabaseSeeder implements CommandLineRunner {
       System.out.println("Seeded " + userCount + " user accounts");
     } catch (Exception e) {
       System.err.println("Failed to seed users: " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
+  private void seedPaychecks() {
+    if (paycheckRepo.count() > 0) {
+      System.out.println("Skipping paychecks - table already has data");
+      return;
+    }
+
+    try {
+      BufferedReader reader = new BufferedReader(
+          new InputStreamReader(
+              new ClassPathResource(CSV_PREFIX + "/paychecks.csv").getInputStream()
+          )
+      );
+
+      List<Map<String, String>> rows = CSV_PARSER.parse(reader);
+
+      if (rows != null && !rows.isEmpty()) {
+        int count = 0;
+        int skipped = 0;
+
+        for (Map<String, String> row : rows) {
+          Long employeeId = CONVERTER.toLong(row.get("employee_id"));
+          if (employeeId == null) {
+            skipped++;
+            continue;
+          }
+
+          Employee employee = employeeCache.get(employeeId);
+          if (employee == null) {
+            employee = employeeRepo.findById(employeeId).orElse(null);
+            if (employee != null) {
+              employeeCache.put(employeeId, employee);
+            }
+          }
+
+          if (employee == null) {
+            System.err.println("Employee not found for paycheck, employee_id: " + employeeId);
+            skipped++;
+            continue;
+          }
+
+          Paycheck paycheck = new Paycheck();
+          paycheck.setEmployee(employee);
+          paycheck.setGrossPay(CONVERTER.toDouble(row.get("gross_pay")));
+          paycheck.setTaxDeduction(CONVERTER.toDouble(row.get("tax_deduction")));
+          paycheck.setInsuranceDeduction(CONVERTER.toDouble(row.get("insurance_deduction")));
+          
+          String bonusStr = row.get("bonus");
+          if (bonusStr != null && !bonusStr.isEmpty() && !bonusStr.equals("0.00")) {
+            paycheck.setBonus(CONVERTER.toDouble(bonusStr));
+          }
+          
+          paycheck.setNetPay(CONVERTER.toDouble(row.get("net_pay")));
+          paycheck.setPayDate(CONVERTER.toLocalDate(row.get("pay_date")));
+          
+          String payPeriod = CONVERTER.toString(row.get("pay_period"));
+          if (payPeriod != null && !payPeriod.isEmpty()) {
+            paycheck.setPayPeriod(payPeriod);
+          }
+          
+          String statusStr = CONVERTER.toString(row.get("status"));
+          if (statusStr != null && !statusStr.isEmpty()) {
+            try {
+              paycheck.setStatus(PaycheckStatus.valueOf(statusStr));
+            } catch (IllegalArgumentException e) {
+              System.err.println("Invalid status: " + statusStr + ", using default DRAFT");
+              paycheck.setStatus(PaycheckStatus.DRAFT);
+            }
+          }
+          
+          String createdAtStr = row.get("created_at");
+          if (createdAtStr != null && !createdAtStr.isEmpty()) {
+            LocalDateTime createdAt = CONVERTER.toLocalDateTime(createdAtStr);
+            paycheck.setCreatedAt(createdAt);
+          }
+
+          paycheckRepo.save(paycheck);
+          count++;
+        }
+        System.out.println("Seeded " + count + " paychecks" + (skipped > 0 ? " (skipped " + skipped + ")" : ""));
+      }
+    } catch (Exception e) {
+      System.err.println("Failed to seed paychecks: " + e.getMessage());
       e.printStackTrace();
     }
   }

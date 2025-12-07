@@ -62,3 +62,34 @@ export interface UpdatePaycheckRequest {
   taxDeduction?: number;
   insuranceDeduction?: number;
 }
+
+/**
+ * DTO for current tax strategy response
+ */
+export interface TaxStrategyResponse {
+  strategy: string;
+}
+
+/**
+ * DTO for available tax strategies response
+ */
+export interface TaxStrategiesResponse {
+  strategies: Record<string, string>;
+}
+
+/**
+ * DTO for tax strategy switch response
+ */
+export interface TaxStrategySwitchResponse {
+  message?: string;
+  strategy?: string;
+  error?: string;
+}
+
+/**
+ * DTO for delete paycheck response
+ */
+export interface DeletePaycheckResponse {
+  success: boolean;
+  message?: string;
+}

@@ -46,10 +46,12 @@ export const usePayroll = (businessId: number | null) => {
         getAvailableTaxStrategies(),
       ]);
       
-      const currentStrategy = currentResponse.data || "Flat Tax Strategy";
+      // Extract strategy from DTO
+      const currentStrategy = currentResponse.data?.strategy || "Flat Tax Strategy";
       setTaxStrategy(currentStrategy);
       
-      const strategies = availableResponse.data;
+      // Extract strategies from DTO
+      const strategies = availableResponse.data?.strategies;
       if (strategies && Object.keys(strategies).length > 0) {
         setAvailableStrategies(strategies);
       } else {
@@ -73,9 +75,28 @@ export const usePayroll = (businessId: number | null) => {
     setIsLoadingStrategy(true);
     try {
       const response = await switchTaxStrategy(strategyKey);
-      setTaxStrategy(response.data.strategy);
-      showNotification("success", `Tax strategy switched to ${response.data.strategy}`);
-      return true;
+      
+      // Check for error in response DTO
+      if (response.data.error) {
+        showNotification("error", response.data.error);
+        return false;
+      }
+      
+      // Success case
+      if (response.data.strategy) {
+        setTaxStrategy(response.data.strategy);
+        showNotification("success", `Tax strategy switched to ${response.data.strategy}`);
+        return true;
+      }
+      
+      // Fallback if message exists but no strategy
+      if (response.data.message) {
+        showNotification("success", response.data.message);
+        return true;
+      }
+      
+      showNotification("error", "Failed to switch tax strategy. Please try again.");
+      return false;
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { error?: string } } };
       const errorMsg =
@@ -207,8 +228,11 @@ export const usePayroll = (businessId: number | null) => {
   const handleDeletePaycheck = useCallback(async (paycheckId: number) => {
     setIsLoading(true);
     try {
-      await deletePaycheck(paycheckId);
-      showNotification("success", "Paycheck deleted successfully");
+      const response = await deletePaycheck(paycheckId);
+      
+      // Use message from DTO if available
+      const successMsg = response.data?.message || "Paycheck deleted successfully";
+      showNotification("success", successMsg);
       await loadAllPayrollHistory();
       return true;
     } catch (error: unknown) {

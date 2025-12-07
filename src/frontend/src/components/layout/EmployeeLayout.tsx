@@ -4,6 +4,7 @@ import {
   User,
   FileText,
   DollarSign,
+  Building2,
   LogOut,
 } from "lucide-react";
 
@@ -36,6 +37,7 @@ export default function EmployeeLayout() {
     { name: "Profile", icon: User, path: "/employee/profile" },
     { name: "Training", icon: FileText, path: "/employee/training" },
     { name: "Payroll", icon: DollarSign, path: "/employee/payroll" },
+    { name: "Company", icon: Building2, path: "/employee/company" },
   ];
 
   const isActive = (path: string) => {

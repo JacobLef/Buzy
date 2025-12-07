@@ -1,53 +1,24 @@
 import { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../api/auth";
 import type { AuthResponse } from "../types/auth";
 
 /**
- * Simple Login page with authentication
+ * Login page component
+ * Handles UI rendering and user input, delegates business logic to useAuth hook
  * TODO: Replace with Ren's styled auth pages later
  * @author: Qing Mi
  */
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const navigate = useNavigate();
+    const { isLoading, error, handleLogin, clearError } = useAuth();
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
-        setIsLoading(true);
-
-        try {
-            const response = await login({ email, password });
-            const authData: AuthResponse = response.data;
-
-            // Store token and user data in localStorage
-            localStorage.setItem("token", authData.token);
-            localStorage.setItem(
-                "user",
-                JSON.stringify({
-                    role: authData.role,
-                    email: authData.email,
-                    userId: authData.userId,
-                    businessPersonId: authData.businessPersonId,
-                })
-            );
-
-            // Redirect based on role
-            navigate(authData.role === "EMPLOYER" ? "/employer" : "/employee");
-        } catch (err) {
-            const axiosError = err as { response?: { status?: number } };
-            setError(
-                axiosError.response?.status === 401
-                    ? "Invalid email or password"
-                    : "Login failed. Please try again."
-            );
-        } finally {
-            setIsLoading(false);
-        }
+        clearError();
+        await handleLogin({ email, password });
     };
 
     return (
@@ -62,7 +33,7 @@ function Login() {
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+                <form className="mt-8 space-y-6" onSubmit={onSubmit}>
                     {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
                             {error}

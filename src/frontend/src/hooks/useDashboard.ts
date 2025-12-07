@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react';
-// import { getAllEmployees, getAllEmployers, getPayrollHistory } from '../api/...';
+import { getRecentActivity } from '../api/dashboard';
+import { getEmployer } from '../api/employers';
+import { getEmployeesByBusiness } from '../api/employees';
+import { getEmployersByBusiness } from '../api/employers';
+import { getPayrollSummary } from '../api/payroll';
+import type { Activity } from '../types/dashboard';
 
 interface DashboardStats {
   totalEmployees: number;
   totalEmployers: number;
   monthlyPayroll: number;
   pendingTrainings: number;
-}
-
-interface RecentActivity {
-  id: number;
-  type: string;
-  title: string;
-  date: string;
-  status: 'completed' | 'info' | 'warning' | 'alert';
 }
 
 export const useDashboard = () => {
@@ -24,34 +21,89 @@ export const useDashboard = () => {
     pendingTrainings: 0,
   });
   
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        // --- MOCK DATA START ---
-        // Replace with: const [emps, employers, history] = await Promise.all([...])
+        // Get businessId from user
+        const userStr = localStorage.getItem('user');
+        let businessId: number | null = null;
         
-        // Mocking API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          if (user.role === 'EMPLOYER' && user.businessPersonId) {
+            try {
+              const employerResponse = await getEmployer(user.businessPersonId);
+              businessId = employerResponse.data.companyId;
+            } catch (error) {
+              console.error('Failed to get employer:', error);
+            }
+          }
+        }
+        
+        // If no businessId, use default or skip activity fetch
+        let activityData: Activity[] = [];
+        if (businessId) {
+          try {
+            const activityResponse = await getRecentActivity(businessId);
+            activityData = activityResponse.data;
+            setRecentActivity(activityData);
+          } catch (error) {
+            console.error('Failed to fetch activity:', error);
+            // Fallback to empty array on error
+            setRecentActivity([]);
+          }
 
-        setStats({
-          totalEmployees: 24,
-          totalEmployers: 3,
-          monthlyPayroll: 124500.00,
-          pendingTrainings: 5, // Placeholder for Ren's data
-        });
+          // Fetch dashboard stats
+          try {
+            // Get current month start and end dates
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const startDate = new Date(year, month, 1).toISOString().split('T')[0];
+            const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
 
-        setRecentActivity([
-          { id: 1, type: 'PAYROLL', title: 'October Payroll Generated', date: '2 hours ago', status: 'completed' },
-          { id: 2, type: 'EMPLOYEE', title: 'New Hire: Sarah J.', date: '1 day ago', status: 'info' },
-          { id: 3, type: 'TRAINING', title: 'Safety Compliance Due', date: '2 days remaining', status: 'warning' },
-          { id: 4, type: 'PAYROLL', title: 'Bonus Distribution', date: '3 days ago', status: 'completed' },
-          { id: 5, type: 'EMPLOYEE', title: 'Employee Termination', date: '1 week ago', status: 'alert' },
-        ]);
-        // --- MOCK DATA END ---
+            // Fetch all stats in parallel
+            const [employeesResponse, employersResponse, payrollSummaryResponse] = await Promise.all([
+              getEmployeesByBusiness(businessId),
+              getEmployersByBusiness(businessId),
+              getPayrollSummary(businessId, startDate, endDate).catch(() => null), // Allow to fail gracefully
+            ]);
+
+            // Count pending trainings from recent activity (trainings expiring soon)
+            const pendingTrainings = activityData.filter(
+              (activity: Activity) => activity.type === 'TRAINING' && activity.status === 'warning'
+            ).length;
+
+            setStats({
+              totalEmployees: employeesResponse.data.length,
+              totalEmployers: employersResponse.data.length,
+              monthlyPayroll: payrollSummaryResponse?.data?.totalNetPay || 0,
+              pendingTrainings: pendingTrainings,
+            });
+          } catch (error) {
+            console.error('Failed to fetch dashboard stats:', error);
+            // Fallback to default values on error
+            setStats({
+              totalEmployees: 0,
+              totalEmployers: 0,
+              monthlyPayroll: 0,
+              pendingTrainings: 0,
+            });
+          }
+        } else {
+          // No businessId available, set empty activity and default stats
+          setRecentActivity([]);
+          setStats({
+            totalEmployees: 0,
+            totalEmployers: 0,
+            monthlyPayroll: 0,
+            pendingTrainings: 0,
+          });
+        }
 
       } catch (error) {
         console.error("Failed to load dashboard", error);

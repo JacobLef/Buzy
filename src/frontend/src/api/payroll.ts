@@ -5,7 +5,11 @@ import type {
   BonusDistributionResponse,
   PayrollSummary,
   DistributeBonusRequest,
-  UpdatePaycheckRequest
+  UpdatePaycheckRequest,
+  TaxStrategyResponse,
+  TaxStrategiesResponse,
+  TaxStrategySwitchResponse,
+  DeletePaycheckResponse,
 } from "../types/payroll";
 export const previewPayroll = (employeeId: number, additionalPay?: number) => {
   const params = additionalPay ? { additionalPay } : {};
@@ -20,14 +24,22 @@ export const calculatePayroll = (employeeId: number, additionalPay?: number) => 
 export const distributeBonuses = (data: DistributeBonusRequest) =>
   api.post<BonusDistributionResponse>("/api/payroll/bonuses", data);
 
+/**
+ * Get current tax strategy
+ * Returns TaxStrategyResponse DTO from backend
+ */
 export const getCurrentTaxStrategy = () =>
-  api.get<string>("/api/payroll/tax-strategy");
+  api.get<TaxStrategyResponse>("/api/payroll/tax-strategy");
 
+/**
+ * Get available tax strategies
+ * Returns TaxStrategiesResponse DTO from backend
+ */
 export const getAvailableTaxStrategies = () =>
-  api.get<Record<string, string>>("/api/payroll/tax-strategies");
+  api.get<TaxStrategiesResponse>("/api/payroll/tax-strategies");
 
 export const switchTaxStrategy = (strategy: string) =>
-  api.put<{ message: string; strategy: string }>("/api/payroll/tax-strategy", null, {
+  api.put<TaxStrategySwitchResponse>("/api/payroll/tax-strategy", null, {
     params: { strategy }
   });
 
@@ -57,8 +69,12 @@ export const updatePaycheck = (paycheckId: number, data: UpdatePaycheckRequest) 
     params: data
   });
 
+/**
+ * Delete a paycheck
+ * Returns DeletePaycheckResponse DTO from backend
+ */
 export const deletePaycheck = (paycheckId: number) =>
-  api.delete(`/api/payroll/paycheck/${paycheckId}`);
+  api.delete<DeletePaycheckResponse>(`/api/payroll/paycheck/${paycheckId}`);
 
 export const updatePaycheckStatus = (paycheckId: number, status: PaycheckStatus) =>
   api.put<Paycheck>(`/api/payroll/paycheck/${paycheckId}/status`, null, {
