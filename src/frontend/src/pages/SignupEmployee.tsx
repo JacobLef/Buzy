@@ -13,7 +13,7 @@ export default function SignupEmployee() {
         salary: 0,
         position: "",
         companyId: 0,
-        managerId: null,
+        managerId: -1,
         hireDate: "",
     });
     const [error, setError] = useState<string | null>(null);
