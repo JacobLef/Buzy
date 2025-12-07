@@ -19,9 +19,10 @@ export interface Employee {
 export interface CreateEmployeeRequest {
   name: string,
   email: string,
+  password: string,
   salary: number,
   position: string,
-  comnpanyId: number,
+  companyId: number,
   managerId: number,
   hireDate: string
 };
@@ -29,6 +30,7 @@ export interface CreateEmployeeRequest {
 export interface UpdateEmployeeRequest {
   name: string,
   email: string,
+  password: string,
   salary: number,
   position: string,
   managerId: number,

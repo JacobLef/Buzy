@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -15,13 +16,14 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
     /**
      * Find all trainings for a specific person (Employee or Employer).
      */
-    List<Training> findByPersonId(Long personId);
+    @Query("SELECT t FROM Training t WHERE t.person.id = :personId")
+    List<Training> findByPersonId(@Param("personId") Long personId);
 
     /**
      * Find all expired trainings for a specific person.
      */
-    List<Training> findByPersonIdAndExpiryDateBefore(Long personId, LocalDate today);
-
+    @Query("SELECT t FROM Training t WHERE t.person.id = :personId AND t.expiryDate < :today")
+    List<Training> findByPersonIdAndExpiryDateBefore(@Param("personId") Long personId, @Param("today") LocalDate today);
     /**
      * Find all trainings expiring within a date range.
      */
@@ -30,7 +32,8 @@ public interface TrainingRepository extends JpaRepository<Training, Long> {
     /**
      * Find all required trainings for a specific person.
      */
-    List<Training> findByPersonIdAndRequiredTrue(Long personId);
+    @Query("SELECT t FROM Training t WHERE t.person.id = :personId AND t.required = true")
+    List<Training> findByPersonIdAndRequiredTrue(@Param("personId") Long personId);
     
     /**
      * Find trainings expiring between dates for a specific business

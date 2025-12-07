@@ -3,8 +3,12 @@ package edu.neu.csye6200.controller;
 import edu.neu.csye6200.dto.AuthDTO;
 import edu.neu.csye6200.dto.request.AuthRequest;
 import edu.neu.csye6200.service.interfaces.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import edu.neu.csye6200.dto.request.CreateEmployeeRequest;
+import edu.neu.csye6200.dto.request.CreateEmployerRequest;
+import edu.neu.csye6200.service.interfaces.SignupService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,4 +81,36 @@ public class AuthController {
     response.put("service", "Authentication Service");
     return ResponseEntity.ok(response);
   }
+
+
+    @Autowired
+    private SignupService signupService;
+
+    /**
+     * Employee signup endpoint.
+     * POST /api/auth/signup/employee
+     */
+    @PostMapping("/signup/employee")
+    public ResponseEntity<AuthDTO> signupEmployee(@RequestBody CreateEmployeeRequest request) {
+        try {
+            AuthDTO response = signupService.signupEmployee(request);
+            return ResponseEntity.status(201).body(response);
+        } catch (RuntimeException e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Employer signup endpoint.
+     * POST /api/auth/signup/employer
+     */
+    @PostMapping("/signup/employer")
+    public ResponseEntity<AuthDTO> signupEmployer(@RequestBody CreateEmployerRequest request) {
+        try {
+            AuthDTO response = signupService.signupEmployer(request);
+            return ResponseEntity.status(201).body(response);
+        } catch (RuntimeException e) {
+            throw e;
+        }
+    }
 }

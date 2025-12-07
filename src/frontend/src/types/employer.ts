@@ -19,6 +19,7 @@ export interface Employer {
 export interface CreateEmployerRequest {
   name: string;
   email: string;
+  password: string;
   salary: number;
   department: string;
   title: string;

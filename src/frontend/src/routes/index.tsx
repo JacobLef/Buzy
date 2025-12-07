@@ -2,6 +2,9 @@ import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 
 import Landing from "../pages/Landing";
 import Login from "../pages/Login";
+import SignupEmployee from "../pages/SignupEmployee";
+import SignupEmployer from "../pages/SignupEmployer";
+import CreateCompany from "../pages/CreateCompany";
 
 import EmployeeDashboard from "../pages/employee/Dashboard";
 import EmployeeProfile from "../pages/employee/Profile";
@@ -22,13 +25,13 @@ import EmployerLayout from "../components/layout/EmployerLayout";
 const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
   const token = localStorage.getItem("token");
   const user = localStorage.getItem("user");
-  
+
   if (!token || !user) {
     return <Navigate to="/login" replace />;
   }
 
   const { role } = JSON.parse(user);
-  
+
   if (!allowedRoles.includes(role)) {
     return <Navigate to={role === "EMPLOYER" ? "/employer" : "/employee"} replace />;
   }
@@ -45,7 +48,18 @@ export const router = createBrowserRouter([
     path: "/login",
     element: <Login />,
   },
-
+  {
+    path: "/signup/employee",
+    element: <SignupEmployee />,
+  },
+  {
+    path: "/signup/employer",
+    element: <SignupEmployer />,
+  },
+  {
+    path: "/create-company",
+    element: <CreateCompany />
+  },
   {
     element: <ProtectedRoute allowedRoles={["EMPLOYEE"]} />,
     children: [

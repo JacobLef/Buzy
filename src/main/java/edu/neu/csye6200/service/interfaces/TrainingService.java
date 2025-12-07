@@ -1,6 +1,8 @@
 package edu.neu.csye6200.service.interfaces;
 
 import edu.neu.csye6200.dto.TrainingDTO;
+import edu.neu.csye6200.dto.request.CreateTrainingRequest;
+import edu.neu.csye6200.dto.request.UpdateTrainingRequest;
 
 import java.util.List;
 
@@ -9,8 +11,7 @@ public interface TrainingService {
     /**
      * Add a new training record for a person (Employee or Employer).
      */
-    TrainingDTO addTraining(Long personId, TrainingDTO dto);
-
+    TrainingDTO addTraining(Long personId, CreateTrainingRequest request);
     /**
      * Get all trainings for a person.
      */
@@ -29,10 +30,15 @@ public interface TrainingService {
     /**
      * Update an existing training.
      */
-    TrainingDTO updateTraining(Long trainingId, TrainingDTO dto);
-
+    TrainingDTO updateTraining(Long trainingId, UpdateTrainingRequest request);
     /**
      * Delete a training by its ID.
      */
     void deleteTraining(Long trainingId);
+
+    /**
+     * Get all trainings (for admin/employer view).
+     * Returns all training records regardless of person.
+     */
+    List<TrainingDTO> getAllTrainings();
 }

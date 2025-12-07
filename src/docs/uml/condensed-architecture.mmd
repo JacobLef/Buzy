@@ -1,0 +1,73 @@
+classDiagram
+    direction TB
+
+    %% Controllers Layer
+    class Controllers {
+        AuthController
+        EmployeeController
+        EmployerController
+        PayrollController
+        TrainingController
+        BusinessController
+    }
+
+    %% Services Layer
+    class Services {
+        AuthService
+        SignupService
+        EmployeeService
+        EmployerService
+        PayrollService
+        TrainingService
+        BusinessService
+    }
+
+    %% Repositories Layer
+    class Repositories {
+        UserRepository
+        EmployeeRepository
+        EmployerRepository
+        BusinessRepository
+        TrainingRepository
+        PaycheckRepository
+    }
+
+    %% Domain Models
+    class DomainModels {
+        User
+        Employee
+        Employer
+        Company
+        Training
+        Paycheck
+    }
+
+    %% DTOs
+    class DTOs {
+        AuthDTO
+        EmployeeDTO
+        EmployerDTO
+        CompanyDTO
+        TrainingDTO
+        PaycheckDTO
+    }
+
+    %% Design Patterns
+    class Patterns {
+        TaxCalculationStrategy
+        DTOFactory
+        BusinessPersonFactory
+    }
+
+    %% Security
+    class Security {
+        JwtTokenProvider
+        JwtAuthenticationFilter
+    }
+
+    Controllers --> Services : uses
+    Controllers --> DTOs : returns
+    Services --> Repositories : uses
+    Services --> Patterns : uses
+    Repositories --> DomainModels : persists
+    Security --> Controllers : protects

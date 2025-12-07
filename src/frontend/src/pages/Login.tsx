@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 /**
@@ -75,6 +76,28 @@ function Login() {
                                 disabled={isLoading}
                             />
                         </div>
+                    </div>
+
+                    {/* Sign up links */}
+                    <div className="flex flex-col items-center gap-2">
+                        <Link
+                            to="/signup/employee"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                            Sign up as employee
+                        </Link>
+                        <Link
+                            to="/signup/employer"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                            Sign up as employer
+                        </Link>
+                        <Link
+                            to="/create-company"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                            Create a Company
+                        </Link>
                     </div>
 
                     <button

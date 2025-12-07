@@ -1,7 +1,9 @@
 package edu.neu.csye6200.controller;
 
 import edu.neu.csye6200.dto.TrainingDTO;
+import edu.neu.csye6200.dto.request.UpdateTrainingRequest;
 import edu.neu.csye6200.service.interfaces.TrainingService;
+import edu.neu.csye6200.dto.request.CreateTrainingRequest;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +23,8 @@ public class TrainingController {
   @PostMapping("/person/{personId}")
   public ResponseEntity<TrainingDTO> addTraining(
       @PathVariable Long personId,
-      @RequestBody TrainingDTO dto
-  ) {
-    TrainingDTO created = trainingService.addTraining(personId, dto);
+      @RequestBody CreateTrainingRequest request  ) {
+    TrainingDTO created = trainingService.addTraining(personId, request);
     return ResponseEntity.status(201).body(created);
   }
 
@@ -45,18 +46,24 @@ public class TrainingController {
     return ResponseEntity.ok(training);
   }
 
-  @PutMapping("/{trainingId}")
-  public ResponseEntity<TrainingDTO> updateTraining(
-      @PathVariable Long trainingId,
-      @RequestBody TrainingDTO dto
-  ) {
-    TrainingDTO updated = trainingService.updateTraining(trainingId, dto);
-    return ResponseEntity.ok(updated);
-  }
+    @PutMapping("/{trainingId}")
+    public ResponseEntity<TrainingDTO> updateTraining(
+            @PathVariable Long trainingId,
+            @RequestBody UpdateTrainingRequest request
+    ) {
+        TrainingDTO updated = trainingService.updateTraining(trainingId, request);
+        return ResponseEntity.ok(updated);
+    }
 
   @DeleteMapping("/{trainingId}")
   public ResponseEntity<Void> deleteTraining(@PathVariable Long trainingId) {
     trainingService.deleteTraining(trainingId);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping
+  public ResponseEntity<List<TrainingDTO>> getAllTrainings() {
+      List<TrainingDTO> trainings = trainingService.getAllTrainings();
+      return ResponseEntity.ok(trainings);
   }
 }
