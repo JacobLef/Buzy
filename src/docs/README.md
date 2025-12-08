@@ -2,6 +2,15 @@
 
 ## How to run the program
 
+## Configure your MySQL username and password
+
+### Go to the main/resources/ page and do the following
+- Create a .env file
+- Create a DB_USERNAME and DB_PASSWORD configurations
+- Continue with the next steps
+- Note: if your username and password are allowed to be root and (no password) then you do not need an environment file
+
+
 ### Start the backend server from the command line
 ```bash
 ./mvnw spring-boot:run
