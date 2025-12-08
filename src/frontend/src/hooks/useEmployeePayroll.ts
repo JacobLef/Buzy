@@ -16,8 +16,10 @@ export const useEmployeePayroll = (employeeId: number | null) => {
       setLoading(true);
       try {
         const response = await getPayrollHistory(employeeId);
+        // Filter out DRAFT paychecks for employee view
+        const filtered = response.data.filter((p: Paycheck) => p.status !== 'DRAFT');
         // Sort: Newest first
-        const sorted = response.data.sort((a: Paycheck, b: Paycheck) => 
+        const sorted = filtered.sort((a: Paycheck, b: Paycheck) => 
           new Date(b.payDate).getTime() - new Date(a.payDate).getTime()
         );
         setHistory(sorted);

@@ -30,19 +30,29 @@ export const ManagerSearch = ({
   const [filteredOptions, setFilteredOptions] = useState<ManagerOption[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedManager, setSelectedManager] = useState<ManagerOption | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Load all company members (employees + employers)
   useEffect(() => {
     const loadMembers = async () => {
+      if (!companyId || companyId <= 0) {
+        setOptions([]);
+        setError(null);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
       try {
         const [employeesRes, employersRes] = await Promise.all([
           getEmployeesByBusiness(companyId),
           getEmployersByBusiness(companyId),
         ]);
 
-        const employeeOptions: ManagerOption[] = employeesRes.data
+        const employeeOptions: ManagerOption[] = (employeesRes.data || [])
           .filter((emp: Employee) => emp.id !== excludeId)
           .map((emp: Employee) => ({
             id: emp.id,
@@ -51,7 +61,7 @@ export const ManagerSearch = ({
             position: emp.position,
           }));
 
-        const employerOptions: ManagerOption[] = employersRes.data
+        const employerOptions: ManagerOption[] = (employersRes.data || [])
           .filter((emp: Employer) => emp.id !== excludeId)
           .map((emp: Employer) => ({
             id: emp.id,
@@ -61,14 +71,21 @@ export const ManagerSearch = ({
           }));
 
         setOptions([...employerOptions, ...employeeOptions]);
-      } catch (error) {
-        console.error('Failed to load members:', error);
+      } catch (err: unknown) {
+        console.error('Failed to load members:', err);
+        const axiosError = err as { response?: { data?: { message?: string; error?: string } } };
+        const errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.response?.data?.error ||
+          'Failed to load managers. Please try again.';
+        setError(errorMessage);
+        setOptions([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    if (companyId) {
-      loadMembers();
-    }
+    loadMembers();
   }, [companyId, excludeId]);
 
   // Find selected manager
@@ -156,10 +173,17 @@ export const ManagerSearch = ({
           value={searchQuery}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
-          placeholder="Search for manager by name..."
-          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+          placeholder={isLoading ? "Loading managers..." : error ? "Error loading managers" : "Search for manager by name..."}
+          disabled={isLoading || !!error}
+          className={`w-full pl-10 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
+            error 
+              ? 'border-red-300 bg-red-50 text-red-700' 
+              : isLoading 
+                ? 'border-gray-300 bg-gray-50' 
+                : 'border-gray-300'
+          }`}
         />
-        {selectedManager && (
+        {selectedManager && !isLoading && !error && (
           <button
             type="button"
             onClick={handleClear}
@@ -169,6 +193,10 @@ export const ManagerSearch = ({
           </button>
         )}
       </div>
+      
+      {error && (
+        <p className="mt-1 text-xs text-red-600">{error}</p>
+      )}
 
       {isOpen && filteredOptions.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
