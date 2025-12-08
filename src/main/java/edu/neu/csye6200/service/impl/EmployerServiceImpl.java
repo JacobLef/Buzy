@@ -82,7 +82,6 @@ public class EmployerServiceImpl implements EmployerService {
     Employer employer = employerRepository.findById(id)
         .orElseThrow(() -> new EmployerNotFoundException(id));
 
-    // Track if email changed to update User table
     String oldEmail = employer.getEmail();
     boolean emailChanged = false;
 
@@ -94,12 +93,10 @@ public class EmployerServiceImpl implements EmployerService {
       emailChanged = true;
     }
     
-    // Handle password update: encrypt and sync with User table
     if (request.password() != null && !request.password().trim().isEmpty()) {
       String encryptedPassword = passwordEncoder.encode(request.password());
       employer.setPassword(encryptedPassword);
       
-      // Update User table password for authentication
       Optional<User> userOpt = userRepository.findByBusinessPersonId(id);
       if (userOpt.isPresent()) {
         User user = userOpt.get();
@@ -126,7 +123,6 @@ public class EmployerServiceImpl implements EmployerService {
 
     Employer savedEmployer = employerRepository.save(employer);
 
-    // Update User table email if it changed
     if (emailChanged) {
       Optional<User> userOpt = userRepository.findByBusinessPersonId(id);
       if (userOpt.isPresent()) {

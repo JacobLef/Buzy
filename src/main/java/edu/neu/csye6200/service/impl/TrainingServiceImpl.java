@@ -37,9 +37,6 @@ public class TrainingServiceImpl implements TrainingService {
               .orElseThrow(() -> new ResourceNotFoundException("Person", "id", personId));
       Training training = createTrainingFromRequest(request);
     training.setPerson(person);
-    // Do not auto-calculate expiry date - only use dates explicitly provided
-    // Removed: setDefaultExpiryDate(training);
-
     Training saved = trainingRepository.save(training);
     return convertToDTO(saved);
   }
@@ -139,8 +136,6 @@ public class TrainingServiceImpl implements TrainingService {
         dto.isRequired()
     );
   }
-
-  // Removed setDefaultExpiryDate - dates should only be set explicitly, not auto-calculated
 
   private TrainingDTO convertToDTO(Training training) {
     TrainingDTO.Builder builder = TrainingDTO.builder()

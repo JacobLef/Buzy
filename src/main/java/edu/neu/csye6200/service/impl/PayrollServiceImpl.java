@@ -42,17 +42,14 @@ public class PayrollServiceImpl implements PayrollService {
     
     private static final Logger logger = LoggerFactory.getLogger(PayrollServiceImpl.class);
     
-    // Configuration constants
     private static final double MINIMUM_SALARY_THRESHOLD = 0.0;
     
-    // Dependencies - Constructor injection for better testability
     private final EmployeeService employeeService;
     private final PaycheckRepository paycheckRepository;
     private final BusinessRepository businessRepository;
     private final DTOFactory dtoFactory;
     private TaxCalculationStrategy taxStrategy;
     
-    // Configurable insurance rate from application.properties
     private final double insuranceRate;
     
     /**
