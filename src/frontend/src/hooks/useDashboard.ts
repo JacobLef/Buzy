@@ -13,6 +13,7 @@ interface DashboardStats {
   totalEmployers: number;
   monthlyPayroll: number;
   pendingTrainings: number;
+  expiringTrainings: number; // For trend display
 }
 
 export const useDashboard = () => {
@@ -21,9 +22,11 @@ export const useDashboard = () => {
     totalEmployers: 0,
     monthlyPayroll: 0,
     pendingTrainings: 0,
+    expiringTrainings: 0,
   });
   
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
+  const [pendingTrainings, setPendingTrainings] = useState<Training[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,13 +55,37 @@ export const useDashboard = () => {
           try {
             const activityResponse = await getRecentActivity(businessId);
             activityData = activityResponse.data;
-            // Sort by timestamp (most recent first) - descending order
-            // This ensures the most relevant/recent activities appear at the top
+            // Filter out TRAINING activities (they will be shown in separate card)
+            activityData = activityData.filter((activity) => activity.type !== 'TRAINING');
+            // Sort by timestamp: past (ago) -> today -> future (due)
+            // This ensures chronological order: oldest past events first, then today, then future events
+            const now = new Date().getTime();
             activityData.sort((a, b) => {
               const dateA = new Date(a.timestamp).getTime();
               const dateB = new Date(b.timestamp).getTime();
-              return dateA - dateB; // Descending order (newest first)
+              const isPastA = dateA < now;
+              const isPastB = dateB < now;
+              const isFutureA = dateA > now;
+              const isFutureB = dateB > now;
+              
+              // Past events come first (oldest first)
+              if (isPastA && isPastB) {
+                return dateA - dateB; // Ascending: older past events first
+              }
+              if (isPastA && !isPastB) return -1; // Past before present/future
+              if (!isPastA && isPastB) return 1; // Present/future after past
+              
+              // Future events come last (soonest first)
+              if (isFutureA && isFutureB) {
+                return dateA - dateB; // Ascending: soonest future events first
+              }
+              if (isFutureA && !isFutureB) return 1; // Future after present
+              if (!isFutureA && isFutureB) return -1; // Present before future
+              
+              // Both are today/present - sort by time (earlier first)
+              return dateA - dateB;
             });
+            console.log('Recent Activity Data:', activityData); // Debug log
             setRecentActivity(activityData);
           } catch (error) {
             console.error('Failed to fetch activity:', error);
@@ -92,9 +119,24 @@ export const useDashboard = () => {
               return t.personId && (businessEmployeeIds.has(Number(t.personId)) || businessEmployerIds.has(Number(t.personId)));
             });
 
-            // Use the exact same logic as Training.tsx getPendingCount()
+            // Calculate pending and expiring trainings
             const now = new Date();
-            const pendingTrainings = businessTrainings.filter((t: Training) => {
+            
+            // Filter for expiring soon trainings (expiring within 30 days)
+            const expiringSoonTrainingsList = businessTrainings.filter((t: Training) => {
+              if (t.completed || t.expired) return false;
+              // Must have expiry date
+              if (!t.expiryDate) return false;
+              // Expiring within 30 days
+              const expiryDate = new Date(t.expiryDate);
+              const daysUntilExpiry = Math.ceil(
+                (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+              );
+              return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+            });
+
+            // Filter for pending trainings (not completed, not expired, not expiring soon)
+            const pendingTrainingsList = businessTrainings.filter((t: Training) => {
               if (t.completed || t.expired) return false;
               // If no expiry date, it's pending
               if (!t.expiryDate) return true;
@@ -104,13 +146,27 @@ export const useDashboard = () => {
                 (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
               );
               return daysUntilExpiry > 30;
-            }).length;
+            });
+
+            // Sort expiring soon trainings by expiry date (soonest first)
+            const sortedExpiringSoonTrainings = expiringSoonTrainingsList.sort((a, b) => {
+              const dateA = a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity;
+              const dateB = b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity;
+              return dateA - dateB;
+            });
+
+            setPendingTrainings(sortedExpiringSoonTrainings);
+
+            // Total pending + expiring count
+            const totalPendingAndExpiring = pendingTrainingsList.length + expiringSoonTrainingsList.length;
+            const expiringCount = expiringSoonTrainingsList.length;
 
             setStats({
               totalEmployees: employeesResponse.data.length,
               totalEmployers: employersResponse.data.length,
               monthlyPayroll: payrollSummaryResponse?.data?.totalNetPay || 0,
-              pendingTrainings: pendingTrainings,
+              pendingTrainings: totalPendingAndExpiring,
+              expiringTrainings: expiringCount,
             });
           } catch (error) {
             console.error('Failed to fetch dashboard stats:', error);
@@ -120,16 +176,19 @@ export const useDashboard = () => {
               totalEmployers: 0,
               monthlyPayroll: 0,
               pendingTrainings: 0,
+              expiringTrainings: 0,
             });
           }
         } else {
           // No businessId available, set empty activity and default stats
           setRecentActivity([]);
+          setPendingTrainings([]);
           setStats({
             totalEmployees: 0,
             totalEmployers: 0,
             monthlyPayroll: 0,
             pendingTrainings: 0,
+            expiringTrainings: 0,
           });
         }
 
@@ -143,6 +202,6 @@ export const useDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  return { stats, recentActivity, loading };
+  return { stats, recentActivity, pendingTrainings, loading };
 };
 

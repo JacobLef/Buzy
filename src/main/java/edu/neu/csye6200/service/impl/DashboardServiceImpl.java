@@ -39,8 +39,8 @@ public class DashboardServiceImpl {
         List<ActivityDTO> activities = new ArrayList<>();
         
         // 1. Get recent paychecks (last 7 days) - query by payDate and group by date
-        LocalDate weekAgo = LocalDate.now().minusDays(7);
-        var recentPaychecks = paycheckRepository.findByBusinessIdAndPayDateAfter(businessId, weekAgo);
+        LocalDate monthAgoForPaychecks = LocalDate.now().minusDays(7);
+        var recentPaychecks = paycheckRepository.findByBusinessIdAndPayDateAfter(businessId, monthAgoForPaychecks);
         
         // Group paychecks by payDate
         var paychecksByDate = recentPaychecks.stream()
@@ -73,9 +73,9 @@ public class DashboardServiceImpl {
             ));
         }
         
-        // 2. Get recently hired employees (last 30 days) for this business - query by hireDate
-        LocalDate monthAgo = LocalDate.now().minusDays(30);
-        var recentHires = employeeRepository.findByCompanyIdAndHireDateAfter(businessId, monthAgo);
+        // 2. Get recently hired employees (last 7 days) for this business - query by hireDate
+        LocalDate threeMonthsAgo = LocalDate.now().minusDays(7);
+        var recentHires = employeeRepository.findByCompanyIdAndHireDateAfter(businessId, threeMonthsAgo);
         
         for (var employee : recentHires) {
             // Use hireDate for timestamp (not createdAt)
@@ -113,44 +113,65 @@ public class DashboardServiceImpl {
             ));
         }
         
-        // Sort by timestamp (newest first) and limit to 10
+        // Sort by timestamp (newest first) - show all activities (removed limit)
+        // Debug logging
+        System.out.println("=== Dashboard Activity Debug ===");
+        System.out.println("Business ID: " + businessId);
+        System.out.println("Total paychecks found: " + recentPaychecks.size());
+        System.out.println("Paycheck groups by date: " + paychecksByDate.size());
+        System.out.println("Total recent hires found: " + recentHires.size());
+        System.out.println("Total expiring trainings: " + expiringTrainings.size());
+        System.out.println("Total activities before sorting: " + activities.size());
+        
         return activities.stream()
             .sorted(Comparator.comparing(ActivityDTO::timestamp).reversed())
-            .limit(10)
-            .toList();
+            .toList(); // Removed .limit(10) to show all activities
     }
     
     /**
-     * Format timestamp as relative time ("2 hours ago")
+     * Format timestamp as relative time ("2 hours ago" or "Due in 3 days")
      */
     private String formatRelativeTime(LocalDateTime timestamp) {
         LocalDateTime now = LocalDateTime.now();
         
-        long minutes = ChronoUnit.MINUTES.between(timestamp, now);
+        // Check if timestamp is in the future
+        boolean isFuture = timestamp.isAfter(now);
+        long minutes = Math.abs(ChronoUnit.MINUTES.between(timestamp, now));
+        
         if (minutes < 1) {
-            return "just now";
+            return isFuture ? "due now" : "just now";
         }
         if (minutes < 60) {
-            return minutes == 1 ? "1 minute ago" : minutes + " minutes ago";
+            String timeStr = minutes == 1 ? "1 minute" : minutes + " minutes";
+            return isFuture ? "due in " + timeStr : timeStr + " ago";
         }
         
-        long hours = ChronoUnit.HOURS.between(timestamp, now);
+        long hours = Math.abs(ChronoUnit.HOURS.between(timestamp, now));
         if (hours < 24) {
-            return hours == 1 ? "1 hour ago" : hours + " hours ago";
+            String timeStr = hours == 1 ? "1 hour" : hours + " hours";
+            return isFuture ? "due in " + timeStr : timeStr + " ago";
         }
         
-        long days = ChronoUnit.DAYS.between(timestamp, now);
+        long days = Math.abs(ChronoUnit.DAYS.between(timestamp, now));
+        if (days == 0) {
+            // Same day - show hours instead
+            String timeStr = hours == 1 ? "1 hour" : hours + " hours";
+            return isFuture ? "due in " + timeStr : timeStr + " ago";
+        }
         if (days < 7) {
-            return days == 1 ? "1 day ago" : days + " days ago";
+            String timeStr = days == 1 ? "1 day" : days + " days";
+            return isFuture ? "due in " + timeStr : timeStr + " ago";
         }
         
-        long weeks = ChronoUnit.WEEKS.between(timestamp, now);
+        long weeks = Math.abs(ChronoUnit.WEEKS.between(timestamp, now));
         if (weeks < 4) {
-            return weeks == 1 ? "1 week ago" : weeks + " weeks ago";
+            String timeStr = weeks == 1 ? "1 week" : weeks + " weeks";
+            return isFuture ? "due in " + timeStr : timeStr + " ago";
         }
         
-        long months = ChronoUnit.MONTHS.between(timestamp, now);
-        return months == 1 ? "1 month ago" : months + " months ago";
+        long months = Math.abs(ChronoUnit.MONTHS.between(timestamp, now));
+        String timeStr = months == 1 ? "1 month" : months + " months";
+        return isFuture ? "due in " + timeStr : timeStr + " ago";
     }
 }
 

@@ -402,9 +402,9 @@ export default function TrainingManagement() {
             subtitle={`Showing ${filteredTrainings.length} training${filteredTrainings.length !== 1 ? "s" : ""}`}
             icon={<GraduationCap size={20} />}
           />
-        </div>
+      </div>
 
-        {/* Filter and Search */}
+      {/* Filter and Search */}
         <div className="px-6 py-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           <div className="flex flex-wrap gap-2">
             <button
