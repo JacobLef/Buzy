@@ -3,6 +3,7 @@ import { GraduationCap, AlertCircle, CheckCircle, Clock, Eye } from "lucide-reac
 import { Card, CardHeader } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
+import { Modal } from "../../components/ui/Modal";
 import { getTrainingsByPerson } from "../../api/training";
 import type { Training } from "../../types/training";
 
@@ -341,72 +342,60 @@ export default function EmployeeTraining() {
       </Card>
 
       {/* Training Detail Modal */}
-      {selectedTraining && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedTraining(null)}
-        >
-          <div
-            className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-slate-900">Training Details</h2>
-              <button
-                onClick={() => setSelectedTraining(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
+      <Modal
+        isOpen={!!selectedTraining}
+        onClose={() => setSelectedTraining(null)}
+        title="Training Details"
+        maxWidth="lg"
+      >
+        {selectedTraining && (
+          <div className="space-y-6">
+            <div>
+              <span className="text-sm text-gray-500 block mb-1">Training Name</span>
+              <p className="font-semibold text-slate-900 text-lg">
+                {selectedTraining.trainingName}
+              </p>
             </div>
-            <div className="p-6 space-y-4">
+            {selectedTraining.description && (
               <div>
-                <span className="text-sm text-gray-500">Training Name</span>
-                <p className="font-semibold text-slate-900 text-lg">
-                  {selectedTraining.trainingName}
+                <span className="text-sm text-gray-500 block mb-1">Description</span>
+                <p className="text-slate-900">{selectedTraining.description}</p>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-sm text-gray-500 block mb-1">Completion Date</span>
+                <p className="font-medium text-slate-900">
+                  {formatDate(selectedTraining.completionDate)}
                 </p>
               </div>
-              {selectedTraining.description && (
-                <div>
-                  <span className="text-sm text-gray-500">Description</span>
-                  <p className="text-slate-900">{selectedTraining.description}</p>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-sm text-gray-500">Completion Date</span>
-                  <p className="font-medium text-slate-900">
-                    {formatDate(selectedTraining.completionDate)}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-500">Expiry Date</span>
-                  <p className="font-medium text-slate-900">
-                    {formatDate(selectedTraining.expiryDate)}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-500">Required</span>
-                  <p className="font-medium text-slate-900">
-                    {selectedTraining.required ? "Yes" : "No"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm text-gray-500">Status</span>
-                  <Badge variant={getTrainingStatus(selectedTraining).variant}>
-                    {getTrainingStatus(selectedTraining).label}
-                  </Badge>
-                </div>
+              <div>
+                <span className="text-sm text-gray-500 block mb-1">Expiry Date</span>
+                <p className="font-medium text-slate-900">
+                  {formatDate(selectedTraining.expiryDate)}
+                </p>
               </div>
-              <div className="pt-4 border-t border-gray-100 flex justify-end">
-                <Button variant="secondary" onClick={() => setSelectedTraining(null)}>
-                  Close
-                </Button>
+              <div>
+                <span className="text-sm text-gray-500 block mb-1">Required</span>
+                <p className="font-medium text-slate-900">
+                  {selectedTraining.required ? "Yes" : "No"}
+                </p>
+              </div>
+              <div>
+                <span className="text-sm text-gray-500 block mb-1">Status</span>
+                <Badge variant={getTrainingStatus(selectedTraining).variant}>
+                  {getTrainingStatus(selectedTraining).label}
+                </Badge>
               </div>
             </div>
+            <div className="pt-4 border-t border-gray-100 flex justify-end">
+              <Button variant="secondary" onClick={() => setSelectedTraining(null)}>
+                Close
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }
