@@ -1,5 +1,23 @@
 # UML Diagrams - Business Management Platform
 
+## How to run the program
+
+### Start the backend server from the command line
+```bash
+./mvnw spring-boot:run
+```
+
+### If you DO NOT want to do that, just press start on BusinessManagmentApplication class
+
+### Start the the frontend server
+```bash
+cd src/frontend/src
+```
+
+```bash
+npm run dev
+```
+
 ## Use Case Diagram
 <img src="uml/images/Use-Case-Diagram-OOD.png" width="700">
 
