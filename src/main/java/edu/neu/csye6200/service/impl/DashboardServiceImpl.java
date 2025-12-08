@@ -38,11 +38,9 @@ public class DashboardServiceImpl {
     public List<ActivityDTO> getRecentActivity(Long businessId) {
         List<ActivityDTO> activities = new ArrayList<>();
         
-        // 1. Get recent paychecks (last 7 days) - query by payDate and group by date
         LocalDate monthAgoForPaychecks = LocalDate.now().minusDays(7);
         var recentPaychecks = paycheckRepository.findByBusinessIdAndPayDateAfter(businessId, monthAgoForPaychecks);
         
-        // Group paychecks by payDate
         var paychecksByDate = recentPaychecks.stream()
             .collect(Collectors.groupingBy(Paycheck::getPayDate));
         
@@ -51,7 +49,6 @@ public class DashboardServiceImpl {
             List<Paycheck> paychecksForDate = entry.getValue();
             LocalDateTime payDateTime = payDate.atStartOfDay();
             
-            // Calculate total net pay for this date
             double totalNetPay = paychecksForDate.stream()
                 .mapToDouble(Paycheck::getNetPay)
                 .sum();
@@ -64,7 +61,7 @@ public class DashboardServiceImpl {
                 : String.format("Payroll generated for %d employees (Total: $%.2f)", count, totalNetPay);
             
             activities.add(new ActivityDTO(
-                payDate.toEpochDay(), // Use date as ID for grouped entries
+                payDate.toEpochDay(), 
                 "PAYROLL",
                 title,
                 formatRelativeTime(payDateTime),
@@ -73,12 +70,10 @@ public class DashboardServiceImpl {
             ));
         }
         
-        // 2. Get recently hired employees (last 7 days) for this business - query by hireDate
         LocalDate threeMonthsAgo = LocalDate.now().minusDays(7);
         var recentHires = employeeRepository.findByCompanyIdAndHireDateAfter(businessId, threeMonthsAgo);
         
         for (var employee : recentHires) {
-            // Use hireDate for timestamp (not createdAt)
             LocalDateTime hireDateTime = employee.getHireDate().atStartOfDay();
             
             activities.add(new ActivityDTO(
@@ -91,7 +86,6 @@ public class DashboardServiceImpl {
             ));
         }
         
-        // 3. Get expiring trainings (next 7 days) for this business
         LocalDate weekFromNow = LocalDate.now().plusDays(7);
         var expiringTrainings = trainingRepository.findExpiringBetween(
             businessId,
@@ -113,19 +107,9 @@ public class DashboardServiceImpl {
             ));
         }
         
-        // Sort by timestamp (newest first) - show all activities (removed limit)
-        // Debug logging
-        System.out.println("=== Dashboard Activity Debug ===");
-        System.out.println("Business ID: " + businessId);
-        System.out.println("Total paychecks found: " + recentPaychecks.size());
-        System.out.println("Paycheck groups by date: " + paychecksByDate.size());
-        System.out.println("Total recent hires found: " + recentHires.size());
-        System.out.println("Total expiring trainings: " + expiringTrainings.size());
-        System.out.println("Total activities before sorting: " + activities.size());
-        
         return activities.stream()
             .sorted(Comparator.comparing(ActivityDTO::timestamp).reversed())
-            .toList(); // Removed .limit(10) to show all activities
+            .toList(); 
     }
     
     /**
@@ -133,8 +117,6 @@ public class DashboardServiceImpl {
      */
     private String formatRelativeTime(LocalDateTime timestamp) {
         LocalDateTime now = LocalDateTime.now();
-        
-        // Check if timestamp is in the future
         boolean isFuture = timestamp.isAfter(now);
         long minutes = Math.abs(ChronoUnit.MINUTES.between(timestamp, now));
         
@@ -154,7 +136,6 @@ public class DashboardServiceImpl {
         
         long days = Math.abs(ChronoUnit.DAYS.between(timestamp, now));
         if (days == 0) {
-            // Same day - show hours instead
             String timeStr = hours == 1 ? "1 hour" : hours + " hours";
             return isFuture ? "due in " + timeStr : timeStr + " ago";
         }
