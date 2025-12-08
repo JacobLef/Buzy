@@ -9,6 +9,7 @@ classDiagram
         PayrollController
         TrainingController
         BusinessController
+        DashboardController
     }
 
     %% Services Layer
@@ -20,6 +21,7 @@ classDiagram
         PayrollService
         TrainingService
         BusinessService
+        DashboardServiceImpl
     }
 
     %% Repositories Layer
@@ -28,6 +30,7 @@ classDiagram
         EmployeeRepository
         EmployerRepository
         BusinessRepository
+        BusinessPersonRepository
         TrainingRepository
         PaycheckRepository
     }
@@ -37,6 +40,7 @@ classDiagram
         User
         Employee
         Employer
+        BusinessPerson
         Company
         Training
         Paycheck
@@ -50,6 +54,7 @@ classDiagram
         CompanyDTO
         TrainingDTO
         PaycheckDTO
+        PayrollSummaryDTO
     }
 
     %% Design Patterns
@@ -59,15 +64,20 @@ classDiagram
         BusinessPersonFactory
     }
 
-    %% Security
+    %% Security & Configuration
     class Security {
         JwtTokenProvider
         JwtAuthenticationFilter
+        PasswordEncoder
+        SecurityConfig
     }
 
+    %% Relationships
     Controllers --> Services : uses
     Controllers --> DTOs : returns
     Services --> Repositories : uses
     Services --> Patterns : uses
+    Services --> Security : uses
     Repositories --> DomainModels : persists
     Security --> Controllers : protects
+    DomainModels --> DomainModels : relationships

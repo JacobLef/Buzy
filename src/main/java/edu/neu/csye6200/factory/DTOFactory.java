@@ -57,6 +57,8 @@ public class DTOFactory {
         .withDepartment(employer.getDepartment())
         .withTitle(employer.getTitle())
         .withDirectReportsCount(employer.getDirectReportsCount())
+        .withIsAdmin(employer.getIsAdmin())
+        .withIsOwner(employer.getIsOwner())
         .withCreatedAt(employer.getCreatedAt())
         .withUpdatedAt(employer.getUpdatedAt());
 
@@ -76,6 +78,7 @@ public class DTOFactory {
         .withCompletionDate(training.getCompletionDate())
         .withExpiryDate(training.getExpiryDate())
         .withRequired(training.isRequired())
+        .withCompleted(training.isCompleted())
         .withExpired(training.isExpired())
         .withCreatedAt(training.getCreatedAt());
 

@@ -15,6 +15,7 @@ public class TrainingDTO {
     private final LocalDate completionDate;
     private final LocalDate expiryDate;
     private final boolean required;
+    private final boolean completed;
     private final boolean expired;
     private final Long personId;
     private final String personName;
@@ -28,6 +29,7 @@ public class TrainingDTO {
         this.completionDate = builder.completionDate;
         this.expiryDate = builder.expiryDate;
         this.required = builder.required;
+        this.completed = builder.completed;
         this.expired = builder.expired;
         this.personId = builder.personId;
         this.personName = builder.personName;
@@ -57,6 +59,10 @@ public class TrainingDTO {
 
     public boolean isRequired() {
         return required;
+    }
+
+    public boolean isCompleted() {
+        return completed;
     }
 
     public boolean isExpired() {
@@ -90,6 +96,7 @@ public class TrainingDTO {
         private LocalDate completionDate;
         private LocalDate expiryDate;
         private boolean required;
+        private boolean completed;
         private boolean expired;
         private Long personId;
         private String personName;
@@ -123,6 +130,11 @@ public class TrainingDTO {
 
         public Builder withRequired(boolean required) {
             this.required = required;
+            return this;
+        }
+
+        public Builder withCompleted(boolean completed) {
+            this.completed = completed;
             return this;
         }
 

@@ -99,4 +99,18 @@ public class EmployerController {
         .collect(Collectors.toUnmodifiableSet());
     return ResponseEntity.ok(dtos);
   }
+
+  @PostMapping("/{id}/promote-admin")
+  public ResponseEntity<EmployerDTO> promoteToAdmin(@PathVariable Long id) {
+    Employer employer = employerService.promoteToAdmin(id);
+    EmployerDTO dto = dtoFactory.createDTO(employer);
+    return ResponseEntity.ok(dto);
+  }
+
+  @PostMapping("/{id}/remove-admin")
+  public ResponseEntity<EmployerDTO> removeAdmin(@PathVariable Long id) {
+    Employer employer = employerService.removeAdmin(id);
+    EmployerDTO dto = dtoFactory.createDTO(employer);
+    return ResponseEntity.ok(dto);
+  }
 }

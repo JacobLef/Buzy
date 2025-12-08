@@ -1,5 +1,6 @@
-package edu.neu.csye6200.service.impl;
+package edu.neu.csye6200.service;
 
+import edu.neu.csye6200.service.impl.EmployeeServiceImpl;
 import edu.neu.csye6200.dto.request.CreateEmployeeRequest;
 import edu.neu.csye6200.dto.request.UpdateEmployeeRequest;
 import edu.neu.csye6200.exception.EmployeeNotFoundException;

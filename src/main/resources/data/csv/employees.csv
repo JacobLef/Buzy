@@ -1,8 +1,8 @@
 id,name,email,password,salary,position,hire_date,manager_id,company_id,status
 100,Alex Morgan,alex.morgan@techvision.com,SecurePass123!,95000.00,Senior Software Engineer,2020-01-15,1,1,Active
-101,Sophie Turner,sophie.turner@techvision.com,SecurePass123!,85000.00,Software Engineer,2021-03-22,1,1,Active
-102,Lucas Bennett,lucas.bennett@techvision.com,SecurePass123!,78000.00,Frontend Developer,2021-06-10,1,1,Active
-103,Emma Collins,emma.collins@techvision.com,SecurePass123!,92000.00,DevOps Engineer,2020-09-01,1,1,Active
+101,Sophie Turner,sophie.turner@techvision.com,SecurePass123!,85000.00,Software Engineer,2021-03-22,100,1,Active
+102,Lucas Bennett,lucas.bennett@techvision.com,SecurePass123!,78000.00,Frontend Developer,2021-06-10,100,1,Active
+103,Emma Collins,emma.collins@techvision.com,SecurePass123!,92000.00,DevOps Engineer,2020-09-01,100,1,Active
 104,Oliver Hayes,oliver.hayes@techvision.com,SecurePass123!,88000.00,Backend Developer,2021-01-20,1,1,Active
 105,Ava Mitchell,ava.mitchell@techvision.com,SecurePass123!,72000.00,Product Manager,2022-02-15,2,1,Active
 106,Noah Foster,noah.foster@techvision.com,SecurePass123!,68000.00,UX Designer,2022-05-01,2,1,Active
@@ -88,4 +88,4 @@ id,name,email,password,salary,position,hire_date,manager_id,company_id,status
 186,Michael Davis,michael.davis@healthcare.com,SecurePass123!,85000.00,Registered Nurse,2025-11-25,7,3,Active
 187,Sophia Martinez,sophia.martinez@edutech.com,SecurePass123!,70000.00,Content Developer,2025-12-01,9,4,Active
 188,Daniel Taylor,daniel.taylor@greenenergy.com,SecurePass123!,80000.00,Energy Analyst,2025-12-05,11,5,Active
-189,Robert Anderson,robert.anderson@techvision.com,SecurePass123!,82000.00,Mobile Developer,2025-12-03,1,1,Active
+189,Robert Anderson,robert.anderson@techvision.com,SecurePass123!,82000.00,Mobile Developer,2025-12-05,1,1,Active

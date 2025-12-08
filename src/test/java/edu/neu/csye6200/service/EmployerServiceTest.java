@@ -1,4 +1,4 @@
-package edu.neu.csye6200.service.impl;
+package edu.neu.csye6200.service;
 
 import edu.neu.csye6200.dto.request.CreateEmployerRequest;
 import edu.neu.csye6200.dto.request.UpdateEmployerRequest;
@@ -9,6 +9,7 @@ import edu.neu.csye6200.model.domain.Employer;
 import edu.neu.csye6200.model.domain.PersonStatus;
 import edu.neu.csye6200.repository.BusinessRepository;
 import edu.neu.csye6200.repository.EmployerRepository;
+import edu.neu.csye6200.service.impl.EmployerServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

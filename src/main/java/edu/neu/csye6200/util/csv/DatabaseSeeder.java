@@ -161,9 +161,44 @@ public class DatabaseSeeder implements CommandLineRunner {
 
       if (rows != null && !rows.isEmpty()) {
         int count = 0;
+        // Track first employer per company to set as owner if not specified in CSV
+        Map<Long, Boolean> companyOwnerSet = new HashMap<>();
+        
         for (Map<String, String> row : rows) {
           Long csvId = CONVERTER.toLong(row.get("id"));
+          Long companyId = CONVERTER.toLong(row.get("company_id"));
+          
           Employer employer = mapToEmployer(row);
+          
+          // If is_owner is not set in CSV and this is the first employer for this company,
+          // set them as owner (and admin)
+          Boolean isOwnerFromCSV = CONVERTER.toBoolean(row.get("is_owner"));
+          if ((isOwnerFromCSV == null || !isOwnerFromCSV) && companyId != null) {
+            if (!companyOwnerSet.containsKey(companyId)) {
+              // Check if title contains CEO, Chief, President, or Managing Partner
+              String title = CONVERTER.toString(row.get("title"));
+              if (title != null && (
+                  title.toLowerCase().contains("ceo") ||
+                  title.toLowerCase().contains("chief") ||
+                  title.toLowerCase().contains("president") ||
+                  title.toLowerCase().contains("managing partner")
+              )) {
+                employer.setIsOwner(true);
+                employer.setIsAdmin(true);
+                companyOwnerSet.put(companyId, true);
+                System.out.println("Auto-set " + employer.getName() + " as Owner for company " + companyId);
+              } else {
+                // Set first employer as owner if no CEO/Chief found
+                employer.setIsOwner(true);
+                employer.setIsAdmin(true);
+                companyOwnerSet.put(companyId, true);
+                System.out.println("Auto-set first employer " + employer.getName() + " as Owner for company " + companyId);
+              }
+            }
+          } else if (isOwnerFromCSV != null && isOwnerFromCSV) {
+            companyOwnerSet.put(companyId, true);
+          }
+          
           Employer saved = employerRepo.save(employer);
 
           if (csvId != null) {
@@ -218,6 +253,22 @@ public class DatabaseSeeder implements CommandLineRunner {
       }
     }
 
+    // Set is_admin field
+    Boolean isAdmin = CONVERTER.toBoolean(row.get("is_admin"));
+    if (isAdmin != null) {
+      employer.setIsAdmin(isAdmin);
+    }
+
+    // Set is_owner field
+    Boolean isOwner = CONVERTER.toBoolean(row.get("is_owner"));
+    if (isOwner != null) {
+      employer.setIsOwner(isOwner);
+      // Owner is automatically an admin
+      if (isOwner) {
+        employer.setIsAdmin(true);
+      }
+    }
+
     return employer;
   }
 
@@ -239,9 +290,20 @@ public class DatabaseSeeder implements CommandLineRunner {
 
       if (rows != null && !rows.isEmpty()) {
         int count = 0;
+        // First pass: Create all employees without manager relationships
+        Map<Long, Long> managerRelationships = new HashMap<>();
         for (Map<String, String> row : rows) {
           Long csvId = CONVERTER.toLong(row.get("id"));
+          Long managerId = CONVERTER.toLong(row.get("manager_id"));
+          
+          // Store manager relationship for later
+          if (csvId != null && managerId != null) {
+            managerRelationships.put(csvId, managerId);
+          }
+          
           Employee employee = mapToEmployee(row);
+          // Don't set manager in first pass
+          employee.setManager(null);
           Employee saved = employeeRepo.save(employee);
 
           if (csvId != null) {
@@ -249,6 +311,28 @@ public class DatabaseSeeder implements CommandLineRunner {
           }
           count++;
         }
+        
+        // Second pass: Set manager relationships
+        for (Map.Entry<Long, Long> entry : managerRelationships.entrySet()) {
+          Long employeeId = entry.getKey();
+          Long managerId = entry.getValue();
+          
+          Employee employee = employeeCache.get(employeeId);
+          if (employee != null) {
+            // Try to find manager in employer cache first, then employee cache
+            BusinessPerson manager = employerCache.get(managerId);
+            if (manager == null) {
+              manager = employeeCache.get(managerId);
+            }
+            if (manager != null) {
+              employee.setManager(manager);
+              employeeRepo.save(employee);
+            } else {
+              System.err.println("Warning: Manager not found for employee ID " + employeeId + ", manager_id: " + managerId);
+            }
+          }
+        }
+        
         System.out.println("Seeded " + count + " employees");
       }
     } catch (Exception e) {
@@ -285,13 +369,8 @@ public class DatabaseSeeder implements CommandLineRunner {
       }
     }
 
-    Long managerId = CONVERTER.toLong(row.get("manager_id"));
-    if (managerId != null) {
-      Employer manager = employerCache.get(managerId);
-      if (manager != null) {
-        employee.setManager(manager);
-      }
-    }
+    // Manager relationship will be set in second pass after all employees are created
+    // This allows employees to manage other employees
 
     String status = CONVERTER.toString(row.get("status"));
     if (status != null && !status.isEmpty()) {

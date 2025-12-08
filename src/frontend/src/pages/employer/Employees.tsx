@@ -43,8 +43,9 @@ export default function EmployeeManagement() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [companyId, setCompanyId] = useState<number | null>(null);
+  const [currentUserEmployer, setCurrentUserEmployer] = useState<{ isOwner?: boolean; isAdmin?: boolean } | null>(null);
 
-  // Load company ID
+  // Load company ID and current user employer info
   useEffect(() => {
     const loadCompanyId = async () => {
       try {
@@ -54,6 +55,7 @@ export default function EmployeeManagement() {
           if (user.role === 'EMPLOYER' && user.businessPersonId) {
             const response = await getEmployer(user.businessPersonId);
             setCompanyId(response.data.companyId);
+            setCurrentUserEmployer(response.data);
           }
         }
       } catch (error) {
@@ -62,6 +64,11 @@ export default function EmployeeManagement() {
     };
     loadCompanyId();
   }, []);
+
+  // Calculate permissions
+  const isOwner = currentUserEmployer?.isOwner ?? false;
+  const isAdmin = currentUserEmployer?.isAdmin ?? false;
+  const canEditEmployees = isAdmin || isOwner;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -136,6 +143,8 @@ export default function EmployeeManagement() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -339,17 +348,19 @@ export default function EmployeeManagement() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(employee);
-                          }}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-600 hover:text-blue-700"
-                          title="Edit"
-                        >
-                          <Edit3 size={18} />
-                        </button>
+                        {canEditEmployees && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(employee);
+                            }}
+                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-600 hover:text-blue-700"
+                            title="Edit"
+                          >
+                            <Edit3 size={18} />
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {

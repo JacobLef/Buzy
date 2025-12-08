@@ -30,4 +30,8 @@ public interface EmployerService {
   Employer updateSalary(Long id, Double salary);
 
   Employer giveBonus(Long id, Double bonus);
+
+  Employer promoteToAdmin(Long id);
+
+  Employer removeAdmin(Long id);
 }

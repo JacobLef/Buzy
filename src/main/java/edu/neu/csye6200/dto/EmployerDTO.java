@@ -18,6 +18,8 @@ public class EmployerDTO {
   private final String department;
   private final String title;
   private final Integer directReportsCount;
+  private final Boolean isAdmin;
+  private final Boolean isOwner;
   private final LocalDateTime createdAt;
   private final LocalDateTime updatedAt;
 
@@ -33,6 +35,8 @@ public class EmployerDTO {
     this.department = builder.department;
     this.title = builder.title;
     this.directReportsCount = builder.directReportsCount;
+    this.isAdmin = builder.isAdmin;
+    this.isOwner = builder.isOwner;
     this.createdAt = builder.createdAt;
     this.updatedAt = builder.updatedAt;
   }
@@ -81,6 +85,14 @@ public class EmployerDTO {
     return directReportsCount;
   }
 
+  public Boolean getIsAdmin() {
+    return isAdmin != null ? isAdmin : false;
+  }
+
+  public Boolean getIsOwner() {
+    return isOwner != null ? isOwner : false;
+  }
+
   public LocalDateTime getCreatedAt() {
     return createdAt;
   }
@@ -105,6 +117,8 @@ public class EmployerDTO {
     private String department;
     private String title;
     private Integer directReportsCount;
+    private Boolean isAdmin;
+    private Boolean isOwner;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -160,6 +174,16 @@ public class EmployerDTO {
 
     public Builder withDirectReportsCount(Integer directReportsCount) {
       this.directReportsCount = directReportsCount;
+      return this;
+    }
+
+    public Builder withIsAdmin(Boolean isAdmin) {
+      this.isAdmin = isAdmin;
+      return this;
+    }
+
+    public Builder withIsOwner(Boolean isOwner) {
+      this.isOwner = isOwner;
       return this;
     }
 

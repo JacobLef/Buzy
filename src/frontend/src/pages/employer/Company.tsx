@@ -10,10 +10,13 @@ import { Modal } from '../../components/ui/Modal';
 import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { buildOrgTree, flattenTree } from '../../utils/orgTreeBuilder';
 import { getEmployeesByBusiness, updateEmployee } from '../../api/employees';
-import { getEmployersByBusiness, getEmployer } from '../../api/employers';
+import { getEmployersByBusiness, getEmployer, promoteToAdmin, removeAdmin, updateEmployer } from '../../api/employers';
+import { EmployerForm } from '../../components/employer/EmployerForm';
 import type { EmployeeNode, DepartmentSummary } from '../../types/company';
 import type { Employee, UpdateEmployeeRequest } from '../../types/employee';
-import type { Employer } from '../../types/employer';
+import type { Employer, UpdateEmployerRequest } from '../../types/employer';
+import { authStorage } from '../../utils/authStorage';
+import { Shield, Crown, UserPlus, UserMinus } from 'lucide-react';
 
 /**
  * Extract department information from tree
@@ -91,9 +94,17 @@ export default function CompanyView() {
   const [isPersonEmployer, setIsPersonEmployer] = useState(false);
   const [saving, setSaving] = useState(false);
   const [companyId, setCompanyId] = useState<number | null>(null);
+  const [currentUserEmployer, setCurrentUserEmployer] = useState<Employer | null>(null);
+  const [showAdminSection, setShowAdminSection] = useState(false);
   
   // Get highlightEmployer from URL query params
   const highlightEmployerId = searchParams.get('highlightEmployer');
+  
+  // Calculate permissions
+  const isOwner = currentUserEmployer?.isOwner ?? false;
+  const isAdmin = currentUserEmployer?.isAdmin ?? false;
+  const canEditCompany = isAdmin || isOwner;
+  const canManageAdmins = isOwner;
 
   // Fetch data from backend
   useEffect(() => {
@@ -125,6 +136,19 @@ export default function CompanyView() {
           setEmployees(employeesResponse.data);
           setEmployers(employersResponse.data);
           setCompanyId(currentBusinessId);
+          
+          // Get current user's employer info for permissions
+          if (userStr) {
+            const user = JSON.parse(userStr);
+            if (user.role === 'EMPLOYER' && user.businessPersonId) {
+              try {
+                const currentEmployerResponse = await getEmployer(user.businessPersonId);
+                setCurrentUserEmployer(currentEmployerResponse.data);
+              } catch (error) {
+                console.error('Failed to get current employer:', error);
+              }
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to fetch company data:', error);
@@ -370,6 +394,24 @@ export default function CompanyView() {
         employee={selectedEmp}
         mode="EMPLOYER"
         allPeople={allPeople}
+        canEdit={
+          selectedEmp
+            ? (() => {
+                // Check if current user can edit this person
+                const employer = employers.find(emp => emp.id === selectedEmp.id);
+                if (employer) {
+                  // Admin cannot edit Owner
+                  if (isAdmin && !isOwner && employer.isOwner) {
+                    return false;
+                  }
+                  // Only Admin/Owner can edit employers
+                  return canEditCompany;
+                }
+                // For employees, Admin/Owner can edit
+                return canEditCompany;
+              })()
+            : false
+        }
         onEdit={(employeeId) => {
           // Find the person in employees or employers array
           const employee = employees.find(emp => emp.id === employeeId);
@@ -399,9 +441,53 @@ export default function CompanyView() {
           maxWidth="2xl"
         >
           {isPersonEmployer ? (
-            <div className="text-center py-8 text-gray-500">
-              Employer editing form coming soon. Please use the employer management page for now.
-            </div>
+            <EmployerForm
+              employer={editingPerson as Employer}
+              mode="edit"
+              companyId={companyId || undefined}
+              canEditFullProfile={
+                canEditCompany && 
+                editingPerson.id !== currentUserEmployer?.id &&
+                !(isAdmin && !isOwner && (editingPerson as Employer).isOwner)
+              }
+              onSubmit={async (data) => {
+                setSaving(true);
+                try {
+                  await updateEmployer(editingPerson.id, data as UpdateEmployerRequest);
+                  // Refresh data
+                  const [employeesResponse, employersResponse] = await Promise.all([
+                    getEmployeesByBusiness(companyId!),
+                    getEmployersByBusiness(companyId!),
+                  ]);
+                  setEmployees(employeesResponse.data);
+                  setEmployers(employersResponse.data);
+                  
+                  // Refresh current user if editing self
+                  if (editingPerson.id === currentUserEmployer?.id) {
+                    const user = authStorage.getUser();
+                    if (user?.businessPersonId) {
+                      const currentEmployerResponse = await getEmployer(user.businessPersonId);
+                      setCurrentUserEmployer(currentEmployerResponse.data);
+                    }
+                  }
+                  
+                  setIsEditModalOpen(false);
+                  setEditingPerson(null);
+                  setSelectedEmp(null);
+                } catch (error: unknown) {
+                  const err = error as { response?: { data?: { message?: string } } };
+                  console.error('Failed to update employer:', error);
+                  alert(err.response?.data?.message || 'Failed to update employer');
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              onCancel={() => {
+                setIsEditModalOpen(false);
+                setEditingPerson(null);
+              }}
+              saving={saving}
+            />
           ) : (
             <EmployeeForm
               employee={editingPerson as Employee}

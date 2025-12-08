@@ -37,7 +37,8 @@ public class TrainingServiceImpl implements TrainingService {
               .orElseThrow(() -> new ResourceNotFoundException("Person", "id", personId));
       Training training = createTrainingFromRequest(request);
     training.setPerson(person);
-    setDefaultExpiryDate(training);
+    // Do not auto-calculate expiry date - only use dates explicitly provided
+    // Removed: setDefaultExpiryDate(training);
 
     Training saved = trainingRepository.save(training);
     return convertToDTO(saved);
@@ -139,11 +140,7 @@ public class TrainingServiceImpl implements TrainingService {
     );
   }
 
-  private void setDefaultExpiryDate(Training training) {
-    if (training.getCompletionDate() != null && training.getExpiryDate() == null) {
-      training.setExpiryDate(training.getCompletionDate().plusYears(1));
-    }
-  }
+  // Removed setDefaultExpiryDate - dates should only be set explicitly, not auto-calculated
 
   private TrainingDTO convertToDTO(Training training) {
     TrainingDTO.Builder builder = TrainingDTO.builder()
@@ -153,6 +150,7 @@ public class TrainingServiceImpl implements TrainingService {
         .withCompletionDate(training.getCompletionDate())
         .withExpiryDate(training.getExpiryDate())
         .withRequired(training.isRequired())
+        .withCompleted(training.isCompleted())
         .withExpired(training.isExpired())
         .withCreatedAt(training.getCreatedAt());
 

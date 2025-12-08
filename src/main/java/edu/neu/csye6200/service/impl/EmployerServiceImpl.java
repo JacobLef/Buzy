@@ -193,4 +193,27 @@ public class EmployerServiceImpl implements EmployerService {
     employer.setSalary(employer.getSalary() + bonus);
     return employerRepository.save(employer);
   }
+
+  @Override
+  public Employer promoteToAdmin(Long id) {
+    Employer employer = employerRepository.findById(id)
+        .orElseThrow(() -> new EmployerNotFoundException(id));
+    
+    employer.setIsAdmin(true);
+    return employerRepository.save(employer);
+  }
+
+  @Override
+  public Employer removeAdmin(Long id) {
+    Employer employer = employerRepository.findById(id)
+        .orElseThrow(() -> new EmployerNotFoundException(id));
+    
+    // Don't allow removing admin from owner
+    if (employer.getIsOwner()) {
+      throw new IllegalArgumentException("Cannot remove admin rights from owner");
+    }
+    
+    employer.setIsAdmin(false);
+    return employerRepository.save(employer);
+  }
 }

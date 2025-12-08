@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
@@ -18,7 +19,8 @@ import { Badge } from '../../components/ui/Badge';
 
 export default function EmployerDashboard() {
   const navigate = useNavigate();
-  const { stats, recentActivity, loading } = useDashboard();
+  const { stats, recentActivity, pendingTrainings, loading } = useDashboard();
+  const [isActivityExpanded, setIsActivityExpanded] = useState(false);
 
   // Helper for Recent Activity Icons
   const getActivityIcon = (type: string) => {
@@ -96,15 +98,20 @@ export default function EmployerDashboard() {
           value={stats.pendingTrainings} 
           icon={<GraduationCap size={24} />} 
           color="orange"
+          trend={stats.expiringTrainings > 0 ? {
+            value: stats.expiringTrainings,
+            isPositive: false, // Expiring is a concern, so negative trend
+            label: "expiring soon"
+          } : undefined}
         />
       </div>
 
-      {/* 3. Main Content Split: Quick Actions (Left) & Recent Activity (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* 3. Main Content Split: Quick Actions (Left) & Activities (Right with 2 rows) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
         
-        {/* Quick Actions Panel */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="h-full">
+        {/* Quick Actions Panel - Narrow Column */}
+        <div className="space-y-6">
+          <Card>
             <CardHeader 
               title="Quick Actions" 
               subtitle="Common tasks" 
@@ -142,6 +149,17 @@ export default function EmployerDashboard() {
                 </span>
                 <ArrowRight size={16} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
               </Button>
+
+              <Button 
+                variant="secondary" 
+                className="w-full justify-between group"
+                onClick={() => navigate('/employer/training')}
+              >
+                <span className="flex items-center gap-2">
+                  <GraduationCap size={18} /> Manage Trainings
+                </span>
+                <ArrowRight size={16} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </Button>
             </div>
             
             {/* Contextual Tip */}
@@ -154,16 +172,20 @@ export default function EmployerDashboard() {
           </Card>
         </div>
 
-        {/* Recent Activity Feed */}
-        <div className="lg:col-span-2">
-          <Card className="h-full">
+        {/* Activities Column - Two Rows */}
+        <div className="space-y-6">
+          {/* Row 1: Recent Activity */}
+          <Card>
             <CardHeader 
               title="Recent Activity" 
               subtitle="Latest system events and deadlines"
             />
             
-            <div className="space-y-1">
-              {recentActivity.map((activity) => (
+            <div 
+              className="space-y-1 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 #f1f5f9' }}
+            >
+              {(isActivityExpanded ? recentActivity : recentActivity.slice(0, 5)).map((activity) => (
                 <div 
                   key={activity.id} 
                   className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors border-b border-gray-100 last:border-0"
@@ -200,11 +222,98 @@ export default function EmployerDashboard() {
               )}
             </div>
             
-            <div className="mt-4 pt-4 border-t border-gray-100 text-center">
-              <button className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
-                View Full Activity Log
-              </button>
+            {recentActivity.length > 5 && (
+              <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                <button 
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                  onClick={() => setIsActivityExpanded(!isActivityExpanded)}
+                >
+                  {isActivityExpanded ? 'Show Less' : `Show All (${recentActivity.length})`}
+                </button>
+              </div>
+            )}
+          </Card>
+
+          {/* Row 2: Expiring Soon Trainings */}
+          <Card>
+            <CardHeader 
+              title="Expiring Soon" 
+              subtitle={`${pendingTrainings.length} training${pendingTrainings.length !== 1 ? 's' : ''} expiring within 30 days`}
+            />
+            
+            <div className="space-y-1 max-h-[400px] overflow-y-auto">
+              {pendingTrainings.length > 0 ? (
+                pendingTrainings.slice(0, 10).map((training) => {
+                  const getTrainingStatus = () => {
+                    if (training.completed) {
+                      return { variant: "success" as const, label: "Completed" };
+                    }
+                    if (training.expired) {
+                      return { variant: "error" as const, label: "Expired" };
+                    }
+                    if (!training.expiryDate) {
+                      return { variant: "neutral" as const, label: "Pending" };
+                    }
+                    const expiryDate = new Date(training.expiryDate);
+                    const now = new Date();
+                    const daysUntilExpiry = Math.ceil(
+                      (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+                    );
+                    // Show expiry info for all trainings with expiry date (not expired)
+                    if (daysUntilExpiry > 0) {
+                      const variant = daysUntilExpiry <= 30 ? "warning" as const : "neutral" as const;
+                      return { variant, label: `Expires in ${daysUntilExpiry} ${daysUntilExpiry === 1 ? 'day' : 'days'}` };
+                    }
+                    return { variant: "neutral" as const, label: "Pending" };
+                  };
+                  
+                  const status = getTrainingStatus();
+                  
+                  return (
+                    <div 
+                      key={training.id}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors border-b border-gray-100 last:border-0 cursor-pointer"
+                      onClick={() => navigate('/employer/training')}
+                    >
+                      {/* Icon */}
+                      <div className="p-2 rounded-full bg-orange-50 text-orange-600">
+                        <GraduationCap size={14} />
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                          {training.trainingName}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {training.personName || 'Unknown'}
+                        </p>
+                      </div>
+
+                      {/* Status Badge */}
+                      <Badge variant={status.variant}>{status.label}</Badge>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-12 text-gray-400">
+                  <GraduationCap size={48} className="mx-auto mb-4 opacity-50" />
+                  <p>No trainings expiring soon</p>
+                  <p className="text-xs mt-1">All trainings are up to date</p>
+                </div>
+              )}
             </div>
+            
+            {pendingTrainings.length > 10 && (
+              <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                <button 
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                  onClick={() => navigate('/employer/training')}
+                >
+                  View All {pendingTrainings.length} Trainings
+                </button>
+              </div>
+            )}
           </Card>
         </div>
 
