@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import Landing from "../pages/Landing";
 import Login from "../pages/Login";
@@ -13,6 +13,7 @@ import EmployeePayroll from "../pages/employee/Payroll";
 import EmployeeCompany from "../pages/employee/CompanyDirectory";
 
 import EmployerDashboard from "../pages/employer/Dashboard";
+import EmployerProfile from "../pages/employer/Profile";
 import EmployeeManagement from "../pages/employer/Employees";
 import EmployerManagement from "../pages/employer/Employers";
 import TrainingManagement from "../pages/employer/Training";
@@ -21,23 +22,8 @@ import CompanySettings from "../pages/employer/Company";
 
 import EmployeeLayout from "../components/layout/EmployeeLayout";
 import EmployerLayout from "../components/layout/EmployerLayout";
-
-const ProtectedRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
-  const token = localStorage.getItem("token");
-  const user = localStorage.getItem("user");
-
-  if (!token || !user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const { role } = JSON.parse(user);
-
-  if (!allowedRoles.includes(role)) {
-    return <Navigate to={role === "EMPLOYER" ? "/employer" : "/employee"} replace />;
-  }
-
-  return <Outlet />;
-};
+import { ProtectedRoute } from "../components/auth/ProtectedRoute";
+import { AdminOnlyRoute } from "../components/auth/AdminOnlyRoute";
 
 export const router = createBrowserRouter([
   {
@@ -102,12 +88,21 @@ export const router = createBrowserRouter([
             element: <EmployerDashboard />,
           },
           {
+            path: "/employer/profile",
+            element: <EmployerProfile />,
+          },
+          {
             path: "/employer/employees",
             element: <EmployeeManagement />,
           },
           {
+            element: <AdminOnlyRoute />,
+            children: [
+          {
             path: "/employer/employers",
             element: <EmployerManagement />,
+              },
+            ],
           },
           {
             path: "/employer/training",

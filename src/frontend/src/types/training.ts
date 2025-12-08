@@ -5,6 +5,7 @@ export interface Training {
   completionDate: string | null;
   expiryDate: string | null;
   required: boolean;
+  completed: boolean;
   expired: boolean;
   personId: number;
   personName: string;

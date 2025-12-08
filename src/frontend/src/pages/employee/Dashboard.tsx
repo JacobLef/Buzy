@@ -28,15 +28,54 @@ export default function EmployeeDashboard() {
   } = useEmployeeDashboard(user.businessPersonId);
 
   // Helper for Training Status Badge
-  const getTrainingStatus = (expirationDate: string) => {
+  const getTrainingStatus = (training: typeof trainings[0]) => {
+    // Priority 1: If completed (has completion_date), show completed status
+    if (training.completed) {
+      return { variant: 'success' as const, label: 'Completed', sortDate: training.completionDate || training.createdAt };
+    }
+    
+    // Priority 2: If expired, show expired status
+    if (training.expired) {
+      return { variant: 'error' as const, label: 'Expired', sortDate: training.expiryDate || training.createdAt };
+    }
+    
+    // Priority 3: Check expiry date for pending/expiring trainings
+    if (!training.expiryDate) {
+      return { variant: 'neutral' as const, label: 'Pending', sortDate: training.createdAt };
+    }
+    
     const today = new Date();
-    const expDate = new Date(expirationDate);
+    const expDate = new Date(training.expiryDate);
     const daysUntil = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
-    if (daysUntil < 0) return { variant: 'error' as const, label: 'Expired' };
-    if (daysUntil <= 30) return { variant: 'warning' as const, label: `${daysUntil} days left` };
-    return { variant: 'success' as const, label: 'Valid' };
+    if (daysUntil < 0) {
+      return { variant: 'error' as const, label: 'Expired', sortDate: training.expiryDate };
+    } else if (daysUntil <= 30) {
+      return { variant: 'warning' as const, label: `Expires in ${daysUntil} days`, sortDate: training.expiryDate };
+    } else {
+      return { variant: 'neutral' as const, label: 'Pending', sortDate: training.expiryDate };
+    }
   };
+
+  // Filter out completed trainings and sort: expired first, then expiring, then pending (by expiry date)
+  const sortedTrainings = [...trainings, ...expiredTrainings]
+    .filter((t) => !t.completed) // Filter out completed trainings
+    .sort((a, b) => {
+      const statusA = getTrainingStatus(a);
+      const statusB = getTrainingStatus(b);
+      
+      // For non-completed: expired first, then expiring, then pending
+      if (a.expired && !b.expired) return -1;
+      if (!a.expired && b.expired) return 1;
+      
+      // Sort by expiry date (soonest first for expiring, oldest first for expired)
+      const dateA = new Date(statusA.sortDate || '').getTime();
+      const dateB = new Date(statusB.sortDate || '').getTime();
+      if (a.expired || b.expired) {
+        return dateA - dateB; // Oldest expired first
+      }
+      return dateA - dateB; // Soonest expiring first
+    });
 
   if (loading) {
     return (
@@ -179,14 +218,19 @@ export default function EmployeeDashboard() {
             />
             
             <div className="space-y-1">
-              {[...expiredTrainings, ...trainings].slice(0, 5).map((training) => {
-                const status = getTrainingStatus(training.expiryDate);
+              {sortedTrainings.slice(0, 5).map((training) => {
+                const status = getTrainingStatus(training);
                 return (
                   <div 
                     key={training.id} 
                     className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors border-b border-gray-100 last:border-0"
                   >
-                    <div className={`p-3 rounded-full ${status.variant === 'error' ? 'bg-red-50 text-red-600' : status.variant === 'warning' ? 'bg-orange-50 text-orange-600' : 'bg-green-50 text-green-600'}`}>
+                    <div className={`p-3 rounded-full ${
+                      status.variant === 'error' ? 'bg-red-50 text-red-600' : 
+                      status.variant === 'warning' ? 'bg-orange-50 text-orange-600' : 
+                      status.variant === 'success' ? 'bg-green-50 text-green-600' :
+                      'bg-gray-50 text-gray-600'
+                    }`}>
                       <GraduationCap size={16} />
                     </div>
 
@@ -195,7 +239,12 @@ export default function EmployeeDashboard() {
                         {training.trainingName}
                       </p>
                       <p className="text-xs text-gray-500">
-                        Expires: {new Date(training.expiryDate).toLocaleDateString()}
+                        {training.completed 
+                          ? `Completed: ${training.completionDate ? new Date(training.completionDate).toLocaleDateString() : 'N/A'}`
+                          : training.expiryDate 
+                            ? `Expires: ${new Date(training.expiryDate).toLocaleDateString()}`
+                            : 'No expiry date'
+                        }
                       </p>
                     </div>
 

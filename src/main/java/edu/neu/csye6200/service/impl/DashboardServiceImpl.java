@@ -1,6 +1,7 @@
 package edu.neu.csye6200.service.impl;
 
 import edu.neu.csye6200.dto.response.ActivityDTO;
+import edu.neu.csye6200.model.payroll.Paycheck;
 import edu.neu.csye6200.repository.PaycheckRepository;
 import edu.neu.csye6200.repository.EmployeeRepository;
 import edu.neu.csye6200.repository.TrainingRepository;
@@ -12,6 +13,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DashboardServiceImpl {
@@ -36,36 +38,48 @@ public class DashboardServiceImpl {
     public List<ActivityDTO> getRecentActivity(Long businessId) {
         List<ActivityDTO> activities = new ArrayList<>();
         
-        // 1. Get recent paychecks (last 7 days)
+        // 1. Get recent paychecks (last 7 days) - query by payDate and group by date
         LocalDate weekAgo = LocalDate.now().minusDays(7);
         var recentPaychecks = paycheckRepository.findByBusinessIdAndPayDateAfter(businessId, weekAgo);
         
-        for (var paycheck : recentPaychecks) {
-            LocalDateTime payDateTime = paycheck.getPayDate().atStartOfDay();
-            // Use createdAt if available, otherwise use payDate
-            if (paycheck.getCreatedAt() != null) {
-                payDateTime = paycheck.getCreatedAt();
-            }
+        // Group paychecks by payDate
+        var paychecksByDate = recentPaychecks.stream()
+            .collect(Collectors.groupingBy(Paycheck::getPayDate));
+        
+        for (var entry : paychecksByDate.entrySet()) {
+            LocalDate payDate = entry.getKey();
+            List<Paycheck> paychecksForDate = entry.getValue();
+            LocalDateTime payDateTime = payDate.atStartOfDay();
+            
+            // Calculate total net pay for this date
+            double totalNetPay = paychecksForDate.stream()
+                .mapToDouble(Paycheck::getNetPay)
+                .sum();
+            
+            int count = paychecksForDate.size();
+            String title = count == 1 
+                ? "Payroll generated for " + (paychecksForDate.get(0).getEmployee() != null 
+                    ? paychecksForDate.get(0).getEmployee().getName() 
+                    : "Employee")
+                : String.format("Payroll generated for %d employees (Total: $%.2f)", count, totalNetPay);
             
             activities.add(new ActivityDTO(
-                paycheck.getId(),
+                payDate.toEpochDay(), // Use date as ID for grouped entries
                 "PAYROLL",
-                "Payroll generated for " + (paycheck.getEmployee() != null ? paycheck.getEmployee().getName() : "Employee"),
+                title,
                 formatRelativeTime(payDateTime),
                 payDateTime,
                 "completed"
             ));
         }
         
-        // 2. Get recently hired employees (last 30 days) for this business
+        // 2. Get recently hired employees (last 30 days) for this business - query by hireDate
         LocalDate monthAgo = LocalDate.now().minusDays(30);
         var recentHires = employeeRepository.findByCompanyIdAndHireDateAfter(businessId, monthAgo);
         
         for (var employee : recentHires) {
+            // Use hireDate for timestamp (not createdAt)
             LocalDateTime hireDateTime = employee.getHireDate().atStartOfDay();
-            if (employee.getCreatedAt() != null) {
-                hireDateTime = employee.getCreatedAt();
-            }
             
             activities.add(new ActivityDTO(
                 employee.getId(),

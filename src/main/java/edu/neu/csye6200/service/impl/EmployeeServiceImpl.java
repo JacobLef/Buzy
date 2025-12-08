@@ -5,9 +5,10 @@ import edu.neu.csye6200.dto.request.UpdateEmployeeRequest;
 import edu.neu.csye6200.exception.EmployeeNotFoundException;
 import edu.neu.csye6200.model.domain.Company;
 import edu.neu.csye6200.model.domain.Employee;
-import edu.neu.csye6200.model.domain.Employer;
+import edu.neu.csye6200.model.domain.BusinessPerson;
 import edu.neu.csye6200.model.domain.User;
 import edu.neu.csye6200.repository.BusinessRepository;
+import edu.neu.csye6200.repository.BusinessPersonRepository;
 import edu.neu.csye6200.repository.EmployeeRepository;
 import edu.neu.csye6200.repository.EmployerRepository;
 import edu.neu.csye6200.repository.UserRepository;
@@ -28,6 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   private final EmployeeRepository employeeRepository;
   private final EmployerRepository employerRepository;
+  private final BusinessPersonRepository businessPersonRepository;
   private final BusinessRepository businessRepository;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
@@ -35,12 +37,14 @@ public class EmployeeServiceImpl implements EmployeeService {
   public EmployeeServiceImpl(
       EmployeeRepository employeeRepository,
       EmployerRepository employerRepository,
+      BusinessPersonRepository businessPersonRepository,
       BusinessRepository businessRepository,
       UserRepository userRepository,
       PasswordEncoder passwordEncoder
   ) {
     this.employeeRepository = employeeRepository;
     this.employerRepository = employerRepository;
+    this.businessPersonRepository = businessPersonRepository;
     this.businessRepository = businessRepository;
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
@@ -67,7 +71,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     if (request.managerId() != null) {
-      Employer manager = employerRepository.findById(request.managerId())
+      BusinessPerson manager = businessPersonRepository.findById(request.managerId())
           .orElseThrow(() -> new RuntimeException("Manager not found with id: " + request.managerId()));
       employee.setManager(manager);
     }
@@ -128,7 +132,7 @@ public class EmployeeServiceImpl implements EmployeeService {
       employee.setHireDate(request.hireDate());
     }
     if (request.managerId() != null) {
-      Employer manager = employerRepository.findById(request.managerId())
+      BusinessPerson manager = businessPersonRepository.findById(request.managerId())
           .orElseThrow(() -> new RuntimeException("Manager not found with id: " + request.managerId()));
       employee.setManager(manager);
     }
@@ -176,7 +180,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     Employee employee = employeeRepository.findById(employeeId)
         .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
 
-    Employer manager = employerRepository.findById(managerId)
+    BusinessPerson manager = businessPersonRepository.findById(managerId)
         .orElseThrow(() -> new RuntimeException("Manager not found with id: " + managerId));
 
     employee.setManager(manager);

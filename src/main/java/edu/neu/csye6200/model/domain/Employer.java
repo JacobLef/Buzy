@@ -19,6 +19,12 @@ public class Employer extends BusinessPerson {
   @Column(nullable = false)
   private String title;
 
+  @Column(name = "is_admin")
+  private Boolean isAdmin = false;
+
+  @Column(name = "is_owner")
+  private Boolean isOwner = false;
+
   @OneToMany(mappedBy = "manager", cascade = CascadeType.ALL)
   private Set<Employee> managedEmployees;
 
@@ -85,6 +91,22 @@ public class Employer extends BusinessPerson {
 
   public boolean managesEmployee(Employee employee) {
     return managedEmployees != null && managedEmployees.contains(employee);
+  }
+
+  public Boolean getIsAdmin() {
+    return isAdmin != null ? isAdmin : false;
+  }
+
+  public void setIsAdmin(Boolean isAdmin) {
+    this.isAdmin = isAdmin != null ? isAdmin : false;
+  }
+
+  public Boolean getIsOwner() {
+    return isOwner != null ? isOwner : false;
+  }
+
+  public void setIsOwner(Boolean isOwner) {
+    this.isOwner = isOwner != null ? isOwner : false;
   }
 
   @Override

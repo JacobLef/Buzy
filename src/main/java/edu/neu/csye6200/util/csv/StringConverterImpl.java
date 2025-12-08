@@ -18,13 +18,13 @@ public class StringConverterImpl implements StringConverter {
   @Override
   public LocalDate toLocalDate(String dateStr) {
     if (dateStr == null || dateStr.trim().isEmpty()) {
-      return LocalDate.now();
+      return null; // Return null for empty dates, don't auto-set to current date
     }
     try {
       return LocalDate.parse(dateStr.trim(), DATE_FORMATTER);
     } catch (DateTimeParseException e) {
-      System.err.println("Failed to parse date: " + dateStr + ", using current date");
-      return LocalDate.now();
+      System.err.println("Failed to parse date: " + dateStr + ", returning null");
+      return null; // Return null on parse error instead of current date
     }
   }
 

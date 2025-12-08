@@ -7,25 +7,26 @@ import {
   Clock,
   Edit,
   Trash2,
-  Users,
+
   Search,
 } from "lucide-react";
 import { Card, CardHeader } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
-import { getAllTrainings, getTrainingsByPerson, addTraining, updateTraining, deleteTraining } from "../../api/training";
+import { getAllTrainings, addTraining, updateTraining, deleteTraining } from "../../api/training";
 import { getAllEmployees } from "../../api/employees";
+import { getEmployersByBusiness, getEmployer } from "../../api/employers";
 import type { Training } from "../../types/training";
 import type { Employee } from "../../types/employee";
+import type { Employer } from "../../types/employer";
 import type { CreateTrainingRequest, UpdateTrainingRequest } from "../../types/training";
 
-type FilterType = "all" | "expiring" | "expired" | "department";
+type FilterType = "all" | "completed" | "expiring" | "expired" | "pending" | "department";
 
 export default function TrainingManagement() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [allTrainings, setAllTrainings] = useState<Training[]>([]);
   const [filteredTrainings, setFilteredTrainings] = useState<Training[]>([]);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
@@ -40,11 +41,44 @@ export default function TrainingManagement() {
         try {
         setIsLoading(true);
 
-        const trainingsResponse = await getAllTrainings();
-        setAllTrainings(trainingsResponse.data);
+        // Get current user's company ID
+        const userStr = localStorage.getItem("user");
+        let companyId: number | null = null;
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            if (user.role === 'EMPLOYER' && user.businessPersonId) {
+              // Get employer to find companyId
+              const employerResponse = await getEmployer(user.businessPersonId);
+              companyId = employerResponse.data.companyId;
+            }
+          } catch (err) {
+            console.error("Failed to get company ID:", err);
+          }
+        }
 
-        const employeesResponse = await getAllEmployees();
-        setEmployees(employeesResponse.data);
+        const [trainingsResponse, employeesResponse, employersResponse] = await Promise.all([
+          getAllTrainings(),
+          getAllEmployees(),
+          companyId ? getEmployersByBusiness(companyId) : Promise.resolve({ data: [] })
+        ]);
+
+        // Filter trainings for this company only
+        const allTrainingsData = trainingsResponse.data;
+        const employeesData = employeesResponse.data;
+        const employersData = employersResponse.data;
+        
+        // Get all person IDs for this company
+        const companyEmployeeIds = new Set(employeesData.filter((e: Employee) => e.companyId === companyId).map((e: Employee) => e.id));
+        const companyEmployerIds = new Set(employersData.map((e: Employer) => e.id));
+        
+        // Filter trainings by company
+        const companyTrainings = allTrainingsData.filter((t: Training) => {
+          return t.personId && (companyEmployeeIds.has(Number(t.personId)) || companyEmployerIds.has(Number(t.personId)));
+        });
+
+        setAllTrainings(companyTrainings);
+        setEmployees(employeesData.filter((e: Employee) => e.companyId === companyId));
         } catch (err) {
             console.error("Failed to load data:", err);
             setError("Failed to load training data. Please try again.");
@@ -72,9 +106,18 @@ export default function TrainingManagement() {
 
     // Apply status filter
     switch (activeFilter) {
+      case "completed":
+        // Completed trainings (has completion_date)
+        filtered = filtered.filter((t) => t.completed);
+        break;
+      case "expired":
+        // Expired trainings (only for non-completed trainings)
+        filtered = filtered.filter((t) => !t.completed && t.expired);
+        break;
       case "expiring":
+        // Pending trainings that are expiring soon (not completed, not expired)
         filtered = filtered.filter((t) => {
-          if (!t.expiryDate || t.expired) return false;
+          if (t.completed || t.expired || !t.expiryDate) return false;
           const expiryDate = new Date(t.expiryDate);
           const daysUntilExpiry = Math.ceil(
             (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
@@ -82,10 +125,22 @@ export default function TrainingManagement() {
           return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
         });
         break;
-      case "expired":
-        filtered = filtered.filter((t) => t.expired);
+      case "pending":
+        // Pending trainings: not completed, not expired, and not expiring soon
+        filtered = filtered.filter((t) => {
+          if (t.completed || t.expired) return false;
+          // If no expiry date, it's pending
+          if (!t.expiryDate) return true;
+          // If expiry date is more than 30 days away, it's pending
+          const expiryDate = new Date(t.expiryDate);
+          const daysUntilExpiry = Math.ceil(
+            (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          return daysUntilExpiry > 30;
+        });
         break;
       default:
+        // "all" - show all trainings
         break;
     }
 
@@ -152,12 +207,22 @@ export default function TrainingManagement() {
 
   // Get training status
   const getTrainingStatus = (training: Training) => {
+    // Priority 1: If completed (has completion_date), show completed status
+    if (training.completed) {
+      return { variant: "success" as const, label: "Completed", icon: CheckCircle };
+    }
+    
+    // Priority 2: If expired, show expired status
     if (training.expired) {
       return { variant: "error" as const, label: "Expired", icon: AlertCircle };
     }
+    
+    // Priority 3: Check expiry date for pending trainings
     if (!training.expiryDate) {
-      return { variant: "neutral" as const, label: "No Expiry", icon: Clock };
+      // No expiry date -> Pending
+      return { variant: "neutral" as const, label: "Pending", icon: Clock };
     }
+    
     const expiryDate = new Date(training.expiryDate);
     const now = new Date();
     const daysUntilExpiry = Math.ceil(
@@ -165,15 +230,18 @@ export default function TrainingManagement() {
     );
 
     if (daysUntilExpiry < 0) {
+      // Already expired (shouldn't happen if expired check passed, but just in case)
       return { variant: "error" as const, label: "Expired", icon: AlertCircle };
     } else if (daysUntilExpiry <= 30) {
+      // Expiring soon (within 30 days)
       return {
         variant: "warning" as const,
         label: `Expires in ${daysUntilExpiry} days`,
         icon: Clock,
       };
     } else {
-      return { variant: "success" as const, label: "Active", icon: CheckCircle };
+      // Not expiring soon -> Pending
+      return { variant: "neutral" as const, label: "Pending", icon: Clock };
     }
   };
 
@@ -188,16 +256,32 @@ export default function TrainingManagement() {
     });
   };
 
-  // Get expiring trainings count
+  // Get expiring trainings count (only pending trainings, not completed)
   const getExpiringCount = () => {
     const now = new Date();
     return allTrainings.filter((t) => {
-      if (!t.expiryDate || t.expired) return false;
+      if (t.completed || !t.expiryDate || t.expired) return false;
       const expiryDate = new Date(t.expiryDate);
       const daysUntilExpiry = Math.ceil(
         (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
       );
       return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+    }).length;
+  };
+
+  // Get pending trainings count (not completed, not expired, not expiring soon)
+  const getPendingCount = () => {
+    const now = new Date();
+    return allTrainings.filter((t) => {
+      if (t.completed || t.expired) return false;
+      // If no expiry date, it's pending
+      if (!t.expiryDate) return true;
+      // If expiry date is more than 30 days away, it's pending
+      const expiryDate = new Date(t.expiryDate);
+      const daysUntilExpiry = Math.ceil(
+        (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      return daysUntilExpiry > 30;
     }).length;
   };
 
@@ -282,58 +366,6 @@ export default function TrainingManagement() {
         </Card>
       </div>
 
-      {/* Filter and Search */}
-      <Card>
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setActiveFilter("all")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeFilter === "all"
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              All ({allTrainings.length})
-            </button>
-            <button
-              onClick={() => setActiveFilter("expiring")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeFilter === "expiring"
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              Expiring Soon ({getExpiringCount()})
-            </button>
-            <button
-              onClick={() => setActiveFilter("expired")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeFilter === "expired"
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-50"
-              }`}
-            >
-              Expired ({allTrainings.filter((t) => t.expired).length})
-            </button>
-          </div>
-
-          <div className="relative w-full md:w-auto">
-            <Search
-              size={20}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Search trainings..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-        </div>
-      </Card>
-
       {/* Expiring Trainings Alert */}
       {getExpiringCount() > 0 && activeFilter !== "expiring" && (
         <Card className="bg-yellow-50 border-yellow-200">
@@ -359,6 +391,9 @@ export default function TrainingManagement() {
         </Card>
       )}
 
+      
+      
+
       {/* Training List */}
       <Card padding="none">
         <div className="px-6 py-4 border-b border-gray-100">
@@ -367,6 +402,77 @@ export default function TrainingManagement() {
             subtitle={`Showing ${filteredTrainings.length} training${filteredTrainings.length !== 1 ? "s" : ""}`}
             icon={<GraduationCap size={20} />}
           />
+        </div>
+
+        {/* Filter and Search */}
+        <div className="px-6 py-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveFilter("all")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeFilter === "all"
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              All ({allTrainings.length})
+            </button>
+            <button
+              onClick={() => setActiveFilter("pending")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeFilter === "pending"
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              Pending ({getPendingCount()})
+            </button>
+            <button
+              onClick={() => setActiveFilter("expiring")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeFilter === "expiring"
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              Expiring Soon ({getExpiringCount()})
+            </button>
+            <button
+              onClick={() => setActiveFilter("expired")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeFilter === "expired"
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              Expired ({allTrainings.filter((t) => !t.completed && t.expired).length})
+            </button>
+            <button
+              onClick={() => setActiveFilter("completed")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeFilter === "completed"
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              Completed ({allTrainings.filter((t) => t.completed).length})
+            </button>
+            
+          </div>
+
+          <div className="relative w-full md:w-auto">
+            <Search
+              size={20}
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              placeholder="Search trainings..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
         </div>
 
         {filteredTrainings.length === 0 ? (
@@ -530,7 +636,7 @@ function AddTrainingModal({
         },
         formData.personId
       );
-    } catch (err) {
+    } catch {
       // Error is handled in parent
     }
   };
@@ -685,7 +791,7 @@ function EditTrainingModal({
     e.preventDefault();
     try {
       await onSubmit(training.id, formData);
-    } catch (err) {
+    } catch {
       // Error is handled in parent
     }
   };

@@ -694,6 +694,8 @@ classDiagram
         -EmployeeRepository employeeRepository
         -EmployerRepository employerRepository
         -BusinessRepository businessRepository
+        -UserRepository userRepository
+        -PasswordEncoder passwordEncoder
         +createEmployee(CreateEmployeeRequest) Employee
         +getEmployee(Long) Optional~Employee~
         +getAllEmployees() List~Employee~
@@ -716,6 +718,8 @@ classDiagram
         <<Service>>
         -EmployerRepository employerRepository
         -BusinessRepository businessRepository
+        -UserRepository userRepository
+        -PasswordEncoder passwordEncoder
         +createEmployer(CreateEmployerRequest) Employer
         +getEmployer(Long) Optional~Employer~
         +getAllEmployers() List~Employer~
@@ -849,6 +853,21 @@ classDiagram
         +getAllBusinesses() ResponseEntity~List~CompanyDTO~~
     }
 
+    class DashboardController {
+        <<RestController>>
+        -DashboardServiceImpl dashboardService
+        +getRecentActivity(Long) ResponseEntity~List~ActivityDTO~~
+    }
+
+    class DashboardServiceImpl {
+        <<Service>>
+        -EmployeeService employeeService
+        -EmployerService employerService
+        -PayrollService payrollService
+        -TrainingService trainingService
+        +getRecentActivity(Long) List~ActivityDTO~
+    }
+
 %% Repositories
     class EmployeeRepository {
         <<Repository>>
@@ -918,6 +937,19 @@ classDiagram
         -JwtTokenProvider jwtTokenProvider
         #shouldNotFilter(HttpServletRequest) boolean
         #doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain)
+    }
+
+    class SecurityConfig {
+        <<Configuration>>
+        -JwtAuthenticationFilter jwtAuthenticationFilter
+        +securityFilterChain(HttpSecurity) SecurityFilterChain
+        +passwordEncoder() PasswordEncoder
+    }
+
+    class PasswordEncoder {
+        <<Bean>>
+        +encode(CharSequence) String
+        +matches(CharSequence, String) boolean
     }
 
 %% Exceptions
@@ -1055,12 +1087,19 @@ classDiagram
     TrainingController --> TrainingService
     BusinessController --> BusinessService
     BusinessController --> DTOFactory
+    DashboardController --> DashboardServiceImpl
+    DashboardServiceImpl --> EmployeeService
+    DashboardServiceImpl --> EmployerService
+    DashboardServiceImpl --> PayrollService
+    DashboardServiceImpl --> TrainingService
 
 %% Service Implementations use Repositories
     AuthServiceImpl --> UserRepository
     AuthServiceImpl --> JwtTokenProvider
+    AuthServiceImpl --> PasswordEncoder
     SignupServiceImpl --> UserRepository
     SignupServiceImpl --> JwtTokenProvider
+    SignupServiceImpl --> PasswordEncoder
     SignupServiceImpl --> EmployeeService
     SignupServiceImpl --> EmployerService
     PayrollServiceImpl --> PaycheckRepository
@@ -1071,8 +1110,12 @@ classDiagram
     EmployeeServiceImpl --> EmployeeRepository
     EmployeeServiceImpl --> EmployerRepository
     EmployeeServiceImpl --> BusinessRepository
+    EmployeeServiceImpl --> UserRepository
+    EmployeeServiceImpl --> PasswordEncoder
     EmployerServiceImpl --> EmployerRepository
     EmployerServiceImpl --> BusinessRepository
+    EmployerServiceImpl --> UserRepository
+    EmployerServiceImpl --> PasswordEncoder
     TrainingServiceImpl --> TrainingRepository
     TrainingServiceImpl --> BusinessPersonRepository
     BusinessServiceImpl --> BusinessRepository
@@ -1082,6 +1125,8 @@ classDiagram
 
 %% Security
     JwtAuthenticationFilter --> JwtTokenProvider
+    SecurityConfig --> PasswordEncoder
+    SecurityConfig --> JwtAuthenticationFilter
 
 %% Utility Classes
     class CSVParser {

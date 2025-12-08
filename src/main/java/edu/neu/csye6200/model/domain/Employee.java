@@ -15,7 +15,7 @@ public class Employee extends BusinessPerson {
 
   @ManyToOne
   @JoinColumn(name = "manager_id")
-  private Employer manager;
+  private BusinessPerson manager;
 
   public Employee() {
     super();
@@ -39,11 +39,11 @@ public class Employee extends BusinessPerson {
     this.position = position;
   }
 
-  public Employer getManager() {
+  public BusinessPerson getManager() {
     return manager;
   }
 
-  public void setManager(Employer manager) {
+  public void setManager(BusinessPerson manager) {
     this.manager = manager;
   }
 

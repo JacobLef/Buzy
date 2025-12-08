@@ -4,7 +4,9 @@ import { getEmployer } from '../api/employers';
 import { getEmployeesByBusiness } from '../api/employees';
 import { getEmployersByBusiness } from '../api/employers';
 import { getPayrollSummary } from '../api/payroll';
+import { getAllTrainings } from '../api/training';
 import type { Activity } from '../types/dashboard';
+import type { Training } from '../types/training';
 
 interface DashboardStats {
   totalEmployees: number;
@@ -50,6 +52,13 @@ export const useDashboard = () => {
           try {
             const activityResponse = await getRecentActivity(businessId);
             activityData = activityResponse.data;
+            // Sort by timestamp (most recent first) - descending order
+            // This ensures the most relevant/recent activities appear at the top
+            activityData.sort((a, b) => {
+              const dateA = new Date(a.timestamp).getTime();
+              const dateB = new Date(b.timestamp).getTime();
+              return dateA - dateB; // Descending order (newest first)
+            });
             setRecentActivity(activityData);
           } catch (error) {
             console.error('Failed to fetch activity:', error);
@@ -60,23 +69,42 @@ export const useDashboard = () => {
           // Fetch dashboard stats
           try {
             // Get current month start and end dates
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
+            const currentDate = new Date();
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
             const startDate = new Date(year, month, 1).toISOString().split('T')[0];
             const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
 
             // Fetch all stats in parallel
-            const [employeesResponse, employersResponse, payrollSummaryResponse] = await Promise.all([
+            const [employeesResponse, employersResponse, payrollSummaryResponse, trainingsResponse] = await Promise.all([
               getEmployeesByBusiness(businessId),
               getEmployersByBusiness(businessId),
               getPayrollSummary(businessId, startDate, endDate).catch(() => null), // Allow to fail gracefully
+              getAllTrainings().catch(() => ({ data: [] })), // Allow to fail gracefully
             ]);
 
-            // Count pending trainings from recent activity (trainings expiring soon)
-            const pendingTrainings = activityData.filter(
-              (activity: Activity) => activity.type === 'TRAINING' && activity.status === 'warning'
-            ).length;
+            // Calculate pending trainings: not completed, not expired, not expiring soon
+            // Filter trainings for this business only - match personId with employee/employer IDs
+            const businessEmployeeIds = new Set(employeesResponse.data.map((e: { id: number }) => e.id));
+            const businessEmployerIds = new Set(employersResponse.data.map((e: { id: number }) => e.id));
+            const businessTrainings = trainingsResponse.data.filter((t: Training) => {
+              // Match personId (number) with employee/employer IDs
+              return t.personId && (businessEmployeeIds.has(Number(t.personId)) || businessEmployerIds.has(Number(t.personId)));
+            });
+
+            // Use the exact same logic as Training.tsx getPendingCount()
+            const now = new Date();
+            const pendingTrainings = businessTrainings.filter((t: Training) => {
+              if (t.completed || t.expired) return false;
+              // If no expiry date, it's pending
+              if (!t.expiryDate) return true;
+              // If expiry date is more than 30 days away, it's pending
+              const expiryDate = new Date(t.expiryDate);
+              const daysUntilExpiry = Math.ceil(
+                (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+              );
+              return daysUntilExpiry > 30;
+            }).length;
 
             setStats({
               totalEmployees: employeesResponse.data.length,

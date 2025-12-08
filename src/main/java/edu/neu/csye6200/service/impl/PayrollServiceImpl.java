@@ -9,6 +9,7 @@ import edu.neu.csye6200.exception.PayrollCalculationException;
 import edu.neu.csye6200.exception.ResourceNotFoundException;
 import edu.neu.csye6200.model.domain.Company;
 import edu.neu.csye6200.model.domain.Employee;
+import edu.neu.csye6200.model.domain.Employer;
 import edu.neu.csye6200.model.payroll.Paycheck;
 import edu.neu.csye6200.model.payroll.PaycheckStatus;
 import edu.neu.csye6200.repository.PaycheckRepository;
@@ -429,8 +430,14 @@ public class PayrollServiceImpl implements PayrollService {
         // Apply department filter if specified
         if (request.department() != null && !request.department().isBlank()) {
             allEmployees = allEmployees.stream()
-                .filter(emp -> request.department().equalsIgnoreCase(
-                    emp.getManager() != null ? emp.getManager().getDepartment() : ""))
+                .filter(emp -> {
+                    if (emp.getManager() == null) return false;
+                    // Manager can be Employee or Employer, only Employer has department
+                    if (emp.getManager() instanceof Employer) {
+                        return request.department().equalsIgnoreCase(((Employer) emp.getManager()).getDepartment());
+                    }
+                    return false;
+                })
                 .collect(Collectors.toList());
         }
         

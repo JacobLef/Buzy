@@ -12,6 +12,8 @@ export interface Employer {
   department: string;
   title: string;
   directReportsCount: number;
+  isAdmin?: boolean;
+  isOwner?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,6 +32,7 @@ export interface CreateEmployerRequest {
 export interface UpdateEmployerRequest {
   name: string;
   email: string;
+  password?: string | null;
   salary: number;
   department: string;
   title: string;

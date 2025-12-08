@@ -2,11 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Briefcase,
-  Mail,
   Users,
   Search,
   X,
-  Plus,
   Edit3,
   Network,
   CheckSquare,
@@ -17,10 +15,12 @@ import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
-import { updateEmployer } from '../../api/employers';
-import { getEmployer } from '../../api/employers';
-import type { Employer, UpdateEmployerRequest } from '../../types/employer';
+import { EmployerForm } from '../../components/employer/EmployerForm';
+import { updateEmployer, getEmployer } from '../../api/employers';
+import type { Employer, UpdateEmployerRequest, CreateEmployerRequest } from '../../types/employer';
 import { PersonStatus } from '../../types/person_status';
+import { Shield, Crown, UserPlus, UserMinus } from 'lucide-react';
+import { promoteToAdmin, removeAdmin } from '../../api/employers';
 
 export default function EmployerManagement() {
   const navigate = useNavigate();
@@ -34,7 +34,6 @@ export default function EmployerManagement() {
     refetch,
     toggleSelect,
     toggleSelectAll,
-    clearSelection,
     updateFilter,
     clearFilters,
   } = useEmployerList();
@@ -43,8 +42,14 @@ export default function EmployerManagement() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [companyId, setCompanyId] = useState<number | null>(null);
+  const [currentUserEmployer, setCurrentUserEmployer] = useState<Employer | null>(null);
+  
+  // Calculate permissions
+  const isOwner = currentUserEmployer?.isOwner ?? false;
+  const isAdmin = currentUserEmployer?.isAdmin ?? false;
+  const canEditFullProfile = isAdmin || isOwner;
 
-  // Load company ID
+  // Load company ID and current user employer info
   useEffect(() => {
     const loadCompanyId = async () => {
       try {
@@ -54,6 +59,7 @@ export default function EmployerManagement() {
           if (user.role === 'EMPLOYER' && user.businessPersonId) {
             const response = await getEmployer(user.businessPersonId);
             setCompanyId(response.data.companyId);
+            setCurrentUserEmployer(response.data);
           }
         }
       } catch (error) {
@@ -94,26 +100,21 @@ export default function EmployerManagement() {
       await refetch();
       setIsEditModalOpen(false);
       setEditingEmployer(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       console.error('Failed to update employer:', error);
-      alert(error.response?.data?.message || 'Failed to update employer');
+      alert(err.response?.data?.message || 'Failed to update employer');
     } finally {
       setSaving(false);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -133,7 +134,11 @@ export default function EmployerManagement() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Employer Management</h1>
-          <p className="text-gray-500 mt-2">Manage leadership team and department heads</p>
+          <p className="text-gray-500 mt-2">
+            Manage leadership team, department heads, and admin roles
+            {isOwner && <span className="ml-2 text-yellow-600">(Owner)</span>}
+            {isAdmin && !isOwner && <span className="ml-2 text-blue-600">(Admin)</span>}
+          </p>
         </div>
       </div>
 
@@ -275,6 +280,11 @@ export default function EmployerManagement() {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Status
                   </th>
+                  {isOwner && (
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Admin Role
+                    </th>
+                  )}
                   <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Actions
                   </th>
@@ -300,8 +310,20 @@ export default function EmployerManagement() {
                         <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                           <Briefcase size={20} className="text-purple-600" />
                         </div>
-                        <div>
+                        <div className="flex items-center gap-2">
                           <div className="font-medium text-slate-900">{employer.name}</div>
+                          {employer.isOwner && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">
+                              <Crown size={12} />
+                              OWNER
+                            </span>
+                          )}
+                          {employer.isAdmin && !employer.isOwner && (
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                              <Shield size={12} className="inline mr-1" />
+                              ADMIN
+                            </span>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -321,19 +343,76 @@ export default function EmployerManagement() {
                       {formatCurrency(employer.salary)}
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(employer.status)}</td>
+                    {isOwner && (
+                      <td className="px-6 py-4">
+                        {employer.isOwner ? (
+                          <span className="text-xs text-gray-500 italic">Cannot change</span>
+                        ) : employer.isAdmin ? (
+                          <Button
+                            variant="secondary"
+                            onClick={async () => {
+                              if (confirm(`Remove admin rights from ${employer.name}?`)) {
+                                try {
+                                  await removeAdmin(employer.id);
+                                  await refetch();
+                                  // Refresh current user if editing self
+                                  const user = localStorage.getItem('user');
+                                  if (user) {
+                                    const userObj = JSON.parse(user);
+                                    if (userObj.businessPersonId === employer.id) {
+                                      const response = await getEmployer(userObj.businessPersonId);
+                                      setCurrentUserEmployer(response.data);
+                                    }
+                                  }
+                                } catch (error) {
+                                  console.error('Failed to remove admin:', error);
+                                  alert('Failed to remove admin rights');
+                                }
+                              }
+                            }}
+                            className="text-red-600 hover:text-red-700 text-xs"
+                          >
+                            <UserMinus size={14} className="mr-1" />
+                            Remove Admin
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="primary"
+                            onClick={async () => {
+                              if (confirm(`Grant admin rights to ${employer.name}?`)) {
+                                try {
+                                  await promoteToAdmin(employer.id);
+                                  await refetch();
+                                } catch (error) {
+                                  console.error('Failed to promote admin:', error);
+                                  alert('Failed to promote to admin');
+                                }
+                              }
+                            }}
+                            className="text-xs"
+                          >
+                            <UserPlus size={14} className="mr-1" />
+                            Promote to Admin
+                          </Button>
+                        )}
+                      </td>
+                    )}
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEdit(employer);
-                          }}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-600 hover:text-blue-700"
-                          title="Edit"
-                        >
-                          <Edit3 size={18} />
-                        </button>
+                        {/* Only show edit button if user has permission to edit this employer */}
+                        {canEditFullProfile && !(isAdmin && !isOwner && employer.isOwner) && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(employer);
+                            }}
+                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-600 hover:text-blue-700"
+                            title="Edit"
+                          >
+                            <Edit3 size={18} />
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {
@@ -355,7 +434,7 @@ export default function EmployerManagement() {
         )}
       </Card>
 
-      {/* Edit Modal - TODO: Create EmployerForm component */}
+      {/* Edit Modal */}
       {isEditModalOpen && editingEmployer && (
         <Modal
           isOpen={isEditModalOpen}
@@ -366,9 +445,22 @@ export default function EmployerManagement() {
           title="Edit Employer"
           maxWidth="2xl"
         >
-          <div className="text-center py-8 text-gray-500">
-            Employer editing form coming soon. Please use the employer profile page for now.
-          </div>
+          <EmployerForm
+            employer={editingEmployer}
+            mode="edit"
+            companyId={companyId || undefined}
+            canEditFullProfile={
+              canEditFullProfile && 
+              editingEmployer.id !== currentUserEmployer?.id &&
+              !(isAdmin && !isOwner && editingEmployer.isOwner)
+            }
+            onSubmit={handleSaveEdit as (data: UpdateEmployerRequest | CreateEmployerRequest) => Promise<void>}
+            onCancel={() => {
+              setIsEditModalOpen(false);
+              setEditingEmployer(null);
+            }}
+            saving={saving}
+          />
         </Modal>
       )}
     </div>

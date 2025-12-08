@@ -29,3 +29,9 @@ export const getEmployersByDepartment = (department: string) =>
 
 export const getDirectReports = (id: number) => 
   api.get<Employee[]>(`/api/employers/${id}/direct-reports`);
+
+export const promoteToAdmin = (id: number) => 
+  api.post<Employer>(`/api/employers/${id}/promote-admin`);
+
+export const removeAdmin = (id: number) => 
+  api.post<Employer>(`/api/employers/${id}/remove-admin`);

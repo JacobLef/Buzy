@@ -60,9 +60,28 @@ export const useEmployeeDashboard = (employeeId: number) => {
         setExpiredTrainings(expiredRes.data)
         setRecentPaychecks(paycheckRes.data)
 
+        // Calculate pending trainings: not completed, not expired, not expiring soon
+        const now = new Date();
+        const pendingTrainings = trainingRes.data.filter((t: Training) => {
+          if (t.completed || t.expired) return false;
+          // If no expiry date, it's pending
+          if (!t.expiryDate) return true;
+          // If expiry date is more than 30 days away, it's pending
+          const expiryDate = new Date(t.expiryDate);
+          const daysUntilExpiry = Math.ceil(
+            (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          return daysUntilExpiry > 30;
+        }).length;
+
+        // Calculate expired trainings: only non-completed expired trainings
+        const expiredTrainingsCount = trainingRes.data.filter((t: Training) => {
+          return !t.completed && t.expired;
+        }).length;
+
         setStats({
-          upcomingTrainings: trainingRes.data.length,
-          expiredTrainings: expiredRes.data.length,
+          upcomingTrainings: pendingTrainings,
+          expiredTrainings: expiredTrainingsCount,
           nextPayDate: calculateNextPayDate(paycheckRes.data),
           lastBonus: findLastBonus(paycheckRes.data)
         });

@@ -67,6 +67,14 @@ public class Training {
 
     // -------------------- Business Logic --------------------
 
+    /**
+     * Check if the training is completed.
+     * A training is considered completed if completionDate is not null.
+     */
+    public boolean isCompleted() {
+        return completionDate != null;
+    }
+
     public boolean isExpired() {
         if (expiryDate == null) {
             return false;

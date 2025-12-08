@@ -3,10 +3,10 @@ import { GraduationCap, AlertCircle, CheckCircle, Clock, Eye } from "lucide-reac
 import { Card, CardHeader } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
-import { getTrainingsByPerson, getExpiredTrainings } from "../../api/training";
+import { getTrainingsByPerson } from "../../api/training";
 import type { Training } from "../../types/training";
 
-type FilterType = "all" | "completed" | "expired" | "upcoming";
+type FilterType = "all" | "completed" | "expired" | "expiring" | "pending";
 
 export default function EmployeeTraining() {
   const [trainings, setTrainings] = useState<Training[]>([]);
@@ -62,16 +62,32 @@ export default function EmployeeTraining() {
     const filtered = trainings.filter((training) => {
       switch (activeFilter) {
         case "completed":
-          return training.completionDate !== null && !training.expired;
+          // Completed trainings (has completion_date)
+          return training.completed;
         case "expired":
-          return training.expired;
-        case "upcoming":
-          if (!training.expiryDate) return false;
+          // Expired trainings (only for non-completed trainings)
+          return !training.completed && training.expired;
+        case "expiring": {
+          // Pending trainings that are expiring soon (not completed, not expired)
+          if (training.completed || training.expired || !training.expiryDate) return false;
           const expiryDate = new Date(training.expiryDate);
           const daysUntilExpiry = Math.ceil(
             (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
           );
-          return daysUntilExpiry > 0 && daysUntilExpiry <= 30 && !training.expired;
+          return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+        }
+        case "pending": {
+          // Pending trainings: not completed, not expired, and not expiring soon
+          if (training.completed || training.expired) return false;
+          // If no expiry date, it's pending
+          if (!training.expiryDate) return true;
+          // If expiry date is more than 30 days away, it's pending
+          const expiryDatePending = new Date(training.expiryDate);
+          const daysUntilExpiryPending = Math.ceil(
+            (expiryDatePending.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          return daysUntilExpiryPending > 30;
+        }
         default:
           return true;
       }
@@ -81,12 +97,22 @@ export default function EmployeeTraining() {
 
   // Get training status
   const getTrainingStatus = (training: Training) => {
+    // Priority 1: If completed (has completion_date), show completed status
+    if (training.completed) {
+      return { variant: "success" as const, label: "Completed", icon: CheckCircle };
+    }
+    
+    // Priority 2: If expired, show expired status
     if (training.expired) {
       return { variant: "error" as const, label: "Expired", icon: AlertCircle };
     }
+    
+    // Priority 3: Check expiry date for pending trainings
     if (!training.expiryDate) {
-      return { variant: "neutral" as const, label: "No Expiry", icon: Clock };
+      // No expiry date -> Pending
+      return { variant: "neutral" as const, label: "Pending", icon: Clock };
     }
+    
     const expiryDate = new Date(training.expiryDate);
     const now = new Date();
     const daysUntilExpiry = Math.ceil(
@@ -94,15 +120,18 @@ export default function EmployeeTraining() {
     );
 
     if (daysUntilExpiry < 0) {
+      // Already expired (shouldn't happen if expired check passed, but just in case)
       return { variant: "error" as const, label: "Expired", icon: AlertCircle };
     } else if (daysUntilExpiry <= 30) {
+      // Expiring soon (within 30 days)
       return {
         variant: "warning" as const,
         label: `Expires in ${daysUntilExpiry} days`,
         icon: Clock,
       };
     } else {
-      return { variant: "success" as const, label: "Active", icon: CheckCircle };
+      // Not expiring soon -> Pending
+      return { variant: "neutral" as const, label: "Pending", icon: Clock };
     }
   };
 
@@ -114,6 +143,35 @@ export default function EmployeeTraining() {
       month: "short",
       day: "numeric",
     });
+  };
+
+  // Get expiring trainings count (only pending trainings, not completed)
+  const getExpiringCount = () => {
+    const now = new Date();
+    return trainings.filter((t) => {
+      if (t.completed || !t.expiryDate || t.expired) return false;
+      const expiryDate = new Date(t.expiryDate);
+      const daysUntilExpiry = Math.ceil(
+        (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
+    }).length;
+  };
+
+  // Get pending trainings count (not completed, not expired, not expiring soon)
+  const getPendingCount = () => {
+    const now = new Date();
+    return trainings.filter((t) => {
+      if (t.completed || t.expired) return false;
+      // If no expiry date, it's pending
+      if (!t.expiryDate) return true;
+      // If expiry date is more than 30 days away, it's pending
+      const expiryDate = new Date(t.expiryDate);
+      const daysUntilExpiry = Math.ceil(
+        (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      return daysUntilExpiry > 30;
+    }).length;
   };
 
   if (isLoading) {
@@ -155,6 +213,26 @@ export default function EmployeeTraining() {
             All ({trainings.length})
           </button>
           <button
+            onClick={() => setActiveFilter("pending")}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeFilter === "pending"
+                ? "bg-blue-50 text-blue-700"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            Pending ({getPendingCount()})
+          </button>
+          <button
+            onClick={() => setActiveFilter("expiring")}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeFilter === "expiring"
+                ? "bg-blue-50 text-blue-700"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            Expiring Soon ({getExpiringCount()})
+          </button>
+          <button
             onClick={() => setActiveFilter("completed")}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeFilter === "completed"
@@ -162,8 +240,7 @@ export default function EmployeeTraining() {
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            Completed (
-            {trainings.filter((t) => t.completionDate !== null && !t.expired).length})
+            Completed ({trainings.filter((t) => t.completed).length})
           </button>
           <button
             onClick={() => setActiveFilter("expired")}
@@ -173,28 +250,7 @@ export default function EmployeeTraining() {
                 : "text-gray-600 hover:bg-gray-50"
             }`}
           >
-            Expired ({trainings.filter((t) => t.expired).length})
-          </button>
-          <button
-            onClick={() => setActiveFilter("upcoming")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeFilter === "upcoming"
-                ? "bg-blue-50 text-blue-700"
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            Expiring Soon (
-            {
-              trainings.filter((t) => {
-                if (!t.expiryDate || t.expired) return false;
-                const expiryDate = new Date(t.expiryDate);
-                const daysUntilExpiry = Math.ceil(
-                  (expiryDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-                );
-                return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
-              }).length
-            }
-            )
+            Expired ({trainings.filter((t) => !t.completed && t.expired).length})
           </button>
         </div>
       </Card>

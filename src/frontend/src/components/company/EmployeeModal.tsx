@@ -10,6 +10,7 @@ interface EmployeeModalProps {
   mode: 'EMPLOYER' | 'EMPLOYEE';
   allPeople?: EmployeeNode[];
   onEdit?: (employeeId: number) => void;
+  canEdit?: boolean; // Whether the current user can edit this person
 }
 
 export const EmployeeModal: React.FC<EmployeeModalProps> = ({
@@ -19,6 +20,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
   mode,
   allPeople = [],
   onEdit,
+  canEdit = false,
 }) => {
   if (!isOpen || !employee) return null;
 
@@ -44,7 +46,7 @@ export const EmployeeModal: React.FC<EmployeeModalProps> = ({
       title={`${employee.name} - ${employee.position}`}
       maxWidth="lg"
       headerActions={
-        mode === 'EMPLOYER' && onEdit ? (
+        mode === 'EMPLOYER' && onEdit && canEdit ? (
           <button
             onClick={() => {
               if (onEdit) {
