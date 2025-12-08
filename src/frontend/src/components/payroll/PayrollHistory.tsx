@@ -1,8 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { FileText, Download, Search, CheckCircle, Trash2, X } from 'lucide-react';
 import type { Paycheck, PaycheckStatus } from '../../types/payroll';
+import { getEmployer } from '../../api/employers';
+import { authStorage } from '../../utils/authStorage';
 
 interface PayrollHistoryProps {
   history: Paycheck[];
@@ -18,6 +20,27 @@ export const PayrollHistory = ({
   onUpdateStatus 
 }: PayrollHistoryProps) => {
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+
+  // Check if current user is admin or owner
+  useEffect(() => {
+    const checkPermissions = async () => {
+      try {
+        const user = authStorage.getUser();
+        if (user && user.role === 'EMPLOYER' && user.businessPersonId) {
+          const response = await getEmployer(user.businessPersonId);
+          setIsAdmin(response.data.isAdmin ?? false);
+          setIsOwner(response.data.isOwner ?? false);
+        }
+      } catch (error) {
+        console.error('Failed to check permissions:', error);
+      }
+    };
+    checkPermissions();
+  }, []);
+
+  const canConfirmOrVoid = isAdmin || isOwner;
 
   // Filter history by search query
   const filteredHistory = useMemo(() => {
@@ -140,26 +163,28 @@ export const PayrollHistory = ({
                             case "DRAFT":
                               return (
                                 <>
-                                  <button
-                                    onClick={() => onUpdateStatus(item.id, "PAID")}
-                                    disabled={isLoading}
-                                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg border border-green-200 hover:border-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Mark as Paid"
-                                  >
-                                    <CheckCircle size={18} />
-                                  </button>
+                                  {canConfirmOrVoid && (
+                                    <button
+                                      onClick={() => onUpdateStatus(item.id, "PAID")}
+                                      disabled={isLoading}
+                                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg border border-green-200 hover:border-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                      title="Mark as Paid"
+                                    >
+                                      <CheckCircle size={18} />
+                                    </button>
+                                  )}
                                   <button
                                     onClick={() => handleDelete(item.id)}
                                     disabled={isLoading}
                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg border border-red-200 hover:border-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Delete Paycheck"
+                                    title="Delete Draft"
                                   >
                                     <Trash2 size={18} />
                                   </button>
                                 </>
                               );
                             case "PENDING":
-                              return (
+                              return canConfirmOrVoid ? (
                                 <button
                                   onClick={() => onUpdateStatus(item.id, "PAID")}
                                   disabled={isLoading}
@@ -168,9 +193,13 @@ export const PayrollHistory = ({
                                 >
                                   <CheckCircle size={18} />
                                 </button>
+                              ) : (
+                                <span className="text-xs text-gray-400 italic px-2">
+                                  Pending Approval
+                                </span>
                               );
                             case "PAID":
-                              return (
+                              return canConfirmOrVoid ? (
                                 <button
                                   onClick={() => onUpdateStatus(item.id, "VOIDED")}
                                   disabled={isLoading}
@@ -179,6 +208,10 @@ export const PayrollHistory = ({
                                 >
                                   <X size={18} />
                                 </button>
+                              ) : (
+                                <span className="text-xs text-gray-400 italic px-2">
+                                  Paid
+                                </span>
                               );
                             case "VOIDED":
                               return (
@@ -189,14 +222,16 @@ export const PayrollHistory = ({
                             default:
                               return (
                                 <>
-                                  <button
-                                    onClick={() => onUpdateStatus(item.id, "PAID")}
-                                    disabled={isLoading}
-                                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg border border-green-200 hover:border-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    title="Mark as Paid"
-                                  >
-                                    <CheckCircle size={18} />
-                                  </button>
+                                  {canConfirmOrVoid && (
+                                    <button
+                                      onClick={() => onUpdateStatus(item.id, "PAID")}
+                                      disabled={isLoading}
+                                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg border border-green-200 hover:border-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                      title="Mark as Paid"
+                                    >
+                                      <CheckCircle size={18} />
+                                    </button>
+                                  )}
                                   <button
                                     onClick={() => handleDelete(item.id)}
                                     disabled={isLoading}

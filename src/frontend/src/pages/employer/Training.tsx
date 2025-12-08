@@ -13,6 +13,7 @@ import {
 import { Card, CardHeader } from "../../components/ui/Card";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
+import { Modal } from "../../components/ui/Modal";
 import { getAllTrainings, addTraining, updateTraining, deleteTraining } from "../../api/training";
 import { getAllEmployees } from "../../api/employees";
 import { getEmployersByBusiness, getEmployer } from "../../api/employers";
@@ -609,11 +610,12 @@ function AddTrainingModal({
   onSubmit,
   isSubmitting,
 }: AddTrainingModalProps) {
+  const [isCompleted, setIsCompleted] = useState(false);
   const [formData, setFormData] = useState<CreateTrainingRequest & { personId: number }>({
     personId: employees[0]?.id || 0,
     trainingName: "",
     description: "",
-    completionDate: "",
+    completionDate: "", // Default empty
     expiryDate: "",
     required: false,
   });
@@ -630,7 +632,7 @@ function AddTrainingModal({
         {
           trainingName: formData.trainingName,
           description: formData.description || undefined,
-          completionDate: formData.completionDate || undefined,
+          completionDate: isCompleted && formData.completionDate ? formData.completionDate : undefined,
           expiryDate: formData.expiryDate || undefined,
           required: formData.required,
         },
@@ -642,21 +644,8 @@ function AddTrainingModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-900">Assign Training</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            ✕
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <Modal isOpen={true} onClose={onClose} title="Assign Training" maxWidth="2xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-slate-900 mb-1.5">
               Employee *
@@ -707,33 +696,19 @@ function AddTrainingModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-900 mb-1.5">
-                Completion Date
-              </label>
-              <input
-                type="date"
-                value={formData.completionDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, completionDate: e.target.value })
-                }
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-900 mb-1.5">
-                Expiry Date
-              </label>
-              <input
-                type="date"
-                value={formData.expiryDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, expiryDate: e.target.value })
-                }
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-slate-900 mb-1.5">
+              Expiry Date
+            </label>
+            <input
+              type="date"
+              value={formData.expiryDate}
+              onChange={(e) =>
+                setFormData({ ...formData, expiryDate: e.target.value })
+              }
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
 
           <div className="flex items-center gap-2">
@@ -751,17 +726,52 @@ function AddTrainingModal({
             </label>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end gap-4">
-            <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" isLoading={isSubmitting}>
-              Assign Training
-            </Button>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="completed"
+              checked={isCompleted}
+              onChange={(e) => {
+                setIsCompleted(e.target.checked);
+                if (!e.target.checked) {
+                  setFormData({ ...formData, completionDate: "" });
+                }
+              }}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="completed" className="text-sm font-medium text-slate-900">
+              Training Completed
+            </label>
           </div>
-        </form>
-      </div>
-    </div>
+
+          {isCompleted && (
+            <div>
+              <label className="block text-sm font-medium text-slate-900 mb-1.5">
+                Completion Date *
+              </label>
+              <input
+                type="date"
+                value={formData.completionDate}
+                onChange={(e) =>
+                  setFormData({ ...formData, completionDate: e.target.value })
+                }
+                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required={isCompleted}
+              />
+            </div>
+          )}
+
+
+        <div className="pt-4 border-t border-gray-100 flex justify-end gap-4">
+          <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" isLoading={isSubmitting}>
+            Assign Training
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 
@@ -779,6 +789,7 @@ function EditTrainingModal({
   onSubmit,
   isSubmitting,
 }: EditTrainingModalProps) {
+  const [isCompleted, setIsCompleted] = useState(!!training.completionDate);
   const [formData, setFormData] = useState<UpdateTrainingRequest>({
     trainingName: training.trainingName,
     description: training.description || "",
@@ -790,28 +801,18 @@ function EditTrainingModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await onSubmit(training.id, formData);
+      await onSubmit(training.id, {
+        ...formData,
+        completionDate: isCompleted && formData.completionDate ? formData.completionDate : undefined,
+      });
     } catch {
       // Error is handled in parent
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-900">Edit Training</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            ✕
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <Modal isOpen={true} onClose={onClose} title="Edit Training" maxWidth="2xl">
+      <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-slate-900 mb-1.5">
               Training Name *
@@ -841,10 +842,28 @@ function EditTrainingModal({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="completed-edit"
+              checked={isCompleted}
+              onChange={(e) => {
+                setIsCompleted(e.target.checked);
+                if (!e.target.checked) {
+                  setFormData({ ...formData, completionDate: "" });
+                }
+              }}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="completed-edit" className="text-sm font-medium text-slate-900">
+              Training Completed
+            </label>
+          </div>
+
+          {isCompleted && (
             <div>
               <label className="block text-sm font-medium text-slate-900 mb-1.5">
-                Completion Date
+                Completion Date *
               </label>
               <input
                 type="date"
@@ -853,21 +872,23 @@ function EditTrainingModal({
                   setFormData({ ...formData, completionDate: e.target.value })
                 }
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required={isCompleted}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-900 mb-1.5">
-                Expiry Date
-              </label>
-              <input
-                type="date"
-                value={formData.expiryDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, expiryDate: e.target.value })
-                }
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-slate-900 mb-1.5">
+              Expiry Date
+            </label>
+            <input
+              type="date"
+              value={formData.expiryDate}
+              onChange={(e) =>
+                setFormData({ ...formData, expiryDate: e.target.value })
+              }
+              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
 
           <div className="flex items-center gap-2">
@@ -885,16 +906,15 @@ function EditTrainingModal({
             </label>
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex justify-end gap-4">
-            <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" isLoading={isSubmitting}>
-              Save Changes
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="pt-4 border-t border-gray-100 flex justify-end gap-4">
+          <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" isLoading={isSubmitting}>
+            Save Changes
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

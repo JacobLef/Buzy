@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { signupEmployee } from "../api/auth";
 import type { AuthResponse } from "../types/auth";
 import type { CreateEmployeeRequest } from "../types/employee";
@@ -7,7 +7,6 @@ import { getAllBusinesses } from "../api/businesses";
 import type { Company } from "../types/business";
 
 export default function SignupEmployee() {
-    const navigate = useNavigate();
     const [formData, setFormData] = useState<CreateEmployeeRequest>({
         name: "",
         email: "",
@@ -29,15 +28,26 @@ export default function SignupEmployee() {
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]:
-                name === "salary" || name === "companyId"
-                    ? value === "" ? 0 : Number(value)
-                : name === "managerId"
-                    ? value === "" || value === "null" ? null : Number(value)
-                : value,
-        }));
+        setFormData((prev) => {
+            const newData = {
+                ...prev,
+                [name]:
+                    name === "salary" || name === "companyId"
+                        ? value === "" ? 0 : Number(value)
+                    : name === "managerId"
+                        ? value === "" || value === "null" ? null : Number(value)
+                    : value,
+            };
+            // Reset managerId when companyId changes
+            if (name === "companyId") {
+                newData.managerId = 0;
+            }
+            return newData;
+        });
+        // Clear any previous errors when changing company
+        if (name === "companyId") {
+            setError(null);
+        }
     };
 
     // Load companies
@@ -48,11 +58,12 @@ export default function SignupEmployee() {
                 setCompanyError(null);
                 const response = await getAllBusinesses();
                 setCompanies(response.data);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error("Failed to load companies:", err);
+                const axiosError = err as { response?: { data?: { message?: string; error?: string } } };
                 setCompanyError(
-                    err.response?.data?.message ||
-                    err.response?.data?.error ||
+                    axiosError.response?.data?.message ||
+                    axiosError.response?.data?.error ||
                     "Failed to load companies. Please refresh the page."
                 );
             } finally {
@@ -100,11 +111,12 @@ export default function SignupEmployee() {
             );
 
             setSuccess(true);
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const axiosError = err as { response?: { data?: { message?: string; error?: string } }; message?: string };
             const errorMessage =
-                err.response?.data?.message ||
-                err.response?.data?.error ||
-                err.message ||
+                axiosError.response?.data?.message ||
+                axiosError.response?.data?.error ||
+                (axiosError as Error).message ||
                 "Registration failed. Please try again.";
             setError(errorMessage);
         } finally {
