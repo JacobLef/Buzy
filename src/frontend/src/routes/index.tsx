@@ -98,9 +98,9 @@ export const router = createBrowserRouter([
           {
             element: <AdminOnlyRoute />,
             children: [
-          {
-            path: "/employer/employers",
-            element: <EmployerManagement />,
+              {
+                path: "/employer/employers",
+                element: <EmployerManagement />,
               },
             ],
           },
