@@ -65,10 +65,11 @@ The app will be available at `http://localhost:5173`
 
 ## Documentation
 
-- [UML Diagrams](docs/uml/)
+- [Documentation](docs/)
 - [Project Structure](docs/Project_Structure.md)
 - [UI Components Guide](docs/UI_COMPONENTS_GUIDE.md)
 
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details.
+
