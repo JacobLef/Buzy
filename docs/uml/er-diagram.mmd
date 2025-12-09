@@ -1,0 +1,67 @@
+erDiagram
+    BUSINESS ||--o{ BUSINESS_PERSON : employs
+    BUSINESS_PERSON ||--o{ TRAINING : completes
+    EMPLOYEE ||--o{ PAYCHECK : receives
+    EMPLOYER ||--o{ EMPLOYEE : manages
+
+    BUSINESS {
+        bigint id PK
+        varchar name
+        varchar address
+        varchar industry
+        date founded_date
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    BUSINESS_PERSON {
+        bigint id PK
+        varchar person_type "Employee or Employer"
+        varchar name
+        varchar email UK
+        varchar password
+        bigint business_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    EMPLOYEE {
+        bigint id PK
+        bigint person_id FK "References BUSINESS_PERSON"
+        decimal salary
+        bigint manager_id FK "References EMPLOYER"
+        date hire_date
+        varchar position
+        varchar status
+    }
+
+    EMPLOYER {
+        bigint id PK
+        bigint person_id FK "References BUSINESS_PERSON"
+        varchar department
+        varchar title
+    }
+
+    TRAINING {
+        bigint id PK
+        varchar training_name
+        varchar description
+        date completion_date
+        date expiry_date
+        bigint person_id FK
+        boolean is_required
+        timestamp created_at
+    }
+
+    PAYCHECK {
+        bigint id PK
+        bigint employee_id FK "References EMPLOYEE via @ManyToOne"
+        decimal gross_pay "Base salary"
+        decimal bonus 
+        decimal tax_deduction
+        decimal insurance_deduction
+        decimal net_pay
+        date pay_date
+        varchar pay_period
+        timestamp created_at
+    }

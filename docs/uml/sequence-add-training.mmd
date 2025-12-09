@@ -1,0 +1,50 @@
+sequenceDiagram
+    participant Employer
+    participant TC as TrainingController
+    participant TS as TrainingService
+    participant ES as EmployeeService
+    participant ER as EmployeeRepository
+    participant TR as TrainingRepository
+    participant DB as MySQL Database
+
+    Note over Employer, DB: Workflow 3: Employer adds necessary training for Employee
+
+    Employer->>TC: POST /api/training/{employeeId}
+    activate TC
+    TC->>ES: getEmployee(employeeId)
+    activate ES
+    ES->>ER: findById(employeeId)
+    activate ER
+    ER->>DB: SELECT * FROM employee WHERE id=?
+    DB-->>ER: Employee record
+    ER-->>ES: Employee object
+    deactivate ER
+    ES-->>TC: Employee
+    deactivate ES
+
+    TC->>TS: addTraining(employeeId, trainingDTO)
+    activate TS
+
+    TS->>TS: createTraining(trainingDTO)
+    TS->>TS: setExpiryDate(1 year from completion)
+
+    TS->>TR: save(training)
+    activate TR
+    TR->>DB: INSERT INTO training
+    DB-->>TR: Training record created
+    TR-->>TS: Saved training
+    deactivate TR
+
+    TS->>TR: findByPersonId(employeeId)
+    activate TR
+    TR->>DB: SELECT * FROM training WHERE person_id=?
+    DB-->>TR: All trainings for employee
+    TR-->>TS: List of trainings
+    deactivate TR
+
+    TS->>TS: checkExpiredTrainings(trainings)
+
+    TS-->>TC: TrainingDTO with expiry status
+    deactivate TS
+    TC-->>Employer: 201 Created - Training added
+    deactivate TC

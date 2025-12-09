@@ -1,0 +1,1205 @@
+classDiagram
+%% Enums
+    class PersonStatus {
+        <<enumeration>>
+        Active
+        Inactive
+        OnLeave
+    }
+
+    class UserRole {
+        <<enumeration>>
+        EMPLOYEE
+        EMPLOYER
+    }
+
+    class PaycheckStatus {
+        <<enumeration>>
+        DRAFT
+        PENDING
+        PAID
+        VOIDED
+    }
+
+%% Abstract Classes and Interfaces
+    class BusinessPerson {
+        <<abstract>>
+        #Long id
+        #String name
+        #String email
+        #String password
+        #Company company
+        #PersonStatus status
+        #Double salary
+        #LocalDate hireDate
+        #LocalDateTime createdAt
+        #LocalDateTime updatedAt
+        +getPersonType()* String
+        +getId()
+        +setId(Long)
+        +getName()
+        +setName(String)
+        +getEmail()
+        +setEmail(String)
+        +getPassword()
+        +setPassword(String)
+        +getCompany()
+        +setCompany(Company)
+        +getStatus()
+        +setStatus(PersonStatus)
+        +getSalary()
+        +setSalary(Double)
+        +getHireDate()
+        +setHireDate(LocalDate)
+        +getCreatedAt()
+        +getUpdatedAt()
+        +getYearsOfService() int
+        #onUpdate()
+    }
+
+    class BusinessPersonDTO {
+        <<abstract>>
+        -Long id
+        -String name
+        -String email
+        -Long businessId
+        -String businessName
+        -PersonStatus status
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+        +getPersonType()* String
+        +getId()
+        +getName()
+        +getEmail()
+        +getBusinessId()
+        +getBusinessName()
+        +getStatus()
+        +getCreatedAt()
+        +getUpdatedAt()
+    }
+
+    class BusinessDTO {
+        <<abstract>>
+        -Long id
+        -String name
+        -String address
+        -String industry
+        -LocalDate foundedDate
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+        +getBusinessType()* String
+        +getId()
+        +getName()
+        +getAddress()
+        +getIndustry()
+        +getFoundedDate()
+        +getCreatedAt()
+        +getUpdatedAt()
+    }
+
+    class Business {
+        <<interface>>
+        +getId() Long
+        +setId(Long)
+        +getName() String
+        +setName(String)
+        +getAddress() String
+        +setAddress(String)
+        +getIndustry() String
+        +setIndustry(String)
+        +getFoundedDate() LocalDate
+        +setFoundedDate(LocalDate)
+        +getCreatedAt() LocalDateTime
+        +setCreatedAt(LocalDateTime)
+        +getUpdatedAt() LocalDateTime
+        +setUpdatedAt(LocalDateTime)
+        +addEmployee(BusinessPerson)
+        +removeEmployee(BusinessPerson)
+        +getEmployees() List~BusinessPerson~
+        +getEmployeesOnly() List~Employee~
+        +getEmployersOnly() List~Employer~
+        +getTotalPersonsCount() int
+    }
+
+%% Domain Models
+    class User {
+        -Long id
+        -String email
+        -String password
+        -UserRole role
+        -BusinessPerson businessPerson
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+        -Boolean enabled
+        +getId()
+        +setId(Long)
+        +getEmail()
+        +setEmail(String)
+        +getPassword()
+        +setPassword(String)
+        +getRole()
+        +setRole(UserRole)
+        +getBusinessPerson()
+        +setBusinessPerson(BusinessPerson)
+        +getCreatedAt()
+        +getUpdatedAt()
+        +getEnabled()
+        +setEnabled(Boolean)
+        #onUpdate()
+    }
+
+    class Employee {
+        -String position
+        -Employer manager
+        +Employee()
+        +Employee(String, String, String, Double, String)
+        +getPersonType() String
+        +getPosition()
+        +setPosition(String)
+        +getManager()
+        +setManager(Employer)
+        +hasManager() boolean
+    }
+
+    class Employer {
+        -String department
+        -String title
+        -Set~Employee~ managedEmployees
+        +Employer()
+        +Employer(String, String, String, Double, String, String)
+        +getPersonType() String
+        +getDepartment()
+        +setDepartment(String)
+        +getTitle()
+        +setTitle(String)
+        +getManagedEmployees()
+        +setManagedEmployees(Set~Employee~)
+        +addManagedEmployee(Employee)
+        +removeManagedEmployee(Employee)
+        +getDirectReportsCount() int
+        +hasDirectReports() boolean
+        +managesEmployee(Employee) boolean
+    }
+
+    class Company {
+        -Long id
+        -String name
+        -String address
+        -String industry
+        -LocalDate foundedDate
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+        -List~Employee~ employees
+        -List~Employer~ employers
+        +Company()
+        +Company(String, String)
+        +getName()
+        +setName(String)
+        +addEmployee(BusinessPerson)
+        +removeEmployee(BusinessPerson)
+        +getEmployees() List~BusinessPerson~
+        +getEmployeesOnly() List~Employee~
+        +getEmployersOnly() List~Employer~
+        +getTotalPersonsCount() int
+        +builder()$ Builder
+        #onCreate()
+        #onUpdate()
+    }
+
+    class Training {
+        -Long id
+        -String trainingName
+        -String description
+        -LocalDate completionDate
+        -LocalDate expiryDate
+        -BusinessPerson person
+        -boolean required
+        -LocalDateTime createdAt
+        +Training()
+        +Training(String, String, LocalDate, LocalDate, boolean)
+        +isExpired() boolean
+        +getRemainingDays() long
+        +getId()
+        +setId(Long)
+        +getTrainingName()
+        +setTrainingName(String)
+        +getDescription()
+        +setDescription(String)
+        +getCompletionDate()
+        +setCompletionDate(LocalDate)
+        +getExpiryDate()
+        +setExpiryDate(LocalDate)
+        +getPerson()
+        +setPerson(BusinessPerson)
+        +isRequired()
+        +setRequired(boolean)
+        +getCreatedAt()
+        #onCreate()
+    }
+
+    class Paycheck {
+        -Long id
+        -Employee employee
+        -double grossPay
+        -double taxDeduction
+        -double insuranceDeduction
+        -Double bonus
+        -double netPay
+        -LocalDate payDate
+        -String payPeriod
+        -LocalDateTime createdAt
+        -PaycheckStatus status
+        +Paycheck()
+        +Paycheck(Employee, double, double, double, LocalDate)
+        +calculateNetPay() double
+        +getId()
+        +setId(Long)
+        +getEmployee()
+        +setEmployee(Employee)
+        +getEmployeeId() Long
+        +getGrossPay()
+        +setGrossPay(double)
+        +getTaxDeduction()
+        +setTaxDeduction(double)
+        +getInsuranceDeduction()
+        +setInsuranceDeduction(double)
+        +getBonus()
+        +setBonus(Double)
+        +getNetPay()
+        +setNetPay(double)
+        +getPayDate()
+        +setPayDate(LocalDate)
+        +getPayPeriod()
+        +setPayPeriod(String)
+        +getCreatedAt()
+        +setCreatedAt(LocalDateTime)
+        +getStatus()
+        +setStatus(PaycheckStatus)
+        #onCreate()
+    }
+
+%% Strategy Pattern
+    class TaxCalculationStrategy {
+        <<interface>>
+        +calculateTax(double) double
+        +getStrategyName() String
+    }
+
+    class FlatTaxStrategy {
+        -double taxRate
+        +FlatTaxStrategy(double)
+        +calculateTax(double) double
+        +getTaxRate() double
+        +getStrategyName() String
+    }
+
+    class ProgressiveTaxStrategy {
+        -Map~Double,Double~ taxBrackets
+        +ProgressiveTaxStrategy(Map~Double,Double~)
+        +calculateTax(double) double
+        +getTaxBrackets() Map~Double,Double~
+        +getStrategyName() String
+    }
+
+%% Factory Pattern
+    class BusinessPersonFactory {
+        +createEmployee(name, email, salary)
+        +createEmployer(name, email, department)
+    }
+
+    class DTOFactory {
+        +createDTO(Employee) EmployeeDTO
+        +createDTO(Employer) EmployerDTO
+        +createDTO(Company) CompanyDTO
+        +createDTO(Training) TrainingDTO
+    }
+
+%% DTOs
+    class EmployeeDTO {
+        -Long id
+        -String name
+        -String email
+        -PersonStatus status
+        -Double salary
+        -LocalDate hireDate
+        -Long companyId
+        -String companyName
+        -String position
+        -Long managerId
+        -String managerName
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+        +builder() Builder
+    }
+
+    class EmployerDTO {
+        -Long id
+        -String name
+        -String email
+        -PersonStatus status
+        -Double salary
+        -LocalDate hireDate
+        -Long companyId
+        -String companyName
+        -String department
+        -String title
+        -Integer directReportsCount
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+        +builder() Builder
+    }
+
+    class CompanyDTO {
+        -int totalEmployees
+        -int totalEmployers
+        -int totalPersons
+        -List~Long~ employeeIds
+        -List~Long~ employerIds
+        +getBusinessType() String
+        +getTotalEmployees()
+        +getTotalEmployers()
+        +getTotalPersons()
+        +getEmployeeIds()
+        +getEmployerIds()
+        +builder() Builder
+    }
+
+    class TrainingDTO {
+        -Long id
+        -String trainingName
+        -String description
+        -LocalDate completionDate
+        -LocalDate expiryDate
+        -boolean required
+        -boolean expired
+        -Long personId
+        -String personName
+        -String personType
+        -LocalDateTime createdAt
+        +builder() Builder
+    }
+
+    class AuthDTO {
+        -String token
+        -String role
+        -String email
+        -Long userId
+        -Long businessPersonId
+        +getToken()
+        +setToken()
+        +getRole()
+        +setRole()
+        +getEmail()
+        +setEmail()
+        +getUserId()
+        +setUserId()
+        +getBusinessPersonId()
+        +setBusinessPersonId()
+    }
+
+    class ErrorResponse {
+        <<record>>
+        -LocalDateTime timeStamp
+        -int status
+        -String error
+        -String message
+    }
+
+    class PaycheckDTO {
+        <<record>>
+        -Long id
+        -Long employeeId
+        -String employeeName
+        -Double grossPay
+        -Double bonus
+        -Double taxDeduction
+        -Double insuranceDeduction
+        -Double totalDeductions
+        -Double netPay
+        -LocalDate payDate
+        -String taxStrategyUsed
+        -PaycheckStatus status
+    }
+
+    class PayrollSummaryDTO {
+        <<record>>
+        -Long businessId
+        -String businessName
+        -LocalDate startDate
+        -LocalDate endDate
+        -Integer totalPaychecks
+        -Integer totalEmployees
+        -Double totalGrossPay
+        -Double totalBonus
+        -Double totalTaxDeductions
+        -Double totalInsuranceDeductions
+        -Double totalDeductions
+        -Double totalNetPay
+        -Double averageGrossPay
+        -Double averageNetPay
+        -Double averageTaxRate
+        -Double averageInsuranceRate
+    }
+
+    class BonusDistributionResponse {
+        <<record>>
+        -Long businessId
+        -String businessName
+        -Integer totalEmployeesProcessed
+        -Integer successfulPaychecks
+        -Integer failedPaychecks
+        -Double totalGrossPaid
+        -Double totalNetPaid
+        -Double totalTaxDeducted
+        -Double totalInsuranceDeducted
+        -List~PaycheckDTO~ paychecks
+        -List~String~ errors
+        +success(businessId, businessName, paychecks)$ BonusDistributionResponse
+    }
+
+%% Request DTOs
+    class AuthRequest {
+        <<record>>
+        -String email
+        -String password
+    }
+
+    class CreateEmployeeRequest {
+        <<record>>
+        -String name
+        -String email
+        -String password
+        -Double salary
+        -String position
+        -Long companyId
+        -Long managerId
+        -LocalDate hireDate
+    }
+
+    class UpdateEmployeeRequest {
+        <<record>>
+        -String name
+        -String email
+        -String password
+        -Double salary
+        -String position
+        -Long managerId
+        -LocalDate hireDate
+        -PersonStatus status
+    }
+
+    class CreateEmployerRequest {
+        <<record>>
+        -String name
+        -String email
+        -String password
+        -Double salary
+        -String department
+        -String title
+        -Long companyId
+        -LocalDate hireDate
+    }
+
+    class UpdateEmployerRequest {
+        <<record>>
+        -String name
+        -String email
+        -String password
+        -Double salary
+        -String department
+        -String title
+        -LocalDate hireDate
+        -PersonStatus status
+    }
+
+    class CreateBusinessRequest {
+        <<record>>
+        -String name
+        -String address
+        -String industry
+        -LocalDate foundedDate
+    }
+
+    class UpdateBusinessRequest {
+        <<record>>
+        -String name
+        -String address
+        -String industry
+        -LocalDate foundedDate
+    }
+
+    class CreateTrainingRequest {
+        <<record>>
+        -String trainingName
+        -String description
+        -LocalDate completionDate
+        -LocalDate expiryDate
+        -boolean required
+    }
+
+    class UpdateTrainingRequest {
+        <<record>>
+        -String trainingName
+        -String description
+        -LocalDate completionDate
+        -LocalDate expiryDate
+        -Boolean required
+    }
+
+    class DistributeBonusRequest {
+        <<record>>
+        -Long businessId
+        -Double bonusAmount
+        -List~Long~ employeeIds
+        -String department
+        -String description
+    }
+
+%% Service Interfaces
+    class AuthService {
+        <<interface>>
+        +authenticate(AuthRequest) AuthDTO
+        +refreshToken(String) AuthDTO
+        +validateToken(String) boolean
+    }
+
+    class SignupService {
+        <<interface>>
+        +signupEmployee(CreateEmployeeRequest) AuthDTO
+        +signupEmployer(CreateEmployerRequest) AuthDTO
+    }
+
+    class PayrollService {
+        <<interface>>
+        +calculatePayroll(Long) PaycheckDTO
+        +calculatePayrollWithAdditionalPay(Long, Double) PaycheckDTO
+        +previewPayroll(Long, Double) PaycheckDTO
+        +distributeBonuses(DistributeBonusRequest) List~PaycheckDTO~
+        +setTaxStrategy(TaxCalculationStrategy)
+        +getCurrentTaxStrategyName() String
+        +getPayrollHistory(Long) List~PaycheckDTO~
+        +getPayrollHistory(Long, LocalDate, LocalDate) List~PaycheckDTO~
+        +getPayrollSummary(Long, LocalDate, LocalDate) PayrollSummaryDTO
+        +updatePaycheck(Long, Double, Double, Double, Double) PaycheckDTO
+        +deletePaycheck(Long)
+        +updatePaycheckStatus(Long, PaycheckStatus) PaycheckDTO
+    }
+
+    class EmployeeService {
+        <<interface>>
+        +createEmployee(CreateEmployeeRequest) Employee
+        +getEmployee(Long) Optional~Employee~
+        +getAllEmployees() List~Employee~
+        +updateEmployee(Long, UpdateEmployeeRequest) Employee
+        +deleteEmployee(Long)
+        +getEmployeesByBusiness(Long) List~Employee~
+        +getEmployeesByManager(Long) List~Employee~
+        +assignManager(Long, Long) Employee
+        +updateSalary(Long, Double) Employee
+        +giveBonus(Long, Double) Employee
+        +removeManager(Long) Employee
+        +updatePosition(Long, String) Employee
+        +updateStatus(Long, String) Employee
+        +searchByName(String) List~Employee~
+        +getEmployeesByPosition(String) List~Employee~
+        +getEmployeesHiredAfter(String) List~Employee~
+    }
+
+    class EmployerService {
+        <<interface>>
+        +createEmployer(CreateEmployerRequest) Employer
+        +getEmployer(Long) Optional~Employer~
+        +getAllEmployers() List~Employer~
+        +updateEmployer(Long, UpdateEmployerRequest) Employer
+        +deleteEmployer(Long)
+        +getEmployersByBusiness(Long) List~Employer~
+        +getEmployersByDepartment(String) List~Employer~
+        +getDirectReports(Long) Set~Employee~
+        +updateSalary(Long, Double) Employer
+        +giveBonus(Long, Double) Employer
+    }
+
+    class TrainingService {
+        <<interface>>
+        +addTraining(Long, CreateTrainingRequest) TrainingDTO
+        +getTrainingsByPerson(Long) List~TrainingDTO~
+        +getExpiredTrainings(Long) List~TrainingDTO~
+        +getTrainingById(Long) TrainingDTO
+        +updateTraining(Long, UpdateTrainingRequest) TrainingDTO
+        +deleteTraining(Long)
+        +getAllTrainings() List~TrainingDTO~
+    }
+
+    class BusinessService {
+        <<interface>>
+        +createBusiness(CreateBusinessRequest) Company
+        +updateBusiness(Long, UpdateBusinessRequest) Company
+        +deleteBusiness(Long)
+        +getBusiness(Long) Company
+        +getAllBusinesses() List~Company~
+    }
+
+    class HierarchyService {
+        <<interface>>
+    }
+
+%% Service Implementations
+    class AuthServiceImpl {
+        <<Service>>
+        -UserRepository userRepository
+        -PasswordEncoder passwordEncoder
+        -JwtTokenProvider jwtTokenProvider
+        +authenticate(AuthRequest) AuthDTO
+        +refreshToken(String) AuthDTO
+        +validateToken(String) boolean
+        -buildAuthDTO(User, String) AuthDTO
+    }
+
+    class SignupServiceImpl {
+        <<Service>>
+        -EmployeeService employeeService
+        -EmployerService employerService
+        -UserRepository userRepository
+        -PasswordEncoder passwordEncoder
+        -JwtTokenProvider jwtTokenProvider
+        +signupEmployee(CreateEmployeeRequest) AuthDTO
+        +signupEmployer(CreateEmployerRequest) AuthDTO
+    }
+
+    class PayrollServiceImpl {
+        <<Service>>
+        -EmployeeService employeeService
+        -PaycheckRepository paycheckRepository
+        -BusinessRepository businessRepository
+        -DTOFactory dtoFactory
+        -TaxCalculationStrategy taxStrategy
+        -double insuranceRate
+        +init()
+        +calculatePayroll(Long) PaycheckDTO
+        +calculatePayrollWithAdditionalPay(Long, Double) PaycheckDTO
+        +previewPayroll(Long, Double) PaycheckDTO
+        +distributeBonuses(DistributeBonusRequest) List~PaycheckDTO~
+        +setTaxStrategy(TaxCalculationStrategy)
+        +getCurrentTaxStrategyName() String
+        +getPayrollHistory(Long) List~PaycheckDTO~
+        +getPayrollHistory(Long, LocalDate, LocalDate) List~PaycheckDTO~
+        +getPayrollSummary(Long, LocalDate, LocalDate) PayrollSummaryDTO
+        +updatePaycheck(Long, Double, Double, Double, Double) PaycheckDTO
+        +deletePaycheck(Long)
+        +updatePaycheckStatus(Long, PaycheckStatus) PaycheckDTO
+    }
+
+    class EmployeeServiceImpl {
+        <<Service>>
+        -EmployeeRepository employeeRepository
+        -EmployerRepository employerRepository
+        -BusinessRepository businessRepository
+        -UserRepository userRepository
+        -PasswordEncoder passwordEncoder
+        +createEmployee(CreateEmployeeRequest) Employee
+        +getEmployee(Long) Optional~Employee~
+        +getAllEmployees() List~Employee~
+        +updateEmployee(Long, UpdateEmployeeRequest) Employee
+        +deleteEmployee(Long)
+        +getEmployeesByBusiness(Long) List~Employee~
+        +getEmployeesByManager(Long) List~Employee~
+        +assignManager(Long, Long) Employee
+        +updateSalary(Long, Double) Employee
+        +giveBonus(Long, Double) Employee
+        +removeManager(Long) Employee
+        +updatePosition(Long, String) Employee
+        +updateStatus(Long, String) Employee
+        +searchByName(String) List~Employee~
+        +getEmployeesByPosition(String) List~Employee~
+        +getEmployeesHiredAfter(String) List~Employee~
+    }
+
+    class EmployerServiceImpl {
+        <<Service>>
+        -EmployerRepository employerRepository
+        -BusinessRepository businessRepository
+        -UserRepository userRepository
+        -PasswordEncoder passwordEncoder
+        +createEmployer(CreateEmployerRequest) Employer
+        +getEmployer(Long) Optional~Employer~
+        +getAllEmployers() List~Employer~
+        +updateEmployer(Long, UpdateEmployerRequest) Employer
+        +deleteEmployer(Long)
+        +getEmployersByBusiness(Long) List~Employer~
+        +getEmployersByDepartment(String) List~Employer~
+        +getDirectReports(Long) Set~Employee~
+        +updateSalary(Long, Double) Employer
+        +giveBonus(Long, Double) Employer
+    }
+
+    class TrainingServiceImpl {
+        <<Service>>
+        -TrainingRepository trainingRepository
+        -BusinessPersonRepository businessPersonRepository
+        +addTraining(Long, CreateTrainingRequest) TrainingDTO
+        +getTrainingsByPerson(Long) List~TrainingDTO~
+        +getExpiredTrainings(Long) List~TrainingDTO~
+        +getTrainingById(Long) TrainingDTO
+        +updateTraining(Long, UpdateTrainingRequest) TrainingDTO
+        +deleteTraining(Long)
+        +getAllTrainings() List~TrainingDTO~
+    }
+
+    class BusinessServiceImpl {
+        <<Service>>
+        -BusinessRepository businessRepository
+        +createBusiness(CreateBusinessRequest) Company
+        +updateBusiness(Long, UpdateBusinessRequest) Company
+        +deleteBusiness(Long)
+        +getBusiness(Long) Company
+        +getAllBusinesses() List~Company~
+    }
+
+    AuthService <|.. AuthServiceImpl
+    SignupService <|.. SignupServiceImpl
+    PayrollService <|.. PayrollServiceImpl
+    EmployeeService <|.. EmployeeServiceImpl
+    EmployerService <|.. EmployerServiceImpl
+    TrainingService <|.. TrainingServiceImpl
+    BusinessService <|.. BusinessServiceImpl
+
+%% Controllers
+    class HelloController {
+        <<RestController>>
+        +hello() ResponseEntity~Map~
+        +helloWorld() ResponseEntity~Map~
+    }
+
+    class AuthController {
+        <<RestController>>
+        -AuthService authService
+        -SignupService signupService
+        +login(AuthRequest) ResponseEntity~AuthDTO~
+        +refreshToken(String) ResponseEntity~AuthDTO~
+        +validateToken(String) ResponseEntity~Boolean~
+        +health() ResponseEntity~Map~
+        +signupEmployee(CreateEmployeeRequest) ResponseEntity~AuthDTO~
+        +signupEmployer(CreateEmployerRequest) ResponseEntity~AuthDTO~
+    }
+
+    class EmployeeController {
+        <<RestController>>
+        -EmployeeService employeeService
+        -DTOFactory dtoFactory
+        +createEmployee(CreateEmployeeRequest) ResponseEntity~EmployeeDTO~
+        +getEmployee(Long) ResponseEntity~EmployeeDTO~
+        +getAllEmployees() ResponseEntity~List~EmployeeDTO~~
+        +updateEmployee(Long, UpdateEmployeeRequest) ResponseEntity~EmployeeDTO~
+        +deleteEmployee(Long) ResponseEntity~Void~
+        +getEmployeesByBusinessId(Long) ResponseEntity~List~EmployeeDTO~~
+        +getEmployeesByManager(Long) ResponseEntity~List~EmployeeDTO~~
+        +assignManager(Long, Long) ResponseEntity~EmployeeDTO~
+    }
+
+    class EmployerController {
+        <<RestController>>
+        -EmployerService employerService
+        -DTOFactory dtoFactory
+        +createEmployer(CreateEmployerRequest) ResponseEntity~EmployerDTO~
+        +getEmployer(Long) ResponseEntity~EmployerDTO~
+        +getAllEmployers() ResponseEntity~List~EmployerDTO~~
+        +updateEmployer(Long, UpdateEmployerRequest) ResponseEntity~EmployerDTO~
+        +deleteEmployer(Long) ResponseEntity~Void~
+        +getEmployersByBusiness(Long) ResponseEntity~List~EmployerDTO~~
+        +getEmployersByDepartment(String) ResponseEntity~List~EmployerDTO~~
+        +getDirectReports(Long) ResponseEntity~Set~EmployeeDTO~~
+    }
+
+    class PayrollController {
+        <<RestController>>
+        -PayrollService payrollService
+        -BusinessService businessService
+        -TaxCalculationStrategy flatTaxStrategy
+        -TaxCalculationStrategy progressiveTaxStrategy
+        +calculatePayroll(Long, Double) ResponseEntity~PaycheckDTO~
+        +previewPayroll(Long, Double) ResponseEntity~PaycheckDTO~
+        +distributeBonuses(DistributeBonusRequest) ResponseEntity~BonusDistributionResponse~
+        +getCurrentTaxStrategy() ResponseEntity~String~
+        +getAvailableTaxStrategies() ResponseEntity~Map~
+        +switchTaxStrategy(String) ResponseEntity~Map~
+        +getPayrollHistory(Long) ResponseEntity~List~PaycheckDTO~~
+        +getPayrollHistoryByDateRange(Long, LocalDate, LocalDate) ResponseEntity~List~PaycheckDTO~~
+        +getPayrollSummary(Long, LocalDate, LocalDate) ResponseEntity~PayrollSummaryDTO~
+        +updatePaycheck(Long, Double, Double, Double, Double) ResponseEntity~PaycheckDTO~
+        +deletePaycheck(Long) ResponseEntity~Void~
+        +updatePaycheckStatus(Long, PaycheckStatus) ResponseEntity~PaycheckDTO~
+    }
+
+    class TrainingController {
+        <<RestController>>
+        -TrainingService trainingService
+        +addTraining(Long, CreateTrainingRequest) ResponseEntity~TrainingDTO~
+        +getTrainingsByPerson(Long) ResponseEntity~List~TrainingDTO~~
+        +getExpiredTrainings(Long) ResponseEntity~List~TrainingDTO~~
+        +getTrainingById(Long) ResponseEntity~TrainingDTO~
+        +updateTraining(Long, UpdateTrainingRequest) ResponseEntity~TrainingDTO~
+        +deleteTraining(Long) ResponseEntity~Void~
+        +getAllTrainings() ResponseEntity~List~TrainingDTO~~
+    }
+
+    class BusinessController {
+        <<RestController>>
+        -BusinessService businessService
+        -DTOFactory dtoFactory
+        +createBusiness(CreateBusinessRequest) ResponseEntity~CompanyDTO~
+        +updateBusiness(Long, UpdateBusinessRequest) ResponseEntity~CompanyDTO~
+        +deleteBusiness(Long) ResponseEntity~Void~
+        +getBusiness(Long) ResponseEntity~CompanyDTO~
+        +getAllBusinesses() ResponseEntity~List~CompanyDTO~~
+    }
+
+    class DashboardController {
+        <<RestController>>
+        -DashboardServiceImpl dashboardService
+        +getRecentActivity(Long) ResponseEntity~List~ActivityDTO~~
+    }
+
+    class DashboardServiceImpl {
+        <<Service>>
+        -EmployeeService employeeService
+        -EmployerService employerService
+        -PayrollService payrollService
+        -TrainingService trainingService
+        +getRecentActivity(Long) List~ActivityDTO~
+    }
+
+%% Repositories
+    class EmployeeRepository {
+        <<Repository>>
+        +findByCompanyId(Long) List~Employee~
+        +findByManagerId(Long) List~Employee~
+        +findByPosition(String) List~Employee~
+        +findByNameContainingIgnoreCase(String) List~Employee~
+        +findByHireDateAfter(LocalDate) List~Employee~
+    }
+
+    class EmployerRepository {
+        <<Repository>>
+        +findByCompanyId(Long) List~Employer~
+        +findByDepartment(String) List~Employer~
+    }
+
+    class BusinessRepository {
+        <<Repository>>
+        +findByName(String) Optional~Company~
+        +existsByName(String) boolean
+    }
+
+    class TrainingRepository {
+        <<Repository>>
+        +findByPersonId(Long) List~Training~
+        +findByPersonIdAndExpiryDateBefore(Long, LocalDate) List~Training~
+        +findByExpiryDateBetween(LocalDate, LocalDate) List~Training~
+        +findByPersonIdAndRequiredTrue(Long) List~Training~
+    }
+
+    class PaycheckRepository {
+        <<Repository>>
+        +findByEmployeeId(Long) List~Paycheck~
+        +findByPayDateBetween(LocalDate, LocalDate) List~Paycheck~
+        +findByEmployeeIdAndDateRange(Long, LocalDate, LocalDate) List~Paycheck~
+        +findByBusinessIdAndDateRange(Long, LocalDate, LocalDate) List~Paycheck~
+    }
+
+    class UserRepository {
+        <<Repository>>
+        +findByEmail(String) Optional~User~
+        +existsByEmail(String) boolean
+        +findByBusinessPersonId(Long) Optional~User~
+    }
+
+    class BusinessPersonRepository {
+        <<Repository>>
+    }
+
+%% Security
+    class JwtTokenProvider {
+        <<Component>>
+        -String secret
+        -Long expiration
+        -SecretKey key
+        +init()
+        +generateToken(String, String) String
+        +extractEmail(String) String
+        +extractRole(String) String
+        +extractExpiration(String) Date
+        +extractClaim(String, Function) T
+        +validateToken(String) boolean
+    }
+
+    class JwtAuthenticationFilter {
+        <<Component>>
+        -JwtTokenProvider jwtTokenProvider
+        #shouldNotFilter(HttpServletRequest) boolean
+        #doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain)
+    }
+
+    class SecurityConfig {
+        <<Configuration>>
+        -JwtAuthenticationFilter jwtAuthenticationFilter
+        +securityFilterChain(HttpSecurity) SecurityFilterChain
+        +passwordEncoder() PasswordEncoder
+    }
+
+    class PasswordEncoder {
+        <<Bean>>
+        +encode(CharSequence) String
+        +matches(CharSequence, String) boolean
+    }
+
+%% Exceptions
+    class GlobalExceptionHandler {
+        <<RestControllerAdvice>>
+        +handleInvalidCredentialsException(InvalidCredentialsException)
+        +handleInvalidTokenException(InvalidTokenException)
+        +handleUserDisabledException(UserDisabledException)
+        +handleUserNotFoundException(UserNotFoundException)
+        +handleEmployerNotFoundException(EmployerNotFoundException)
+        +handleEmployeeNotFoundException(EmployeeNotFoundException)
+        +handleBusinessNotFoundException(BusinessNotFoundException)
+        +handleInvalidBusinessException(InvalidBusinessException)
+        +handleIllegalArgumentException(IllegalArgumentException)
+        +handleIllegalStateException(IllegalStateException)
+        +handleResourceNotFoundException(ResourceNotFoundException, WebRequest)
+        +handlePayrollCalculationException(PayrollCalculationException, WebRequest)
+        +handleBusinessValidationException(BusinessValidationException, WebRequest)
+        +handleException(Exception)
+    }
+
+    class EmployerNotFoundException {
+        <<Exception>>
+        +EmployerNotFoundException(Long)
+        +EmployerNotFoundException(String)
+    }
+
+    class EmployeeNotFoundException {
+        <<Exception>>
+        +EmployeeNotFoundException(Long)
+        +EmployeeNotFoundException(String)
+    }
+
+    class BusinessNotFoundException {
+        <<Exception>>
+        +BusinessNotFoundException(Long)
+        +BusinessNotFoundException(String)
+    }
+
+    class InvalidBusinessException {
+        <<Exception>>
+        +InvalidBusinessException(String)
+        +InvalidBusinessException(String, Throwable)
+    }
+
+    class InvalidCredentialsException {
+        <<Exception>>
+        +InvalidCredentialsException()
+        +InvalidCredentialsException(String)
+    }
+
+    class InvalidTokenException {
+        <<Exception>>
+        +InvalidTokenException()
+    }
+
+    class UserDisabledException {
+        <<Exception>>
+        +UserDisabledException()
+    }
+
+    class UserNotFoundException {
+        <<Exception>>
+        +UserNotFoundException(String)
+    }
+
+    class ResourceNotFoundException {
+        <<Exception>>
+        -String resourceName
+        -String fieldName
+        -Object fieldValue
+        +ResourceNotFoundException(String, String, Object)
+        +ResourceNotFoundException(String)
+        +getResourceName()
+        +getFieldName()
+        +getFieldValue()
+    }
+
+    class PayrollCalculationException {
+        <<Exception>>
+        -Long employeeId
+        +PayrollCalculationException(String, Long)
+        +PayrollCalculationException(String, Long, Throwable)
+        +getEmployeeId()
+    }
+
+    class BusinessValidationException {
+        <<Exception>>
+        +BusinessValidationException(String)
+        +BusinessValidationException(String, Throwable)
+    }
+
+%% Relationships - Inheritance
+    BusinessPerson <|-- Employee
+    BusinessPerson <|-- Employer
+    Business <|.. Company
+    BusinessDTO <|-- CompanyDTO
+    TaxCalculationStrategy <|.. FlatTaxStrategy
+    TaxCalculationStrategy <|.. ProgressiveTaxStrategy
+    RuntimeException <|.. EmployerNotFoundException
+    RuntimeException <|.. EmployeeNotFoundException
+    RuntimeException <|.. BusinessNotFoundException
+    RuntimeException <|.. InvalidBusinessException
+    RuntimeException <|.. InvalidCredentialsException
+    RuntimeException <|.. InvalidTokenException
+    RuntimeException <|.. UserDisabledException
+    RuntimeException <|.. UserNotFoundException
+    RuntimeException <|.. ResourceNotFoundException
+    RuntimeException <|.. PayrollCalculationException
+    RuntimeException <|.. BusinessValidationException
+
+%% Relationships - Associations
+    Employee --> Employer : managed by
+    Employee --> PersonStatus : has status
+    Employer --> PersonStatus : has status
+    User --> UserRole : has role
+    User "1" --> "1" BusinessPerson : linked to
+    Company "1" --> "*" Employee : employs
+    Company "1" --> "*" Employer : employs
+    Training "*" --> "1" BusinessPerson : completed by
+    Paycheck "*" --> "1" Employee : paid to
+    Paycheck --> PaycheckStatus : has status
+    PaycheckDTO --> PaycheckStatus : has status
+
+%% Controllers use Services
+    AuthController --> AuthService
+    AuthController --> SignupService
+    EmployeeController --> EmployeeService
+    EmployeeController --> DTOFactory
+    EmployerController --> EmployerService
+    EmployerController --> DTOFactory
+    PayrollController --> PayrollService
+    PayrollController --> BusinessService
+    PayrollController --> TaxCalculationStrategy
+    TrainingController --> TrainingService
+    BusinessController --> BusinessService
+    BusinessController --> DTOFactory
+    DashboardController --> DashboardServiceImpl
+    DashboardServiceImpl --> EmployeeService
+    DashboardServiceImpl --> EmployerService
+    DashboardServiceImpl --> PayrollService
+    DashboardServiceImpl --> TrainingService
+
+%% Service Implementations use Repositories
+    AuthServiceImpl --> UserRepository
+    AuthServiceImpl --> JwtTokenProvider
+    AuthServiceImpl --> PasswordEncoder
+    SignupServiceImpl --> UserRepository
+    SignupServiceImpl --> JwtTokenProvider
+    SignupServiceImpl --> PasswordEncoder
+    SignupServiceImpl --> EmployeeService
+    SignupServiceImpl --> EmployerService
+    PayrollServiceImpl --> PaycheckRepository
+    PayrollServiceImpl --> BusinessRepository
+    PayrollServiceImpl --> EmployeeService
+    PayrollServiceImpl --> TaxCalculationStrategy
+    PayrollServiceImpl --> DTOFactory
+    EmployeeServiceImpl --> EmployeeRepository
+    EmployeeServiceImpl --> EmployerRepository
+    EmployeeServiceImpl --> BusinessRepository
+    EmployeeServiceImpl --> UserRepository
+    EmployeeServiceImpl --> PasswordEncoder
+    EmployerServiceImpl --> EmployerRepository
+    EmployerServiceImpl --> BusinessRepository
+    EmployerServiceImpl --> UserRepository
+    EmployerServiceImpl --> PasswordEncoder
+    TrainingServiceImpl --> TrainingRepository
+    TrainingServiceImpl --> BusinessPersonRepository
+    BusinessServiceImpl --> BusinessRepository
+
+%% Services use Strategies
+    PayrollService --> TaxCalculationStrategy
+
+%% Security
+    JwtAuthenticationFilter --> JwtTokenProvider
+    SecurityConfig --> PasswordEncoder
+    SecurityConfig --> JwtAuthenticationFilter
+
+%% Utility Classes
+    class CSVParser {
+        <<interface>>
+        +parse(BufferedReader) List~Map~String,String~~
+    }
+
+    class CSVParserImpl {
+        +parse(BufferedReader) List~Map~String,String~~
+    }
+
+    class StringConverter {
+        <<interface>>
+        +toLocalDate(String) LocalDate
+        +toLocalDateTime(String) LocalDateTime
+        +toDouble(String) Double
+        +toLong(String) Long
+        +toInteger(String) Integer
+        +toBoolean(String) Boolean
+        +toString(String) String
+    }
+
+    class StringConverterImpl {
+        +toLocalDate(String) LocalDate
+        +toLocalDateTime(String) LocalDateTime
+        +toDouble(String) Double
+        +toLong(String) Long
+        +toInteger(String) Integer
+        +toBoolean(String) Boolean
+        +toString(String) String
+    }
+
+    class DatabaseSeeder {
+        <<Component>>
+        -boolean seedEnabled
+        -BusinessRepository businessRepo
+        -EmployeeRepository employeeRepo
+        -EmployerRepository employerRepo
+        -TrainingRepository trainingRepo
+        -BusinessPersonRepository businessPersonRepo
+        -UserRepository userRepo
+        -PasswordEncoder passwordEncoder
+        -Map~Long,Company~ companyCache
+        -Map~Long,Employer~ employerCache
+        -Map~Long,Employee~ employeeCache
+        +run(String...)
+        -seedCompanies()
+        -seedEmployers()
+        -seedEmployees()
+        -seedUsers()
+        -seedTrainings()
+    }
+
+    CSVParser <|.. CSVParserImpl
+    StringConverter <|.. StringConverterImpl
+    DatabaseSeeder --> BusinessRepository
+    DatabaseSeeder --> EmployeeRepository
+    DatabaseSeeder --> EmployerRepository
+    DatabaseSeeder --> TrainingRepository
+    DatabaseSeeder --> BusinessPersonRepository
+    DatabaseSeeder --> UserRepository
+
+%% Factory creates DTOs
+    DTOFactory ..> EmployeeDTO : creates
+    DTOFactory ..> EmployerDTO : creates
+    DTOFactory ..> CompanyDTO : creates
+    DTOFactory ..> TrainingDTO : creates
+    BusinessPersonFactory ..> Employee : creates
+    BusinessPersonFactory ..> Employer : creates
+
+%% Services return DTOs
+    PayrollService ..> PaycheckDTO : returns
+    PayrollService ..> PayrollSummaryDTO : returns
+    AuthService ..> AuthDTO : returns
+    SignupService ..> AuthDTO : returns
+    TrainingService ..> TrainingDTO : returns
