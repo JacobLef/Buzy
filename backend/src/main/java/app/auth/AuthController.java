@@ -82,35 +82,34 @@ public class AuthController {
     return ResponseEntity.ok(response);
   }
 
+  @Autowired
+  private SignupService signupService;
 
-    @Autowired
-    private SignupService signupService;
-
-    /**
-     * Employee signup endpoint.
-     * POST /api/auth/signup/employee
-     */
-    @PostMapping("/signup/employee")
-    public ResponseEntity<AuthDTO> signupEmployee(@RequestBody CreateEmployeeRequest request) {
-        try {
-            AuthDTO response = signupService.signupEmployee(request);
-            return ResponseEntity.status(201).body(response);
-        } catch (RuntimeException e) {
-            throw e;
-        }
+  /**
+   * Employee signup endpoint.
+   * POST /api/auth/signup/employee
+   */
+  @PostMapping("/signup/employee")
+  public ResponseEntity<AuthDTO> signupEmployee(@RequestBody CreateEmployeeRequest request) {
+    try {
+      AuthDTO response = signupService.signupEmployee(request);
+      return ResponseEntity.status(201).body(response);
+    } catch (RuntimeException e) {
+      throw e;
     }
+  }
 
-    /**
-     * Employer signup endpoint.
-     * POST /api/auth/signup/employer
-     */
-    @PostMapping("/signup/employer")
-    public ResponseEntity<AuthDTO> signupEmployer(@RequestBody CreateEmployerRequest request) {
-        try {
-            AuthDTO response = signupService.signupEmployer(request);
-            return ResponseEntity.status(201).body(response);
-        } catch (RuntimeException e) {
-            throw e;
-        }
+  /**
+   * Employer signup endpoint.
+   * POST /api/auth/signup/employer
+   */
+  @PostMapping("/signup/employer")
+  public ResponseEntity<AuthDTO> signupEmployer(@RequestBody CreateEmployerRequest request) {
+    try {
+      AuthDTO response = signupService.signupEmployer(request);
+      return ResponseEntity.status(201).body(response);
+    } catch (RuntimeException e) {
+      throw e;
     }
+  }
 }
