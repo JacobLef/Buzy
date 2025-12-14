@@ -2,6 +2,7 @@ package app.common.util;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class CSVParserImpl implements CSVParser {
       }
     } catch (IOException e) {
       System.err.println("Error reading file");
-      return null;
+      return Collections.emptyList();
     }
 
     return results;
