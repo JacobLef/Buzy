@@ -18,7 +18,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 api.interceptors.response.use(
@@ -36,7 +36,7 @@ api.interceptors.response.use(
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
 
         const newToken = response.data.token;
@@ -58,19 +58,19 @@ api.interceptors.response.use(
         authStorage.clearAuth();
         window.location.href = "/login";
         return Promise.reject(
-          refreshError instanceof Error 
-            ? refreshError 
-            : new Error("Token refresh failed")
+          refreshError instanceof Error
+            ? refreshError
+            : new Error("Token refresh failed"),
         );
       }
     }
 
     return Promise.reject(
-      error instanceof Error 
-        ? error 
-        : new Error(error?.message || "Request failed")
+      error instanceof Error
+        ? error
+        : new Error(error?.message || "Request failed"),
     );
-  }
+  },
 );
 
 export default api;

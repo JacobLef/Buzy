@@ -6,11 +6,9 @@ import type { CreateEmployerRequest } from "../types/employer";
 export const login = (data: AuthRequest) =>
   api.post<AuthResponse>("/api/auth/login", data);
 
-export const refreshToken = () =>
-  api.post<AuthResponse>("/api/auth/refresh");
+export const refreshToken = () => api.post<AuthResponse>("/api/auth/refresh");
 
-export const validateToken = () =>
-  api.get<boolean>("/api/auth/validate");
+export const validateToken = () => api.get<boolean>("/api/auth/validate");
 
 export const signupEmployee = (data: CreateEmployeeRequest) =>
   api.post<AuthResponse>("/api/auth/signup/employee", data);

@@ -37,8 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request,
       HttpServletResponse response,
-      FilterChain filterChain
-  ) throws ServletException, IOException {
+      FilterChain filterChain) throws ServletException, IOException {
 
     final String authHeader = request.getHeader("Authorization");
 
@@ -55,12 +54,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
-        UsernamePasswordAuthenticationToken authToken =
-            new UsernamePasswordAuthenticationToken(
-                email,
-                null,
-                Collections.singletonList(authority)
-            );
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+            email,
+            null,
+            Collections.singletonList(authority));
 
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);

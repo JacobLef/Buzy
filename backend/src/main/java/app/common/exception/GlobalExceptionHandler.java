@@ -23,175 +23,151 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  private static final String NOT_FOUND = "NOT FOUND";
+
   @ExceptionHandler(InvalidCredentialsException.class)
   public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(
-      InvalidCredentialsException e
-  ) {
+      InvalidCredentialsException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.UNAUTHORIZED.value(),
         "Unauthorized",
-        e.getMessage()
-    );
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
   }
 
   @ExceptionHandler(InvalidTokenException.class)
   public ResponseEntity<ErrorResponse> handleInvalidTokenException(
-      InvalidTokenException e
-  ) {
+      InvalidTokenException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.UNAUTHORIZED.value(),
         "Unauthorized",
-        e.getMessage()
-    );
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
   }
 
   @ExceptionHandler(UserDisabledException.class)
   public ResponseEntity<ErrorResponse> handleUserDisabledException(
-      UserDisabledException e
-  ) {
+      UserDisabledException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.FORBIDDEN.value(),
         "Forbidden",
-        e.getMessage()
-    );
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
   }
 
   @ExceptionHandler(UserNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleUserNotFoundException(
-      UserNotFoundException e
-  ) {
+      UserNotFoundException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.NOT_FOUND.value(),
-        "Not Found",
-        e.getMessage()
-    );
+        NOT_FOUND,
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
   }
 
   @ExceptionHandler(EmployerNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleEmployerNotFoundException(
-      EmployerNotFoundException e
-  ) {
+      EmployerNotFoundException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.NOT_FOUND.value(),
-        "Not Found",
-        e.getMessage()
-    );
+        NOT_FOUND,
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
   }
 
   @ExceptionHandler(EmployeeNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleEmployeeNotFoundException(
-      EmployeeNotFoundException e
-  ) {
+      EmployeeNotFoundException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.NOT_FOUND.value(),
-        "Not Found",
-        e.getMessage()
-    );
+        NOT_FOUND,
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
   }
 
   @ExceptionHandler(BusinessNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleBusinessNotFoundException(
-      BusinessNotFoundException e
-  ) {
+      BusinessNotFoundException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.NOT_FOUND.value(),
-        "Not Found",
-        e.getMessage()
-    );
+        NOT_FOUND,
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
   }
 
   @ExceptionHandler(InvalidBusinessException.class)
   public ResponseEntity<ErrorResponse> handleInvalidBusinessException(
-      InvalidBusinessException e
-  ) {
+      InvalidBusinessException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.BAD_REQUEST.value(),
         "Bad Request",
-        e.getMessage()
-    );
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
-      IllegalArgumentException e
-  ) {
+      IllegalArgumentException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.BAD_REQUEST.value(),
         "Bad Request",
-        e.getMessage()
-    );
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
   }
 
   @ExceptionHandler(IllegalStateException.class)
   public ResponseEntity<ErrorResponse> handleIllegalStateException(
-      IllegalStateException e
-  ) {
+      IllegalStateException e) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.INTERNAL_SERVER_ERROR.value(),
         "Internal Server Error",
-        e.getMessage()
-    );
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
   }
 
   @ExceptionHandler(ResourceNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
-      ResourceNotFoundException e, 
-      WebRequest request
-  ) {
+      ResourceNotFoundException e,
+      WebRequest request) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.NOT_FOUND.value(),
         request.getDescription(false).replace("uri=", ""),
-        e.getMessage()
-    );
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
   }
 
   @ExceptionHandler(PayrollCalculationException.class)
   public ResponseEntity<ErrorResponse> handlePayrollCalculationException(
-      PayrollCalculationException e, 
-      WebRequest request
-  ) {
+      PayrollCalculationException e,
+      WebRequest request) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.INTERNAL_SERVER_ERROR.value(),
         request.getDescription(false).replace("uri=", ""),
-        "Payroll calculation failed: " + e.getMessage()
-    );
+        "Payroll calculation failed: " + e.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
   }
 
   @ExceptionHandler(BusinessValidationException.class)
   public ResponseEntity<ErrorResponse> handleBusinessValidationException(
       BusinessValidationException e,
-      WebRequest request
-  ) {
+      WebRequest request) {
     ErrorResponse res = new ErrorResponse(
         LocalDateTime.now(),
         HttpStatus.BAD_REQUEST.value(),
         request.getDescription(false).replace("uri=", ""),
-        e.getMessage()
-    );
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
   }
 
@@ -201,8 +177,7 @@ public class GlobalExceptionHandler {
         LocalDateTime.now(),
         HttpStatus.INTERNAL_SERVER_ERROR.value(),
         "Internal Server Error",
-        e.getMessage()
-    );
+        e.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
   }
 }

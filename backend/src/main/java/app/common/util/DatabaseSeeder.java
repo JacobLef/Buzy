@@ -62,8 +62,7 @@ public class DatabaseSeeder implements CommandLineRunner {
       BusinessPersonRepository businessPersonRepo,
       UserRepository userRepo,
       PaycheckRepository paycheckRepo,
-      PasswordEncoder passwordEncoder
-  ) {
+      PasswordEncoder passwordEncoder) {
     this.businessRepo = businessRepo;
     this.employeeRepo = employeeRepo;
     this.employerRepo = employerRepo;
@@ -101,9 +100,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     try {
       BufferedReader reader = new BufferedReader(
           new InputStreamReader(
-              new ClassPathResource(CSV_PREFIX + "/businesses.csv").getInputStream()
-          )
-      );
+              new ClassPathResource(CSV_PREFIX + "/businesses.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
@@ -153,9 +150,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     try {
       BufferedReader reader = new BufferedReader(
           new InputStreamReader(
-              new ClassPathResource(CSV_PREFIX + "/employers.csv").getInputStream()
-          )
-      );
+              new ClassPathResource(CSV_PREFIX + "/employers.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
@@ -163,26 +158,25 @@ public class DatabaseSeeder implements CommandLineRunner {
         int count = 0;
         // Track first employer per company to set as owner if not specified in CSV
         Map<Long, Boolean> companyOwnerSet = new HashMap<>();
-        
+
         for (Map<String, String> row : rows) {
           Long csvId = CONVERTER.toLong(row.get("id"));
           Long companyId = CONVERTER.toLong(row.get("company_id"));
-          
+
           Employer employer = mapToEmployer(row);
-          
-          // If is_owner is not set in CSV and this is the first employer for this company,
+
+          // If is_owner is not set in CSV and this is the first employer for this
+          // company,
           // set them as owner (and admin)
           Boolean isOwnerFromCSV = CONVERTER.toBoolean(row.get("is_owner"));
           if ((isOwnerFromCSV == null || !isOwnerFromCSV) && companyId != null) {
             if (!companyOwnerSet.containsKey(companyId)) {
               // Check if title contains CEO, Chief, President, or Managing Partner
               String title = CONVERTER.toString(row.get("title"));
-              if (title != null && (
-                  title.toLowerCase().contains("ceo") ||
+              if (title != null && (title.toLowerCase().contains("ceo") ||
                   title.toLowerCase().contains("chief") ||
                   title.toLowerCase().contains("president") ||
-                  title.toLowerCase().contains("managing partner")
-              )) {
+                  title.toLowerCase().contains("managing partner"))) {
                 employer.setIsOwner(true);
                 employer.setIsAdmin(true);
                 companyOwnerSet.put(companyId, true);
@@ -192,13 +186,14 @@ public class DatabaseSeeder implements CommandLineRunner {
                 employer.setIsOwner(true);
                 employer.setIsAdmin(true);
                 companyOwnerSet.put(companyId, true);
-                System.out.println("Auto-set first employer " + employer.getName() + " as Owner for company " + companyId);
+                System.out
+                    .println("Auto-set first employer " + employer.getName() + " as Owner for company " + companyId);
               }
             }
           } else if (isOwnerFromCSV != null && isOwnerFromCSV) {
             companyOwnerSet.put(companyId, true);
           }
-          
+
           Employer saved = employerRepo.save(employer);
 
           if (csvId != null) {
@@ -228,8 +223,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         CONVERTER.toString(row.get("password")),
         CONVERTER.toDouble(row.get("salary")),
         CONVERTER.toString(row.get("department")),
-        CONVERTER.toString(row.get("title"))
-    );
+        CONVERTER.toString(row.get("title")));
 
     LocalDate hireDate = CONVERTER.toLocalDate(row.get("hire_date"));
     if (hireDate != null) {
@@ -282,9 +276,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     try {
       BufferedReader reader = new BufferedReader(
           new InputStreamReader(
-              new ClassPathResource(CSV_PREFIX + "/employees.csv").getInputStream()
-          )
-      );
+              new ClassPathResource(CSV_PREFIX + "/employees.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
@@ -295,12 +287,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         for (Map<String, String> row : rows) {
           Long csvId = CONVERTER.toLong(row.get("id"));
           Long managerId = CONVERTER.toLong(row.get("manager_id"));
-          
+
           // Store manager relationship for later
           if (csvId != null && managerId != null) {
             managerRelationships.put(csvId, managerId);
           }
-          
+
           Employee employee = mapToEmployee(row);
           // Don't set manager in first pass
           employee.setManager(null);
@@ -311,12 +303,12 @@ public class DatabaseSeeder implements CommandLineRunner {
           }
           count++;
         }
-        
+
         // Second pass: Set manager relationships
         for (Map.Entry<Long, Long> entry : managerRelationships.entrySet()) {
           Long employeeId = entry.getKey();
           Long managerId = entry.getValue();
-          
+
           Employee employee = employeeCache.get(employeeId);
           if (employee != null) {
             // Try to find manager in employer cache first, then employee cache
@@ -328,11 +320,12 @@ public class DatabaseSeeder implements CommandLineRunner {
               employee.setManager(manager);
               employeeRepo.save(employee);
             } else {
-              System.err.println("Warning: Manager not found for employee ID " + employeeId + ", manager_id: " + managerId);
+              System.err
+                  .println("Warning: Manager not found for employee ID " + employeeId + ", manager_id: " + managerId);
             }
           }
         }
-        
+
         System.out.println("Seeded " + count + " employees");
       }
     } catch (Exception e) {
@@ -353,8 +346,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         CONVERTER.toString(row.get("email")),
         CONVERTER.toString(row.get("password")),
         CONVERTER.toDouble(row.get("salary")),
-        CONVERTER.toString(row.get("position"))
-    );
+        CONVERTER.toString(row.get("position")));
 
     LocalDate hireDate = CONVERTER.toLocalDate(row.get("hire_date"));
     if (hireDate != null) {
@@ -369,7 +361,8 @@ public class DatabaseSeeder implements CommandLineRunner {
       }
     }
 
-    // Manager relationship will be set in second pass after all employees are created
+    // Manager relationship will be set in second pass after all employees are
+    // created
     // This allows employees to manage other employees
 
     String status = CONVERTER.toString(row.get("status"));
@@ -393,9 +386,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     try {
       BufferedReader reader = new BufferedReader(
           new InputStreamReader(
-              new ClassPathResource(CSV_PREFIX + "/trainings.csv").getInputStream()
-          )
-      );
+              new ClassPathResource(CSV_PREFIX + "/trainings.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
@@ -409,8 +400,7 @@ public class DatabaseSeeder implements CommandLineRunner {
               CONVERTER.toString(row.get("description")),
               CONVERTER.toLocalDate(row.get("completion_date")),
               CONVERTER.toLocalDate(row.get("expiry_date")),
-              CONVERTER.toBoolean(row.get("is_required"))
-          );
+              CONVERTER.toBoolean(row.get("is_required")));
 
           Long personId = CONVERTER.toLong(row.get("person_id"));
           if (personId != null) {
@@ -458,7 +448,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     try {
       int userCount = 0;
-      
+
       // Create User accounts for all Employers
       List<Employer> employers = employerRepo.findAll();
       for (Employer employer : employers) {
@@ -473,7 +463,7 @@ public class DatabaseSeeder implements CommandLineRunner {
           userCount++;
         }
       }
-      
+
       // Create User accounts for all Employees
       List<Employee> employees = employeeRepo.findAll();
       for (Employee employee : employees) {
@@ -488,7 +478,7 @@ public class DatabaseSeeder implements CommandLineRunner {
           userCount++;
         }
       }
-      
+
       System.out.println("Seeded " + userCount + " user accounts");
     } catch (Exception e) {
       System.err.println("Failed to seed users: " + e.getMessage());
@@ -505,9 +495,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     try {
       BufferedReader reader = new BufferedReader(
           new InputStreamReader(
-              new ClassPathResource(CSV_PREFIX + "/paychecks.csv").getInputStream()
-          )
-      );
+              new ClassPathResource(CSV_PREFIX + "/paychecks.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
@@ -541,20 +529,20 @@ public class DatabaseSeeder implements CommandLineRunner {
           paycheck.setGrossPay(CONVERTER.toDouble(row.get("gross_pay")));
           paycheck.setTaxDeduction(CONVERTER.toDouble(row.get("tax_deduction")));
           paycheck.setInsuranceDeduction(CONVERTER.toDouble(row.get("insurance_deduction")));
-          
+
           String bonusStr = row.get("bonus");
           if (bonusStr != null && !bonusStr.isEmpty() && !bonusStr.equals("0.00")) {
             paycheck.setBonus(CONVERTER.toDouble(bonusStr));
           }
-          
+
           paycheck.setNetPay(CONVERTER.toDouble(row.get("net_pay")));
           paycheck.setPayDate(CONVERTER.toLocalDate(row.get("pay_date")));
-          
+
           String payPeriod = CONVERTER.toString(row.get("pay_period"));
           if (payPeriod != null && !payPeriod.isEmpty()) {
             paycheck.setPayPeriod(payPeriod);
           }
-          
+
           String statusStr = CONVERTER.toString(row.get("status"));
           if (statusStr != null && !statusStr.isEmpty()) {
             try {
@@ -564,7 +552,7 @@ public class DatabaseSeeder implements CommandLineRunner {
               paycheck.setStatus(PaycheckStatus.DRAFT);
             }
           }
-          
+
           String createdAtStr = row.get("created_at");
           if (createdAtStr != null && !createdAtStr.isEmpty()) {
             LocalDateTime createdAt = CONVERTER.toLocalDateTime(createdAtStr);

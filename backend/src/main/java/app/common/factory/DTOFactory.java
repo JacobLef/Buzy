@@ -94,11 +94,11 @@ public class DTOFactory {
   public CompanyDTO createDTO(Company company) {
     List<Long> employeeIds = company.getEmployeesOnly().stream()
         .map(Employee::getId)
-        .collect(Collectors.toList());
-    
+        .toList();
+
     List<Long> employerIds = company.getEmployersOnly().stream()
         .map(Employer::getId)
-        .collect(Collectors.toList());
+        .toList();
 
     return CompanyDTO.builder()
         .withId(company.getId())
@@ -118,20 +118,20 @@ public class DTOFactory {
 
   public PaycheckDTO createDTO(Paycheck paycheck, Employee employee, String taxStrategyName) {
     double totalDeductions = paycheck.getTaxDeduction() + paycheck.getInsuranceDeduction();
-    
+
     return new PaycheckDTO(
         paycheck.getId(),
         paycheck.getEmployeeId(),
         employee.getName(),
-        paycheck.getGrossPay(),           // Base salary
-        paycheck.getBonus(),              // Bonus amount (null if regular payroll)
+        paycheck.getGrossPay(), // Base salary
+        paycheck.getBonus(), // Bonus amount (null if regular payroll)
         paycheck.getTaxDeduction(),
         paycheck.getInsuranceDeduction(),
         totalDeductions,
         paycheck.getNetPay(),
         paycheck.getPayDate(),
         taxStrategyName,
-        paycheck.getStatus()              // Status: DRAFT, PENDING, PAID, VOIDED
+        paycheck.getStatus() // Status: DRAFT, PENDING, PAID, VOIDED
     );
   }
 }
