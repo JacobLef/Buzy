@@ -1,18 +1,15 @@
 name: Spring Boot CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: "backend/"
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -20,6 +17,8 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
+      - name: Check formatting with Spotless
+        run: ./mvnw spotless:check
       - name: Lint with Checkstyle
         run: ./mvnw checkstyle:check
       - name: Build with Maven
