@@ -1,9 +1,9 @@
 package app.employer.dto;
 
-import app.user.PersonStatus;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import app.user.PersonStatus;
 
 public class EmployerDTO {
 

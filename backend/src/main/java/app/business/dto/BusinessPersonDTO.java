@@ -1,8 +1,8 @@
 package app.business.dto;
 
-import app.user.PersonStatus;
-
 import java.time.LocalDateTime;
+
+import app.user.PersonStatus;
 
 /**
  * Abstract DTO base class for BusinessPerson data transfer. Contains common fields shared by
@@ -29,9 +29,7 @@ public abstract class BusinessPersonDTO {
     this.updatedAt = builder.updatedAt;
   }
 
-  /**
-   * Get the type of business person (Employee or Employer).
-   */
+  /** Get the type of business person (Employee or Employer). */
   public abstract String getPersonType();
 
   public Long getId() {
@@ -66,9 +64,7 @@ public abstract class BusinessPersonDTO {
     return updatedAt;
   }
 
-  /**
-   * Abstract builder class for BusinessPersonDTO.
-   */
+  /** Abstract builder class for BusinessPersonDTO. */
   public abstract static class Builder<T extends Builder<T>> {
     private Long id;
     private String name;

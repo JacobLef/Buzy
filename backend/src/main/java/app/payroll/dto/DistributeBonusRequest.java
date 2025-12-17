@@ -1,8 +1,9 @@
 package app.payroll.dto;
 
+import java.util.List;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import java.util.List;
 
 /**
  * Request DTO for distributing bonuses to employees
@@ -10,10 +11,10 @@ import java.util.List;
  * @author Qing Mi
  */
 public record DistributeBonusRequest(
-
     @NotNull(message = "Business ID is required") Long businessId,
-
-    @NotNull(message = "Bonus amount is required") @Positive(message = "Bonus amount must be positive") Double bonusAmount,
+    @NotNull(message = "Bonus amount is required")
+        @Positive(message = "Bonus amount must be positive")
+        Double bonusAmount,
 
     // Optional: filter by specific employee IDs
     List<Long> employeeIds,

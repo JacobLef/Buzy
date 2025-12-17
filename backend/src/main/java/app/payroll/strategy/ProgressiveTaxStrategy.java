@@ -7,13 +7,14 @@ import java.util.TreeMap;
  * Progressive tax strategy that applies different tax rates to different income brackets. Each
  * bracket is taxed at its specific rate, with higher income brackets taxed at higher rates.
  *
- * Example use case: A company implements a tiered tax system: - First $10,000: 10% tax rate -
+ * <p>Example use case: A company implements a tiered tax system: - First $10,000: 10% tax rate -
  * $10,001 to $50,000: 20% tax rate - Above $50,000: 30% tax rate
  *
- * For an employee with $60,000 gross pay: - $0 -$10,000: $10,000 * 0.10 = $1,000 - $10,001-$50,000:
- * $40,000 * 0.20 = $8,000 - $50,001-$60,000: $10,000 * 0.30 = $3,000 Total tax = $12,000
+ * <p>For an employee with $60,000 gross pay: - $0 -$10,000: $10,000 * 0.10 = $1,000 -
+ * $10,001-$50,000: $40,000 * 0.20 = $8,000 - $50,001-$60,000: $10,000 * 0.30 = $3,000 Total tax =
+ * $12,000
  *
- * Usage: Map<Double, Double> brackets = new HashMap<>(); brackets.put(10000.0, 0.10);
+ * <p>Usage: Map<Double, Double> brackets = new HashMap<>(); brackets.put(10000.0, 0.10);
  * brackets.put(50000.0, 0.20); TaxCalculationStrategy strategy = new
  * ProgressiveTaxStrategy(brackets); double tax = strategy.calculateTax(60000.0); // Returns 12000.0
  *

@@ -26,9 +26,7 @@ public abstract class BusinessDTO {
     this.updatedAt = builder.updatedAt;
   }
 
-  /**
-   * Get the type of business (e.g., "Company").
-   */
+  /** Get the type of business (e.g., "Company"). */
   public abstract String getBusinessType();
 
   public Long getId() {
@@ -59,9 +57,7 @@ public abstract class BusinessDTO {
     return updatedAt;
   }
 
-  /**
-   * Abstract builder class for BusinessDTO.
-   */
+  /** Abstract builder class for BusinessDTO. */
   public abstract static class Builder<T extends Builder<T>> {
     private Long id;
     private String name;

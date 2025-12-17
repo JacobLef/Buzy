@@ -1,14 +1,15 @@
 package app.auth;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import app.auth.dto.AuthDTO;
 import app.auth.dto.AuthRequest;
 import app.user.User;
 import app.user.UserDisabledException;
 import app.user.UserNotFoundException;
 import app.user.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -17,7 +18,9 @@ public class AuthServiceImpl implements AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
 
-  public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
+  public AuthServiceImpl(
+      UserRepository userRepository,
+      PasswordEncoder passwordEncoder,
       JwtTokenProvider jwtTokenProvider) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
@@ -27,8 +30,8 @@ public class AuthServiceImpl implements AuthService {
   @Override
   @Transactional(readOnly = true)
   public AuthDTO authenticate(AuthRequest request) {
-    User user = userRepository.findByEmail(request.email())
-        .orElseThrow(InvalidCredentialsException::new);
+    User user =
+        userRepository.findByEmail(request.email()).orElseThrow(InvalidCredentialsException::new);
 
     if (!user.getEnabled()) {
       throw new UserDisabledException();
@@ -53,8 +56,8 @@ public class AuthServiceImpl implements AuthService {
     String email = jwtTokenProvider.extractEmail(token);
     String role = jwtTokenProvider.extractRole(token);
 
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new UserNotFoundException(email));
+    User user =
+        userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
 
     if (!user.getEnabled()) {
       throw new UserDisabledException();

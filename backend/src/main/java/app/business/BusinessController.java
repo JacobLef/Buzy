@@ -1,15 +1,17 @@
 package app.business;
 
-import app.business.dto.CompanyDTO;
-import app.business.dto.CreateBusinessRequest;
-import app.business.dto.UpdateBusinessRequest;
-import app.common.factory.DTOFactory;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import app.business.dto.CompanyDTO;
+import app.business.dto.CreateBusinessRequest;
+import app.business.dto.UpdateBusinessRequest;
+import app.common.factory.DTOFactory;
 
 /** REST Controller for business management operations */
 @RestController
@@ -43,8 +45,8 @@ public class BusinessController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<CompanyDTO> updateBusiness(@PathVariable Long id,
-      @RequestBody UpdateBusinessRequest request) {
+  public ResponseEntity<CompanyDTO> updateBusiness(
+      @PathVariable Long id, @RequestBody UpdateBusinessRequest request) {
     Company updatedBusiness = businessService.updateBusiness(id, request);
     CompanyDTO dto = dtoFactory.createDTO(updatedBusiness);
     return ResponseEntity.ok(dto);
@@ -66,8 +68,8 @@ public class BusinessController {
   @GetMapping
   public ResponseEntity<List<CompanyDTO>> getAllBusinesses() {
     List<Company> businesses = businessService.getAllBusinesses();
-    List<CompanyDTO> dtos = businesses.stream().map(dtoFactory::createDTO)
-        .collect(Collectors.toList());
+    List<CompanyDTO> dtos =
+        businesses.stream().map(dtoFactory::createDTO).collect(Collectors.toList());
     return ResponseEntity.ok(dtos);
   }
 }

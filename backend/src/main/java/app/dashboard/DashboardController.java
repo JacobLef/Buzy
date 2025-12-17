@@ -1,14 +1,13 @@
 package app.dashboard;
 
-import app.dashboard.dto.ActivityDTO;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import app.dashboard.dto.ActivityDTO;
 
-/**
- * Controller for dashboard-specific endpoints
- */
+/** Controller for dashboard-specific endpoints */
 @RestController
 @RequestMapping("/api/dashboard")
 @CrossOrigin(origins = "*")
@@ -20,9 +19,7 @@ public class DashboardController {
     this.dashboardService = dashboardService;
   }
 
-  /**
-   * Get recent activity feed GET /api/dashboard/activity?businessId=1
-   */
+  /** Get recent activity feed GET /api/dashboard/activity?businessId=1 */
   @GetMapping("/activity")
   public ResponseEntity<List<ActivityDTO>> getRecentActivity(@RequestParam Long businessId) {
     List<ActivityDTO> activities = dashboardService.getRecentActivity(businessId);

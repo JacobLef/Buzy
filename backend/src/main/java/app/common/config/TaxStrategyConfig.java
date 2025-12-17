@@ -1,15 +1,16 @@
 package app.common.config;
 
-import app.payroll.strategy.FlatTaxStrategy;
-import app.payroll.strategy.ProgressiveTaxStrategy;
-import app.payroll.strategy.TaxCalculationStrategy;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import java.util.HashMap;
-import java.util.Map;
+import app.payroll.strategy.FlatTaxStrategy;
+import app.payroll.strategy.ProgressiveTaxStrategy;
+import app.payroll.strategy.TaxCalculationStrategy;
 
 /**
  * Configuration for Tax Calculation Strategy beans. Provides default FlatTaxStrategy and optional
@@ -31,9 +32,7 @@ public class TaxStrategyConfig {
     return new FlatTaxStrategy(defaultTaxRate);
   }
 
-  /**
-   * Progressive tax strategy bean (optional). Can be used for tiered tax calculations.
-   */
+  /** Progressive tax strategy bean (optional). Can be used for tiered tax calculations. */
   @Bean(name = "progressiveTaxStrategy")
   public TaxCalculationStrategy progressiveTaxStrategy() {
     // Default progressive tax brackets

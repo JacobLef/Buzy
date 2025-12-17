@@ -9,22 +9,22 @@ import app.employer.Employer;
  */
 public class BusinessPersonFactory {
 
-  private BusinessPersonFactory() {
-  }
+  private BusinessPersonFactory() {}
 
-  /**
-   * Create an Employee with respect to the provided parameters (excluding a manager).
-   */
-  public static Employee createEmployee(String name, String email, String password, Double salary,
-      String position) {
+  /** Create an Employee with respect to the provided parameters (excluding a manager). */
+  public static Employee createEmployee(
+      String name, String email, String password, Double salary, String position) {
     return new Employee(name, email, password, salary, position);
   }
 
-  /**
-   * Create an Employee with manager.
-   */
-  public static Employee createEmployee(String name, String email, String password, Double salary,
-      String position, Employer manager) {
+  /** Create an Employee with manager. */
+  public static Employee createEmployee(
+      String name,
+      String email,
+      String password,
+      Double salary,
+      String position,
+      Employer manager) {
     Employee employee = new Employee(name, email, password, salary, position);
     if (manager != null) {
       manager.addManagedEmployee(employee);
@@ -32,19 +32,21 @@ public class BusinessPersonFactory {
     return employee;
   }
 
-  /**
-   * Create an Employer.
-   */
-  public static Employer createEmployer(String name, String email, String password, Double salary,
-      String department, String title) {
+  /** Create an Employer. */
+  public static Employer createEmployer(
+      String name, String email, String password, Double salary, String department, String title) {
     return new Employer(name, email, password, salary, department, title);
   }
 
-  /**
-   * Create an Employer with managed employees.
-   */
-  public static Employer createEmployer(String name, String email, String password, Double salary,
-      String department, String title, Employee... employees) {
+  /** Create an Employer with managed employees. */
+  public static Employer createEmployer(
+      String name,
+      String email,
+      String password,
+      Double salary,
+      String department,
+      String title,
+      Employee... employees) {
     Employer employer = new Employer(name, email, password, salary, department, title);
     for (Employee employee : employees) {
       employer.addManagedEmployee(employee);

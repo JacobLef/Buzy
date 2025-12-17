@@ -1,21 +1,17 @@
 package app.user;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-  /**
-   * Find user by email (for login).
-   */
+  /** Find user by email (for login). */
   Optional<User> findByEmail(String email);
 
-  /**
-   * Check if email exists. More efficient than findByEmail().isPresent().
-   */
+  /** Check if email exists. More efficient than findByEmail().isPresent(). */
   boolean existsByEmail(String email);
 
   /**

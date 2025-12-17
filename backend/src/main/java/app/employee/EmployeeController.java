@@ -1,17 +1,18 @@
 package app.employee;
 
-import app.employee.dto.EmployeeDTO;
-import app.employee.dto.CreateEmployeeRequest;
-import app.employee.dto.UpdateEmployeeRequest;
-import app.common.factory.DTOFactory;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import app.common.factory.DTOFactory;
+import app.employee.dto.CreateEmployeeRequest;
+import app.employee.dto.EmployeeDTO;
+import app.employee.dto.UpdateEmployeeRequest;
 
 /**
  * REST API based controller for Employee object based requests.
@@ -50,14 +51,14 @@ public class EmployeeController {
   @GetMapping
   public ResponseEntity<List<EmployeeDTO>> getAllEmployees() {
     List<Employee> employees = employeeService.getAllEmployees();
-    List<EmployeeDTO> dtos = employees.stream().map(dtoFactory::createDTO)
-        .collect(Collectors.toList());
+    List<EmployeeDTO> dtos =
+        employees.stream().map(dtoFactory::createDTO).collect(Collectors.toList());
     return ResponseEntity.ok(dtos);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable Long id,
-      @RequestBody UpdateEmployeeRequest req) {
+  public ResponseEntity<EmployeeDTO> updateEmployee(
+      @PathVariable Long id, @RequestBody UpdateEmployeeRequest req) {
     Employee employee = employeeService.updateEmployee(id, req);
     EmployeeDTO dto = dtoFactory.createDTO(employee);
     return ResponseEntity.ok(dto);
@@ -72,22 +73,22 @@ public class EmployeeController {
   @GetMapping("/business/{businessId}")
   public ResponseEntity<List<EmployeeDTO>> getEmployeesByBusinessId(@PathVariable Long businessId) {
     List<Employee> employees = employeeService.getEmployeesByBusiness(businessId);
-    List<EmployeeDTO> dtos = employees.stream().map(dtoFactory::createDTO)
-        .collect(Collectors.toList());
+    List<EmployeeDTO> dtos =
+        employees.stream().map(dtoFactory::createDTO).collect(Collectors.toList());
     return ResponseEntity.ok(dtos);
   }
 
   @GetMapping("/manager/{managerId}")
   public ResponseEntity<List<EmployeeDTO>> getEmployeesByManager(@PathVariable Long managerId) {
     List<Employee> employees = employeeService.getEmployeesByManager(managerId);
-    List<EmployeeDTO> dtos = employees.stream().map(dtoFactory::createDTO)
-        .collect(Collectors.toList());
+    List<EmployeeDTO> dtos =
+        employees.stream().map(dtoFactory::createDTO).collect(Collectors.toList());
     return ResponseEntity.ok(dtos);
   }
 
   @PutMapping("/{id}/manager")
-  public ResponseEntity<EmployeeDTO> assignManager(@PathVariable Long id,
-      @RequestParam Long managerId) {
+  public ResponseEntity<EmployeeDTO> assignManager(
+      @PathVariable Long id, @RequestParam Long managerId) {
     Employee employee = employeeService.assignManager(id, managerId);
     EmployeeDTO dto = dtoFactory.createDTO(employee);
     return ResponseEntity.ok(dto);

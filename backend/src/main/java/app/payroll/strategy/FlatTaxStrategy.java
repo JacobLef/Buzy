@@ -3,10 +3,10 @@ package app.payroll.strategy;
 /**
  * Flat tax strategy that applies a uniform tax rate to all income.
  *
- * Example use case: A small business uses a flat 15% tax rate for all employees regardless of
+ * <p>Example use case: A small business uses a flat 15% tax rate for all employees regardless of
  * income level. For an employee with $50,000 gross pay: tax = $50,000 * 0.15 = $7,500
  *
- * Usage: TaxCalculationStrategy strategy = new FlatTaxStrategy(0.15); double tax =
+ * <p>Usage: TaxCalculationStrategy strategy = new FlatTaxStrategy(0.15); double tax =
  * strategy.calculateTax(50000.0); // Returns 7500.0
  *
  * @author Qing Mi

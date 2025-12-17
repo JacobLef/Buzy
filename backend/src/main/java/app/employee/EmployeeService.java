@@ -1,10 +1,10 @@
 package app.employee;
 
-import app.employee.dto.CreateEmployeeRequest;
-import app.employee.dto.UpdateEmployeeRequest;
-
 import java.util.List;
 import java.util.Optional;
+
+import app.employee.dto.CreateEmployeeRequest;
+import app.employee.dto.UpdateEmployeeRequest;
 
 /**
  * Service interface for employee management operations
@@ -15,8 +15,7 @@ public interface EmployeeService {
   /**
    * Creates a new employee.
    *
-   * @param req
-   *          Data for the new employee.
+   * @param req Data for the new employee.
    * @return Created Employee.
    */
   Employee createEmployee(CreateEmployeeRequest req);
@@ -24,10 +23,9 @@ public interface EmployeeService {
   /**
    * Fetches the employee mapped to the provided ID.
    *
-   * @param id
-   *          the id of the employee to be fetched.
+   * @param id the id of the employee to be fetched.
    * @return {@code Optional.empty()} if there is no employee by the id provided or the employee
-   *         object that relates to the given id.
+   *     object that relates to the given id.
    */
   Optional<Employee> getEmployee(Long id);
 
@@ -41,10 +39,8 @@ public interface EmployeeService {
   /**
    * Updates an existing employee with the given data.
    *
-   * @param id
-   *          the id of the employee to be updated.
-   * @param req
-   *          employee data.
+   * @param id the id of the employee to be updated.
+   * @param req employee data.
    * @return the new Updated employee.
    */
   Employee updateEmployee(Long id, UpdateEmployeeRequest req);
@@ -52,16 +48,14 @@ public interface EmployeeService {
   /**
    * Delete an employee.
    *
-   * @param id
-   *          the id of the Employee to be deleted.
+   * @param id the id of the Employee to be deleted.
    */
   void deleteEmployee(Long id);
 
   /**
    * Get all employees for a specific business;
    *
-   * @param businessId
-   *          the id of the business whose employees are to be fetched.
+   * @param businessId the id of the business whose employees are to be fetched.
    * @return the list of employees working at that business.
    */
   List<Employee> getEmployeesByBusiness(Long businessId);
@@ -69,8 +63,7 @@ public interface EmployeeService {
   /**
    * Get all employees managed by a specific employer.
    *
-   * @param managerId
-   *          the id of the manager whose managees are to be fetched.
+   * @param managerId the id of the manager whose managees are to be fetched.
    * @return a list of the employees found.
    */
   List<Employee> getEmployeesByManager(Long managerId);
@@ -78,10 +71,8 @@ public interface EmployeeService {
   /**
    * Assign a manager to an employee
    *
-   * @param employeeId
-   *          Employee ID
-   * @param managerId
-   *          Manager/Employer ID
+   * @param employeeId Employee ID
+   * @param managerId Manager/Employer ID
    * @return Updated employee
    */
   Employee assignManager(Long employeeId, Long managerId);
@@ -89,8 +80,7 @@ public interface EmployeeService {
   /**
    * Remove manager from an employee
    *
-   * @param employeeId
-   *          Employee ID
+   * @param employeeId Employee ID
    * @return Updated employee
    */
   Employee removeManager(Long employeeId);
@@ -98,10 +88,8 @@ public interface EmployeeService {
   /**
    * Update employee salary
    *
-   * @param employeeId
-   *          Employee ID
-   * @param newSalary
-   *          New salary amount
+   * @param employeeId Employee ID
+   * @param newSalary New salary amount
    * @return Updated employee
    */
   Employee updateSalary(Long employeeId, Double newSalary);
@@ -109,10 +97,8 @@ public interface EmployeeService {
   /**
    * Give bonus to employee
    *
-   * @param employeeId
-   *          Employee ID
-   * @param bonusAmount
-   *          Bonus amount
+   * @param employeeId Employee ID
+   * @param bonusAmount Bonus amount
    * @return Updated employee
    */
   Employee giveBonus(Long employeeId, Double bonusAmount);
@@ -120,10 +106,8 @@ public interface EmployeeService {
   /**
    * Update employee position (promotion/demotion)
    *
-   * @param employeeId
-   *          Employee ID
-   * @param newPosition
-   *          New position title
+   * @param employeeId Employee ID
+   * @param newPosition New position title
    * @return Updated employee
    */
   Employee updatePosition(Long employeeId, String newPosition);
@@ -131,10 +115,8 @@ public interface EmployeeService {
   /**
    * Update employee status (Active, Inactive, On Leave, etc.)
    *
-   * @param employeeId
-   *          Employee ID
-   * @param status
-   *          New status
+   * @param employeeId Employee ID
+   * @param status New status
    * @return Updated employee
    */
   Employee updateStatus(Long employeeId, String status);
@@ -142,8 +124,7 @@ public interface EmployeeService {
   /**
    * Search employees by name
    *
-   * @param name
-   *          Name to search for
+   * @param name Name to search for
    * @return List of matching employees
    */
   List<Employee> searchByName(String name);
@@ -151,8 +132,7 @@ public interface EmployeeService {
   /**
    * Get employees by position
    *
-   * @param position
-   *          Position title
+   * @param position Position title
    * @return List of employees with that position
    */
   List<Employee> getEmployeesByPosition(String position);
@@ -160,8 +140,7 @@ public interface EmployeeService {
   /**
    * Get employees hired after a certain date
    *
-   * @param date
-   *          Date in format YYYY-MM-DD
+   * @param date Date in format YYYY-MM-DD
    * @return List of employees hired after this date
    */
   List<Employee> getEmployeesHiredAfter(String date);

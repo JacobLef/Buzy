@@ -1,18 +1,20 @@
 package app.auth;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 /**
  * JWT Token Provider. Handles JWT token generation, validation, and parsing. Used for login
@@ -37,10 +39,8 @@ public class JwtTokenProvider {
   /**
    * Generate JWT token for user after successful login.
    *
-   * @param email
-   *          User email (used as subject)
-   * @param role
-   *          User role (EMPLOYEE or EMPLOYER)
+   * @param email User email (used as subject)
+   * @param role User role (EMPLOYEE or EMPLOYER)
    * @return JWT token string
    */
   public String generateToken(String email, String role) {
@@ -53,8 +53,13 @@ public class JwtTokenProvider {
     Date now = new Date();
     Date expiryDate = new Date(now.getTime() + expiration);
 
-    return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(now)
-        .setExpiration(expiryDate).signWith(key, SignatureAlgorithm.HS256).compact();
+    return Jwts.builder()
+        .setClaims(claims)
+        .setSubject(subject)
+        .setIssuedAt(now)
+        .setExpiration(expiryDate)
+        .signWith(key, SignatureAlgorithm.HS256)
+        .compact();
   }
 
   public String extractEmail(String token) {
@@ -81,8 +86,7 @@ public class JwtTokenProvider {
   /**
    * Validate token (check expiration and signature).
    *
-   * @param token
-   *          JWT token to validate
+   * @param token JWT token to validate
    * @return true if token is valid, false otherwise
    */
   public boolean validateToken(String token) {

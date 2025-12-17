@@ -3,9 +3,7 @@ package app.training.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * DTO for Training data transfer. Uses Builder pattern for construction.
- */
+/** DTO for Training data transfer. Uses Builder pattern for construction. */
 public class TrainingDTO {
 
   private final Long id;

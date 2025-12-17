@@ -96,5 +96,4 @@ public class StringConverterImpl implements StringConverter {
     }
     return value.trim();
   }
-
 }

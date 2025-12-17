@@ -1,17 +1,16 @@
 package app.business;
 
-import app.business.dto.CreateBusinessRequest;
-import app.business.dto.UpdateBusinessRequest;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import app.business.dto.CreateBusinessRequest;
+import app.business.dto.UpdateBusinessRequest;
 
-/**
- * Service implementation for business management operations
- */
+/** Service implementation for business management operations */
 @Service
 @Transactional
 public class BusinessServiceImpl implements BusinessService {
@@ -25,8 +24,13 @@ public class BusinessServiceImpl implements BusinessService {
 
   @Override
   public Company createBusiness(CreateBusinessRequest request) {
-    Company company = Company.builder().name(request.name()).address(request.address())
-        .industry(request.industry()).foundedDate(request.foundedDate()).build();
+    Company company =
+        Company.builder()
+            .name(request.name())
+            .address(request.address())
+            .industry(request.industry())
+            .foundedDate(request.foundedDate())
+            .build();
     return businessRepository.save(company);
   }
 
@@ -64,7 +68,8 @@ public class BusinessServiceImpl implements BusinessService {
   @Override
   @Transactional(readOnly = true)
   public Company getBusiness(Long id) {
-    return businessRepository.findById(id)
+    return businessRepository
+        .findById(id)
         .orElseThrow(() -> new RuntimeException("Business not found with id: " + id));
   }
 

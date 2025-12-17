@@ -1,12 +1,12 @@
 package app.employee;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
@@ -31,10 +31,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
   @Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.status = 'Active'")
   List<Employee> findActiveEmployeesByBusiness(@Param("companyId") Long companyId);
 
-  /**
-   * Find employees hired after a date for a specific business
-   */
+  /** Find employees hired after a date for a specific business */
   @Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.hireDate >= :date")
-  List<Employee> findByCompanyIdAndHireDateAfter(@Param("companyId") Long companyId,
-      @Param("date") LocalDate date);
+  List<Employee> findByCompanyIdAndHireDateAfter(
+      @Param("companyId") Long companyId, @Param("date") LocalDate date);
 }

@@ -1,7 +1,5 @@
 package app.business;
 
-import jakarta.persistence.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +10,7 @@ import java.util.Map;
 
 import app.employee.Employee;
 import app.employer.Employer;
+import jakarta.persistence.*;
 
 /**
  * Company entity representing a business organization
@@ -50,8 +49,7 @@ public class Company implements Business {
   @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Employer> employers = new ArrayList<>();
 
-  public Company() {
-  }
+  public Company() {}
 
   public Company(String name, String address) {
     this.name = name;
@@ -83,8 +81,7 @@ public class Company implements Business {
 
   @Override
   public void addEmployee(BusinessPerson person) {
-    if (person == null)
-      return;
+    if (person == null) return;
 
     if (person instanceof Employee) {
       Employee emp = (Employee) person;
@@ -103,8 +100,7 @@ public class Company implements Business {
 
   @Override
   public void removeEmployee(BusinessPerson person) {
-    if (person == null)
-      return;
+    if (person == null) return;
 
     if (person instanceof Employee) {
       Employee emp = (Employee) person;
@@ -127,23 +123,17 @@ public class Company implements Business {
     return all;
   }
 
-  /**
-   * Get only Employee objects
-   */
+  /** Get only Employee objects */
   public List<Employee> getEmployeesOnly() {
     return new ArrayList<>(employees);
   }
 
-  /**
-   * Get only Employer objects
-   */
+  /** Get only Employer objects */
   public List<Employer> getEmployersOnly() {
     return new ArrayList<>(employers);
   }
 
-  /**
-   * Get total count of all business persons
-   */
+  /** Get total count of all business persons */
   public int getTotalPersonsCount() {
     return employees.size() + employers.size();
   }
@@ -249,11 +239,9 @@ public class Company implements Business {
     /**
      * Creates a Builder instance from a CSV row map.
      *
-     * @param csvRow
-     *          Map containing CSV column names as keys and values as values
+     * @param csvRow Map containing CSV column names as keys and values as values
      * @return Builder instance configured with CSV data
-     * @throws IllegalArgumentException
-     *           if required fields are missing or invalid
+     * @throws IllegalArgumentException if required fields are missing or invalid
      */
     public static Builder fromCSV(Map<String, String> csvRow) {
       if (csvRow == null) {
@@ -280,12 +268,14 @@ public class Company implements Business {
       String foundedDateStr = csvRow.get("founded_date");
       if (foundedDateStr != null && !foundedDateStr.trim().isEmpty()) {
         try {
-          LocalDate foundedDate = LocalDate.parse(foundedDateStr.trim(),
-              DateTimeFormatter.ISO_LOCAL_DATE);
+          LocalDate foundedDate =
+              LocalDate.parse(foundedDateStr.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
           builder.foundedDate(foundedDate);
         } catch (DateTimeParseException e) {
-          System.err.println("Warning: Invalid date format for founded_date: " + foundedDateStr
-              + ". Skipping date.");
+          System.err.println(
+              "Warning: Invalid date format for founded_date: "
+                  + foundedDateStr
+                  + ". Skipping date.");
         }
       }
 

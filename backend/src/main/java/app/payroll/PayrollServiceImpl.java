@@ -1,17 +1,10 @@
 package app.payroll;
 
-import app.payroll.dto.DistributeBonusRequest;
-import app.payroll.dto.PaycheckDTO;
-import app.payroll.dto.PayrollSummaryDTO;
-import app.common.factory.DTOFactory;
-import app.business.BusinessValidationException;
-import app.common.exception.ResourceNotFoundException;
-import app.business.Company;
-import app.employee.Employee;
-import app.employer.Employer;
-import app.business.BusinessRepository;
-import app.employee.EmployeeService;
-import app.payroll.strategy.TaxCalculationStrategy;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +12,20 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.annotation.PostConstruct;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import app.business.BusinessRepository;
+import app.business.BusinessValidationException;
+import app.business.Company;
+import app.common.exception.ResourceNotFoundException;
+import app.common.factory.DTOFactory;
+import app.employee.Employee;
+import app.employee.EmployeeService;
+import app.employer.Employer;
+import app.payroll.dto.DistributeBonusRequest;
+import app.payroll.dto.PaycheckDTO;
+import app.payroll.dto.PayrollSummaryDTO;
+import app.payroll.strategy.TaxCalculationStrategy;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Implementation of PayrollService handling all payroll calculations Uses Strategy pattern for tax
@@ -52,8 +53,11 @@ public class PayrollServiceImpl implements PayrollService {
    * application.properties with default value 0.05 (5%)
    */
   @Autowired
-  public PayrollServiceImpl(EmployeeService employeeService, PaycheckRepository paycheckRepository,
-      BusinessRepository businessRepository, DTOFactory dtoFactory,
+  public PayrollServiceImpl(
+      EmployeeService employeeService,
+      PaycheckRepository paycheckRepository,
+      BusinessRepository businessRepository,
+      DTOFactory dtoFactory,
       @Qualifier("flatTaxStrategy") TaxCalculationStrategy taxStrategy,
       @Value("${payroll.default.insurance.rate:0.05}") double insuranceRate) {
     this.employeeService = employeeService;
@@ -75,7 +79,8 @@ public class PayrollServiceImpl implements PayrollService {
       throw new IllegalStateException(
           "Tax strategy bean was not properly injected. Check TaxStrategyConfig.");
     }
-    logger.info("PayrollService initialized with tax strategy: {} and insurance rate: {}%",
+    logger.info(
+        "PayrollService initialized with tax strategy: {} and insurance rate: {}%",
         taxStrategy.getStrategyName(), insuranceRate * 100);
   }
 
@@ -85,8 +90,10 @@ public class PayrollServiceImpl implements PayrollService {
     logger.debug("Calculating regular payroll for employee ID: {}", employeeId);
 
     // Fetch employee via EmployeeService
-    Employee employee = employeeService.getEmployee(employeeId)
-        .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
+    Employee employee =
+        employeeService
+            .getEmployee(employeeId)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
 
     // Calculate regular payroll (base salary only)
     try {
@@ -95,15 +102,17 @@ public class PayrollServiceImpl implements PayrollService {
       // Save to database
       Paycheck savedPaycheck = paycheckRepository.save(paycheck);
 
-      logger.info("Regular payroll calculated successfully for employee {}: Net Pay = ${}",
-          employee.getName(), savedPaycheck.getNetPay());
+      logger.info(
+          "Regular payroll calculated successfully for employee {}: Net Pay = ${}",
+          employee.getName(),
+          savedPaycheck.getNetPay());
 
       return convertToDTO(savedPaycheck, employee);
 
     } catch (Exception e) {
       logger.error("Failed to calculate payroll for employee ID: {}", employeeId, e);
-      throw new PayrollCalculationException("Failed to calculate payroll: " + e.getMessage(),
-          employeeId, e);
+      throw new PayrollCalculationException(
+          "Failed to calculate payroll: " + e.getMessage(), employeeId, e);
     }
   }
 
@@ -124,12 +133,16 @@ public class PayrollServiceImpl implements PayrollService {
       throw new IllegalArgumentException("Additional pay cannot be negative");
     }
 
-    logger.debug("Calculating payroll for employee ID: {} with additional pay: {}", employeeId,
+    logger.debug(
+        "Calculating payroll for employee ID: {} with additional pay: {}",
+        employeeId,
         additionalPay);
 
     // Fetch employee via EmployeeService
-    Employee employee = employeeService.getEmployee(employeeId)
-        .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
+    Employee employee =
+        employeeService
+            .getEmployee(employeeId)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
 
     // Calculate payroll with bonus (additionalPay > 0)
     try {
@@ -138,27 +151,34 @@ public class PayrollServiceImpl implements PayrollService {
       // Save to database
       Paycheck savedPaycheck = paycheckRepository.save(paycheck);
 
-      logger.info("Payroll calculated successfully for employee {}: Net Pay = ${}",
-          employee.getName(), savedPaycheck.getNetPay());
+      logger.info(
+          "Payroll calculated successfully for employee {}: Net Pay = ${}",
+          employee.getName(),
+          savedPaycheck.getNetPay());
 
       return convertToDTO(savedPaycheck, employee);
 
     } catch (Exception e) {
       logger.error("Failed to calculate payroll for employee ID: {}", employeeId, e);
-      throw new PayrollCalculationException("Failed to calculate payroll: " + e.getMessage(),
-          employeeId, e);
+      throw new PayrollCalculationException(
+          "Failed to calculate payroll: " + e.getMessage(), employeeId, e);
     }
   }
 
   @Override
   @Transactional
   public List<PaycheckDTO> distributeBonuses(DistributeBonusRequest request) {
-    logger.info("Starting bonus distribution for business ID: {} with amount: ${}",
-        request.businessId(), request.bonusAmount());
+    logger.info(
+        "Starting bonus distribution for business ID: {} with amount: ${}",
+        request.businessId(),
+        request.bonusAmount());
 
     // Validate business exists
-    Company business = businessRepository.findById(request.businessId())
-        .orElseThrow(() -> new ResourceNotFoundException("Business", "id", request.businessId()));
+    Company business =
+        businessRepository
+            .findById(request.businessId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("Business", "id", request.businessId()));
 
     // Fetch employees based on filters
     List<Employee> employees = fetchEmployeesForBonus(request, business);
@@ -182,13 +202,18 @@ public class PayrollServiceImpl implements PayrollService {
         PaycheckDTO dto = convertToDTO(savedPaycheck, employee);
         paycheckDTOs.add(dto);
 
-        logger.debug("Bonus paycheck created for employee {}: Base=${}, Bonus=${}, Net=${}",
-            employee.getName(), savedPaycheck.getGrossPay(), savedPaycheck.getBonus(),
+        logger.debug(
+            "Bonus paycheck created for employee {}: Base=${}, Bonus=${}, Net=${}",
+            employee.getName(),
+            savedPaycheck.getGrossPay(),
+            savedPaycheck.getBonus(),
             savedPaycheck.getNetPay());
 
       } catch (Exception e) {
-        String errorMsg = String.format("Failed to process bonus for employee %s (ID: %d): %s",
-            employee.getName(), employee.getId(), e.getMessage());
+        String errorMsg =
+            String.format(
+                "Failed to process bonus for employee %s (ID: %d): %s",
+                employee.getName(), employee.getId(), e.getMessage());
         errors.add(errorMsg);
         logger.error(errorMsg, e);
         // Continue processing other employees
@@ -202,7 +227,9 @@ public class PayrollServiceImpl implements PayrollService {
           request.businessId());
     }
 
-    logger.info("Bonus distribution completed: {} successful, {} failed", paycheckDTOs.size(),
+    logger.info(
+        "Bonus distribution completed: {} successful, {} failed",
+        paycheckDTOs.size(),
         errors.size());
 
     return paycheckDTOs;
@@ -219,12 +246,16 @@ public class PayrollServiceImpl implements PayrollService {
       throw new IllegalArgumentException("Additional pay cannot be negative");
     }
 
-    logger.debug("Previewing payroll for employee ID: {} with additional pay: {}", employeeId,
+    logger.debug(
+        "Previewing payroll for employee ID: {} with additional pay: {}",
+        employeeId,
         additionalPay);
 
     // Fetch employee via EmployeeService
-    Employee employee = employeeService.getEmployee(employeeId)
-        .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
+    Employee employee =
+        employeeService
+            .getEmployee(employeeId)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
 
     // Calculate payroll without saving
     try {
@@ -236,15 +267,17 @@ public class PayrollServiceImpl implements PayrollService {
       }
 
       // Convert to DTO without saving to database
-      logger.debug("Payroll preview calculated for employee {}: Net Pay = ${}", employee.getName(),
+      logger.debug(
+          "Payroll preview calculated for employee {}: Net Pay = ${}",
+          employee.getName(),
           paycheck.getNetPay());
 
       return convertToDTO(paycheck, employee);
 
     } catch (Exception e) {
       logger.error("Failed to preview payroll for employee ID: {}", employeeId, e);
-      throw new PayrollCalculationException("Failed to preview payroll: " + e.getMessage(),
-          employeeId, e);
+      throw new PayrollCalculationException(
+          "Failed to preview payroll: " + e.getMessage(), employeeId, e);
     }
   }
 
@@ -274,15 +307,14 @@ public class PayrollServiceImpl implements PayrollService {
   /**
    * Calculate regular payroll (base salary only, no bonus)
    *
-   * @param employee
-   *          Employee to calculate payroll for
+   * @param employee Employee to calculate payroll for
    * @return Paycheck object with base salary calculations
    */
   private Paycheck calculateRegularPayroll(Employee employee) {
     // Validate employee has valid salary
     if (employee.getSalary() == null || employee.getSalary() < MINIMUM_SALARY_THRESHOLD) {
-      throw new PayrollCalculationException("Employee has invalid salary: " + employee.getSalary(),
-          employee.getId());
+      throw new PayrollCalculationException(
+          "Employee has invalid salary: " + employee.getSalary(), employee.getId());
     }
 
     double baseSalary = employee.getSalary();
@@ -294,13 +326,16 @@ public class PayrollServiceImpl implements PayrollService {
     double insuranceDeduction = calculateInsuranceDeduction(baseSalary);
 
     // Create paycheck for regular salary (no bonus)
-    Paycheck paycheck = new Paycheck(employee, baseSalary, taxDeduction, insuranceDeduction,
-        LocalDate.now());
+    Paycheck paycheck =
+        new Paycheck(employee, baseSalary, taxDeduction, insuranceDeduction, LocalDate.now());
     paycheck.setBonus(null); // Explicitly set no bonus
 
     logger.debug(
         "Regular payroll calculated - Base Salary: ${}, Tax: ${}, Insurance: ${}, Net: ${}",
-        baseSalary, taxDeduction, insuranceDeduction, paycheck.getNetPay());
+        baseSalary,
+        taxDeduction,
+        insuranceDeduction,
+        paycheck.getNetPay());
 
     return paycheck;
   }
@@ -309,13 +344,10 @@ public class PayrollServiceImpl implements PayrollService {
    * Calculate payroll with bonus payment In real-life: bonus is separate from base salary, taxed on
    * total (base + bonus)
    *
-   * @param employee
-   *          Employee to calculate payroll for
-   * @param bonusAmount
-   *          Bonus amount to add (must be > 0)
+   * @param employee Employee to calculate payroll for
+   * @param bonusAmount Bonus amount to add (must be > 0)
    * @return Paycheck object with base salary and bonus calculations
-   * @throws IllegalArgumentException
-   *           if bonusAmount is null or <= 0
+   * @throws IllegalArgumentException if bonusAmount is null or <= 0
    */
   private Paycheck calculatePayrollWithBonus(Employee employee, Double bonusAmount) {
     // Validate bonus amount
@@ -325,8 +357,8 @@ public class PayrollServiceImpl implements PayrollService {
 
     // Validate employee has valid salary
     if (employee.getSalary() == null || employee.getSalary() < MINIMUM_SALARY_THRESHOLD) {
-      throw new PayrollCalculationException("Employee has invalid salary: " + employee.getSalary(),
-          employee.getId());
+      throw new PayrollCalculationException(
+          "Employee has invalid salary: " + employee.getSalary(), employee.getId());
     }
 
     double baseSalary = employee.getSalary();
@@ -341,13 +373,22 @@ public class PayrollServiceImpl implements PayrollService {
     double insuranceDeduction = calculateInsuranceDeduction(totalGrossPay);
 
     // Create paycheck: grossPay = base salary, bonus stored separately
-    Paycheck paycheck = new Paycheck(employee, baseSalary, // Base salary stored as grossPay
-        taxDeduction, insuranceDeduction, LocalDate.now());
+    Paycheck paycheck =
+        new Paycheck(
+            employee,
+            baseSalary, // Base salary stored as grossPay
+            taxDeduction,
+            insuranceDeduction,
+            LocalDate.now());
     paycheck.setBonus(bonusAmount); // Bonus stored separately
 
     logger.debug(
         "Payroll with bonus calculated - Base: ${}, Bonus: ${}, Total Gross: ${}, Tax: ${}, Insurance: ${}, Net: ${}",
-        baseSalary, bonusAmount, totalGrossPay, taxDeduction, insuranceDeduction,
+        baseSalary,
+        bonusAmount,
+        totalGrossPay,
+        taxDeduction,
+        insuranceDeduction,
         paycheck.getNetPay());
 
     return paycheck;
@@ -357,8 +398,7 @@ public class PayrollServiceImpl implements PayrollService {
    * Calculate insurance deduction based on gross pay Uses configurable insurance rate from
    * application.properties Can be extended to use Strategy pattern if needed
    *
-   * @param grossPay
-   *          Gross payment amount
+   * @param grossPay Gross payment amount
    * @return Insurance deduction amount
    */
   private double calculateInsuranceDeduction(double grossPay) {
@@ -368,10 +408,8 @@ public class PayrollServiceImpl implements PayrollService {
   /**
    * Fetch employees for bonus distribution based on request filters
    *
-   * @param request
-   *          Bonus request with filters
-   * @param business
-   *          Company entity
+   * @param request Bonus request with filters
+   * @param business Company entity
    * @return List of employees matching criteria
    */
   private List<Employee> fetchEmployeesForBonus(DistributeBonusRequest request, Company business) {
@@ -380,14 +418,19 @@ public class PayrollServiceImpl implements PayrollService {
     // If specific employee IDs provided, fetch only those
     if (request.employeeIds() != null && !request.employeeIds().isEmpty()) {
       // Fetch employees via EmployeeService
-      allEmployees = request.employeeIds().stream().map(employeeService::getEmployee)
-          .filter(java.util.Optional::isPresent).map(java.util.Optional::get)
-          .collect(Collectors.toList());
+      allEmployees =
+          request.employeeIds().stream()
+              .map(employeeService::getEmployee)
+              .filter(java.util.Optional::isPresent)
+              .map(java.util.Optional::get)
+              .collect(Collectors.toList());
 
       // Validate all requested employees exist
       if (allEmployees.size() != request.employeeIds().size()) {
-        logger.warn("Some employee IDs not found. Requested: {}, Found: {}",
-            request.employeeIds().size(), allEmployees.size());
+        logger.warn(
+            "Some employee IDs not found. Requested: {}, Found: {}",
+            request.employeeIds().size(),
+            allEmployees.size());
       }
     } else {
       // Fetch all employees for the business via EmployeeService
@@ -396,16 +439,20 @@ public class PayrollServiceImpl implements PayrollService {
 
     // Apply department filter if specified
     if (request.department() != null && !request.department().isBlank()) {
-      allEmployees = allEmployees.stream().filter(emp -> {
-        if (emp.getManager() == null)
-          return false;
-        // Manager can be Employee or Employer, only Employer has department
-        if (emp.getManager() instanceof Employer) {
-          return request.department()
-              .equalsIgnoreCase(((Employer) emp.getManager()).getDepartment());
-        }
-        return false;
-      }).collect(Collectors.toList());
+      allEmployees =
+          allEmployees.stream()
+              .filter(
+                  emp -> {
+                    if (emp.getManager() == null) return false;
+                    // Manager can be Employee or Employer, only Employer has department
+                    if (emp.getManager() instanceof Employer) {
+                      return request
+                          .department()
+                          .equalsIgnoreCase(((Employer) emp.getManager()).getDepartment());
+                    }
+                    return false;
+                  })
+              .collect(Collectors.toList());
     }
 
     logger.debug("Fetched {} employees for bonus distribution", allEmployees.size());
@@ -417,8 +464,10 @@ public class PayrollServiceImpl implements PayrollService {
     logger.debug("Fetching payroll history for employee ID: {}", employeeId);
 
     // Validate employee exists
-    Employee employee = employeeService.getEmployee(employeeId)
-        .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
+    Employee employee =
+        employeeService
+            .getEmployee(employeeId)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
 
     List<Paycheck> paychecks = paycheckRepository.findByEmployeeId(employeeId);
 
@@ -428,21 +477,26 @@ public class PayrollServiceImpl implements PayrollService {
   }
 
   @Override
-  public List<PaycheckDTO> getPayrollHistory(Long employeeId, LocalDate startDate,
-      LocalDate endDate) {
-    logger.debug("Fetching payroll history for employee ID: {} from {} to {}", employeeId,
-        startDate, endDate);
+  public List<PaycheckDTO> getPayrollHistory(
+      Long employeeId, LocalDate startDate, LocalDate endDate) {
+    logger.debug(
+        "Fetching payroll history for employee ID: {} from {} to {}",
+        employeeId,
+        startDate,
+        endDate);
 
     // Validate employee exists
-    Employee employee = employeeService.getEmployee(employeeId)
-        .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
+    Employee employee =
+        employeeService
+            .getEmployee(employeeId)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", employeeId));
 
     if (startDate.isAfter(endDate)) {
       throw new IllegalArgumentException("Start date cannot be after end date");
     }
 
-    List<Paycheck> paychecks = paycheckRepository.findByEmployeeIdAndDateRange(employeeId,
-        startDate, endDate);
+    List<Paycheck> paychecks =
+        paycheckRepository.findByEmployeeIdAndDateRange(employeeId, startDate, endDate);
 
     return paychecks.stream()
         .map(p -> convertToDTO(p, p.getEmployee() != null ? p.getEmployee() : employee))
@@ -450,26 +504,46 @@ public class PayrollServiceImpl implements PayrollService {
   }
 
   @Override
-  public PayrollSummaryDTO getPayrollSummary(Long businessId, LocalDate startDate,
-      LocalDate endDate) {
-    logger.info("Generating payroll summary for business ID: {} from {} to {}", businessId,
-        startDate, endDate);
+  public PayrollSummaryDTO getPayrollSummary(
+      Long businessId, LocalDate startDate, LocalDate endDate) {
+    logger.info(
+        "Generating payroll summary for business ID: {} from {} to {}",
+        businessId,
+        startDate,
+        endDate);
 
     // Validate business exists
-    Company business = businessRepository.findById(businessId)
-        .orElseThrow(() -> new ResourceNotFoundException("Business", "id", businessId));
+    Company business =
+        businessRepository
+            .findById(businessId)
+            .orElseThrow(() -> new ResourceNotFoundException("Business", "id", businessId));
 
     if (startDate.isAfter(endDate)) {
       throw new IllegalArgumentException("Start date cannot be after end date");
     }
 
     // Fetch all paychecks for the business in date range
-    List<Paycheck> paychecks = paycheckRepository.findByBusinessIdAndDateRange(businessId,
-        startDate, endDate);
+    List<Paycheck> paychecks =
+        paycheckRepository.findByBusinessIdAndDateRange(businessId, startDate, endDate);
 
     if (paychecks.isEmpty()) {
-      return new PayrollSummaryDTO(businessId, business.getName(), startDate, endDate, 0, 0, 0.0,
-          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+      return new PayrollSummaryDTO(
+          businessId,
+          business.getName(),
+          startDate,
+          endDate,
+          0,
+          0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0);
     }
 
     // Calculate aggregates
@@ -478,46 +552,70 @@ public class PayrollServiceImpl implements PayrollService {
 
     double totalGrossPay = paychecks.stream().mapToDouble(Paycheck::getGrossPay).sum();
 
-    double totalBonus = paychecks.stream()
-        .mapToDouble(p -> p.getBonus() != null ? p.getBonus() : 0.0).sum();
+    double totalBonus =
+        paychecks.stream().mapToDouble(p -> p.getBonus() != null ? p.getBonus() : 0.0).sum();
 
     double totalTaxDeductions = paychecks.stream().mapToDouble(Paycheck::getTaxDeduction).sum();
 
-    double totalInsuranceDeductions = paychecks.stream()
-        .mapToDouble(Paycheck::getInsuranceDeduction).sum();
+    double totalInsuranceDeductions =
+        paychecks.stream().mapToDouble(Paycheck::getInsuranceDeduction).sum();
 
     double totalDeductions = totalTaxDeductions + totalInsuranceDeductions;
 
     double totalNetPay = paychecks.stream().mapToDouble(Paycheck::getNetPay).sum();
 
-    return new PayrollSummaryDTO(businessId, business.getName(), startDate, endDate, totalPaychecks,
-        (int) totalEmployees, totalGrossPay, totalBonus, totalTaxDeductions,
-        totalInsuranceDeductions, totalDeductions, totalNetPay, 0.0, // Calculated in constructor
+    return new PayrollSummaryDTO(
+        businessId,
+        business.getName(),
+        startDate,
+        endDate,
+        totalPaychecks,
+        (int) totalEmployees,
+        totalGrossPay,
+        totalBonus,
+        totalTaxDeductions,
+        totalInsuranceDeductions,
+        totalDeductions,
+        totalNetPay,
+        0.0, // Calculated in constructor
         0.0, // Calculated in constructor
         0.0, // Calculated in constructor
         0.0 // Calculated in constructor
-    );
+        );
   }
 
   @Override
   @Transactional
-  public PaycheckDTO updatePaycheck(Long paycheckId, Double grossPay, Double bonus,
-      Double taxDeduction, Double insuranceDeduction) {
+  public PaycheckDTO updatePaycheck(
+      Long paycheckId,
+      Double grossPay,
+      Double bonus,
+      Double taxDeduction,
+      Double insuranceDeduction) {
     logger.info("Updating paycheck ID: {}", paycheckId);
 
-    Paycheck paycheck = paycheckRepository.findById(paycheckId)
-        .orElseThrow(() -> new ResourceNotFoundException("Paycheck", "id", paycheckId));
+    Paycheck paycheck =
+        paycheckRepository
+            .findById(paycheckId)
+            .orElseThrow(() -> new ResourceNotFoundException("Paycheck", "id", paycheckId));
 
     // Only allow updates if status is DRAFT
     if (paycheck.getStatus() != PaycheckStatus.DRAFT) {
-      throw new PayrollCalculationException("Cannot update paycheck with status: "
-          + paycheck.getStatus() + ". Only DRAFT paychecks can be updated.", paycheckId, null);
+      throw new PayrollCalculationException(
+          "Cannot update paycheck with status: "
+              + paycheck.getStatus()
+              + ". Only DRAFT paychecks can be updated.",
+          paycheckId,
+          null);
     }
 
     Employee employee = paycheck.getEmployee();
     if (employee == null) {
-      employee = employeeService.getEmployee(paycheck.getEmployeeId()).orElseThrow(
-          () -> new ResourceNotFoundException("Employee", "id", paycheck.getEmployeeId()));
+      employee =
+          employeeService
+              .getEmployee(paycheck.getEmployeeId())
+              .orElseThrow(
+                  () -> new ResourceNotFoundException("Employee", "id", paycheck.getEmployeeId()));
       paycheck.setEmployee(employee);
     }
 
@@ -543,8 +641,8 @@ public class PayrollServiceImpl implements PayrollService {
         logger.error("Tax strategy is null in updatePaycheck");
         throw new IllegalStateException("Tax strategy is not initialized. Cannot update paycheck.");
       }
-      double totalGross = paycheck.getGrossPay()
-          + (paycheck.getBonus() != null ? paycheck.getBonus() : 0.0);
+      double totalGross =
+          paycheck.getGrossPay() + (paycheck.getBonus() != null ? paycheck.getBonus() : 0.0);
       paycheck.setTaxDeduction(taxStrategy.calculateTax(totalGross));
     }
 
@@ -552,15 +650,17 @@ public class PayrollServiceImpl implements PayrollService {
       paycheck.setInsuranceDeduction(insuranceDeduction);
     } else if (recalculateInsurance) {
       // Recalculate insurance based on total (grossPay + bonus)
-      double totalGross = paycheck.getGrossPay()
-          + (paycheck.getBonus() != null ? paycheck.getBonus() : 0.0);
+      double totalGross =
+          paycheck.getGrossPay() + (paycheck.getBonus() != null ? paycheck.getBonus() : 0.0);
       paycheck.setInsuranceDeduction(calculateInsuranceDeduction(totalGross));
     }
 
     // Net pay will be recalculated automatically via setter
     Paycheck updatedPaycheck = paycheckRepository.save(paycheck);
 
-    logger.info("Paycheck ID: {} updated successfully. New net pay: ${}", paycheckId,
+    logger.info(
+        "Paycheck ID: {} updated successfully. New net pay: ${}",
+        paycheckId,
         updatedPaycheck.getNetPay());
 
     return convertToDTO(updatedPaycheck, employee);
@@ -571,13 +671,19 @@ public class PayrollServiceImpl implements PayrollService {
   public void deletePaycheck(Long paycheckId) {
     logger.info("Deleting paycheck ID: {}", paycheckId);
 
-    Paycheck paycheck = paycheckRepository.findById(paycheckId)
-        .orElseThrow(() -> new ResourceNotFoundException("Paycheck", "id", paycheckId));
+    Paycheck paycheck =
+        paycheckRepository
+            .findById(paycheckId)
+            .orElseThrow(() -> new ResourceNotFoundException("Paycheck", "id", paycheckId));
 
     // Only allow deletion if status is DRAFT
     if (paycheck.getStatus() != PaycheckStatus.DRAFT) {
-      throw new PayrollCalculationException("Cannot delete paycheck with status: "
-          + paycheck.getStatus() + ". Only DRAFT paychecks can be deleted.", paycheckId, null);
+      throw new PayrollCalculationException(
+          "Cannot delete paycheck with status: "
+              + paycheck.getStatus()
+              + ". Only DRAFT paychecks can be deleted.",
+          paycheckId,
+          null);
     }
 
     paycheckRepository.delete(paycheck);
@@ -589,8 +695,10 @@ public class PayrollServiceImpl implements PayrollService {
   public PaycheckDTO updatePaycheckStatus(Long paycheckId, PaycheckStatus newStatus) {
     logger.info("Updating paycheck ID: {} status to: {}", paycheckId, newStatus);
 
-    Paycheck paycheck = paycheckRepository.findById(paycheckId)
-        .orElseThrow(() -> new ResourceNotFoundException("Paycheck", "id", paycheckId));
+    Paycheck paycheck =
+        paycheckRepository
+            .findById(paycheckId)
+            .orElseThrow(() -> new ResourceNotFoundException("Paycheck", "id", paycheckId));
 
     PaycheckStatus currentStatus = paycheck.getStatus();
 
@@ -598,12 +706,13 @@ public class PayrollServiceImpl implements PayrollService {
     if (currentStatus == PaycheckStatus.PAID && newStatus != PaycheckStatus.VOIDED) {
       throw new PayrollCalculationException(
           "Cannot change status from PAID to " + newStatus + ". Only VOIDED is allowed.",
-          paycheckId, null);
+          paycheckId,
+          null);
     }
 
     if (currentStatus == PaycheckStatus.VOIDED) {
-      throw new PayrollCalculationException("Cannot change status of VOIDED paycheck.", paycheckId,
-          null);
+      throw new PayrollCalculationException(
+          "Cannot change status of VOIDED paycheck.", paycheckId, null);
     }
 
     paycheck.setStatus(newStatus);
@@ -611,12 +720,17 @@ public class PayrollServiceImpl implements PayrollService {
 
     Employee employee = updatedPaycheck.getEmployee();
     if (employee == null) {
-      employee = employeeService.getEmployee(updatedPaycheck.getEmployeeId()).orElseThrow(
-          () -> new ResourceNotFoundException("Employee", "id", updatedPaycheck.getEmployeeId()));
+      employee =
+          employeeService
+              .getEmployee(updatedPaycheck.getEmployeeId())
+              .orElseThrow(
+                  () ->
+                      new ResourceNotFoundException(
+                          "Employee", "id", updatedPaycheck.getEmployeeId()));
     }
 
-    logger.info("Paycheck ID: {} status updated from {} to {}", paycheckId, currentStatus,
-        newStatus);
+    logger.info(
+        "Paycheck ID: {} status updated from {} to {}", paycheckId, currentStatus, newStatus);
 
     return convertToDTO(updatedPaycheck, employee);
   }
@@ -624,16 +738,13 @@ public class PayrollServiceImpl implements PayrollService {
   /**
    * Convert Paycheck entity to PaycheckDTO using DTOFactory
    *
-   * @param paycheck
-   *          Paycheck entity from database
-   * @param employee
-   *          Employee entity for employee name
+   * @param paycheck Paycheck entity from database
+   * @param employee Employee entity for employee name
    * @return PaycheckDTO for API response
    */
   private PaycheckDTO convertToDTO(Paycheck paycheck, Employee employee) {
-    String strategyName = (taxStrategy != null)
-        ? taxStrategy.getStrategyName()
-        : "Flat Tax Strategy";
+    String strategyName =
+        (taxStrategy != null) ? taxStrategy.getStrategyName() : "Flat Tax Strategy";
     return dtoFactory.createDTO(paycheck, employee, strategyName);
   }
 }

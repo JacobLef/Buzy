@@ -7,5 +7,4 @@ import java.util.Map;
  *
  * @author Qing Mi
  */
-public record TaxStrategiesResponse(Map<String, String> strategies) {
-}
+public record TaxStrategiesResponse(Map<String, String> strategies) {}

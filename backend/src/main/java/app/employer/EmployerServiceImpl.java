@@ -1,20 +1,20 @@
 package app.employer;
 
-import app.employer.dto.CreateEmployerRequest;
-import app.employer.dto.UpdateEmployerRequest;
-import app.business.Company;
-import app.employee.Employee;
-import app.user.User;
-import app.business.BusinessRepository;
-import app.user.UserRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import app.business.BusinessRepository;
+import app.business.Company;
+import app.employee.Employee;
+import app.employer.dto.CreateEmployerRequest;
+import app.employer.dto.UpdateEmployerRequest;
+import app.user.User;
+import app.user.UserRepository;
 
 @Service
 @Transactional
@@ -25,8 +25,10 @@ public class EmployerServiceImpl implements EmployerService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public EmployerServiceImpl(EmployerRepository employerRepository,
-      BusinessRepository businessRepository, UserRepository userRepository,
+  public EmployerServiceImpl(
+      EmployerRepository employerRepository,
+      BusinessRepository businessRepository,
+      UserRepository userRepository,
       PasswordEncoder passwordEncoder) {
     this.employerRepository = employerRepository;
     this.businessRepository = businessRepository;
@@ -36,16 +38,25 @@ public class EmployerServiceImpl implements EmployerService {
 
   @Override
   public Employer createEmployer(CreateEmployerRequest request) {
-    Employer employer = new Employer(request.name(), request.email(), request.password(),
-        request.salary(), request.department(), request.title());
+    Employer employer =
+        new Employer(
+            request.name(),
+            request.email(),
+            request.password(),
+            request.salary(),
+            request.department(),
+            request.title());
 
     if (request.hireDate() != null) {
       employer.setHireDate(request.hireDate());
     }
 
     if (request.companyId() != null) {
-      Company company = businessRepository.findById(request.companyId()).orElseThrow(
-          () -> new RuntimeException("Company not found with id: " + request.companyId()));
+      Company company =
+          businessRepository
+              .findById(request.companyId())
+              .orElseThrow(
+                  () -> new RuntimeException("Company not found with id: " + request.companyId()));
       employer.setCompany(company);
     }
 
@@ -66,8 +77,8 @@ public class EmployerServiceImpl implements EmployerService {
 
   @Override
   public Employer updateEmployer(Long id, UpdateEmployerRequest request) {
-    Employer employer = employerRepository.findById(id)
-        .orElseThrow(() -> new EmployerNotFoundException(id));
+    Employer employer =
+        employerRepository.findById(id).orElseThrow(() -> new EmployerNotFoundException(id));
 
     String oldEmail = employer.getEmail();
     boolean emailChanged = false;
@@ -145,8 +156,8 @@ public class EmployerServiceImpl implements EmployerService {
   @Override
   @Transactional(readOnly = true)
   public Set<Employee> getDirectReports(Long id) {
-    Employer employer = employerRepository.findById(id)
-        .orElseThrow(() -> new EmployerNotFoundException(id));
+    Employer employer =
+        employerRepository.findById(id).orElseThrow(() -> new EmployerNotFoundException(id));
 
     return employer.getManagedEmployees();
   }
@@ -157,8 +168,8 @@ public class EmployerServiceImpl implements EmployerService {
       throw new IllegalArgumentException("Salary cannot be negative");
     }
 
-    Employer employer = employerRepository.findById(id)
-        .orElseThrow(() -> new EmployerNotFoundException(id));
+    Employer employer =
+        employerRepository.findById(id).orElseThrow(() -> new EmployerNotFoundException(id));
 
     employer.setSalary(salary);
     return employerRepository.save(employer);
@@ -170,8 +181,8 @@ public class EmployerServiceImpl implements EmployerService {
       throw new IllegalArgumentException("Bonus amount cannot be negative");
     }
 
-    Employer employer = employerRepository.findById(id)
-        .orElseThrow(() -> new EmployerNotFoundException(id));
+    Employer employer =
+        employerRepository.findById(id).orElseThrow(() -> new EmployerNotFoundException(id));
 
     employer.setSalary(employer.getSalary() + bonus);
     return employerRepository.save(employer);
@@ -179,8 +190,8 @@ public class EmployerServiceImpl implements EmployerService {
 
   @Override
   public Employer promoteToAdmin(Long id) {
-    Employer employer = employerRepository.findById(id)
-        .orElseThrow(() -> new EmployerNotFoundException(id));
+    Employer employer =
+        employerRepository.findById(id).orElseThrow(() -> new EmployerNotFoundException(id));
 
     employer.setIsAdmin(true);
     return employerRepository.save(employer);
@@ -188,8 +199,8 @@ public class EmployerServiceImpl implements EmployerService {
 
   @Override
   public Employer removeAdmin(Long id) {
-    Employer employer = employerRepository.findById(id)
-        .orElseThrow(() -> new EmployerNotFoundException(id));
+    Employer employer =
+        employerRepository.findById(id).orElseThrow(() -> new EmployerNotFoundException(id));
 
     // Don't allow removing admin from owner
     if (employer.getIsOwner()) {

@@ -85,13 +85,14 @@
                 <version>2.43.0</version>
                 <configuration>
                     <java>
-                        <eclipse>
-                            <version>4.26.0</version>
-                            <file>${project.basedir}/eclipse-formatter.xml</file>
-                        </eclipse>
+                        <googleJavaFormat>
+                            <version>1.22.0</version>
+                            <style>GOOGLE</style>
+                        </googleJavaFormat>
                         <removeUnusedImports/>
-                        <trimTrailingWhitespace/>
-                        <endWithNewline/>
+                        <importOrder>
+                            <order>java,javax,org,com</order>
+                        </importOrder>
                     </java>
                 </configuration>
             </plugin>

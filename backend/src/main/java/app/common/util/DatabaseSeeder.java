@@ -1,28 +1,5 @@
 package app.common.util;
 
-import app.business.Company;
-import app.employee.Employee;
-import app.employer.Employer;
-import app.training.Training;
-import app.business.BusinessPerson;
-import app.user.PersonStatus;
-import app.user.User;
-import app.user.UserRole;
-import app.payroll.Paycheck;
-import app.payroll.PaycheckStatus;
-import app.business.BusinessRepository;
-import app.employee.EmployeeRepository;
-import app.employer.EmployerRepository;
-import app.training.TrainingRepository;
-import app.business.BusinessPersonRepository;
-import app.user.UserRepository;
-import app.payroll.PaycheckRepository;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
@@ -30,6 +7,30 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+import app.business.BusinessPerson;
+import app.business.BusinessPersonRepository;
+import app.business.BusinessRepository;
+import app.business.Company;
+import app.employee.Employee;
+import app.employee.EmployeeRepository;
+import app.employer.Employer;
+import app.employer.EmployerRepository;
+import app.payroll.Paycheck;
+import app.payroll.PaycheckRepository;
+import app.payroll.PaycheckStatus;
+import app.training.Training;
+import app.training.TrainingRepository;
+import app.user.PersonStatus;
+import app.user.User;
+import app.user.UserRepository;
+import app.user.UserRole;
 
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
@@ -54,10 +55,15 @@ public class DatabaseSeeder implements CommandLineRunner {
   private final Map<Long, Employer> employerCache = new HashMap<>();
   private final Map<Long, Employee> employeeCache = new HashMap<>();
 
-  public DatabaseSeeder(BusinessRepository businessRepo, EmployeeRepository employeeRepo,
-      EmployerRepository employerRepo, TrainingRepository trainingRepo,
-      BusinessPersonRepository businessPersonRepo, UserRepository userRepo,
-      PaycheckRepository paycheckRepo, PasswordEncoder passwordEncoder) {
+  public DatabaseSeeder(
+      BusinessRepository businessRepo,
+      EmployeeRepository employeeRepo,
+      EmployerRepository employerRepo,
+      TrainingRepository trainingRepo,
+      BusinessPersonRepository businessPersonRepo,
+      UserRepository userRepo,
+      PaycheckRepository paycheckRepo,
+      PasswordEncoder passwordEncoder) {
     this.businessRepo = businessRepo;
     this.employeeRepo = employeeRepo;
     this.employerRepo = employerRepo;
@@ -93,8 +99,10 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     try {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(
-          new ClassPathResource(CSV_PREFIX + "/businesses.csv").getInputStream()));
+      BufferedReader reader =
+          new BufferedReader(
+              new InputStreamReader(
+                  new ClassPathResource(CSV_PREFIX + "/businesses.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
@@ -126,10 +134,12 @@ public class DatabaseSeeder implements CommandLineRunner {
   }
 
   private Company mapToCompany(Map<String, String> row) {
-    return Company.builder().name(CONVERTER.toString(row.get("name")))
+    return Company.builder()
+        .name(CONVERTER.toString(row.get("name")))
         .address(CONVERTER.toString(row.get("address")))
         .industry(CONVERTER.toString(row.get("industry")))
-        .foundedDate(CONVERTER.toLocalDate(row.get("founded_date"))).build();
+        .foundedDate(CONVERTER.toLocalDate(row.get("founded_date")))
+        .build();
   }
 
   private void seedEmployers() {
@@ -140,8 +150,10 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     try {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(
-          new ClassPathResource(CSV_PREFIX + "/employers.csv").getInputStream()));
+      BufferedReader reader =
+          new BufferedReader(
+              new InputStreamReader(
+                  new ClassPathResource(CSV_PREFIX + "/employers.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
@@ -165,7 +177,8 @@ public class DatabaseSeeder implements CommandLineRunner {
               // Check if title contains CEO, Chief, President, or Managing Partner
               String title = CONVERTER.toString(row.get("title"));
               if (title != null
-                  && (title.toLowerCase().contains("ceo") || title.toLowerCase().contains("chief")
+                  && (title.toLowerCase().contains("ceo")
+                      || title.toLowerCase().contains("chief")
                       || title.toLowerCase().contains("president")
                       || title.toLowerCase().contains("managing partner"))) {
                 employer.setIsOwner(true);
@@ -178,8 +191,11 @@ public class DatabaseSeeder implements CommandLineRunner {
                 employer.setIsOwner(true);
                 employer.setIsAdmin(true);
                 companyOwnerSet.put(companyId, true);
-                System.out.println("Auto-set first employer " + employer.getName()
-                    + " as Owner for company " + companyId);
+                System.out.println(
+                    "Auto-set first employer "
+                        + employer.getName()
+                        + " as Owner for company "
+                        + companyId);
               }
             }
           } else if (isOwnerFromCSV != null && isOwnerFromCSV) {
@@ -209,10 +225,14 @@ public class DatabaseSeeder implements CommandLineRunner {
   }
 
   private Employer mapToEmployer(Map<String, String> row) {
-    Employer employer = new Employer(CONVERTER.toString(row.get("name")),
-        CONVERTER.toString(row.get("email")), CONVERTER.toString(row.get("password")),
-        CONVERTER.toDouble(row.get("salary")), CONVERTER.toString(row.get("department")),
-        CONVERTER.toString(row.get("title")));
+    Employer employer =
+        new Employer(
+            CONVERTER.toString(row.get("name")),
+            CONVERTER.toString(row.get("email")),
+            CONVERTER.toString(row.get("password")),
+            CONVERTER.toDouble(row.get("salary")),
+            CONVERTER.toString(row.get("department")),
+            CONVERTER.toString(row.get("title")));
 
     LocalDate hireDate = CONVERTER.toLocalDate(row.get("hire_date"));
     if (hireDate != null) {
@@ -263,8 +283,10 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     try {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(
-          new ClassPathResource(CSV_PREFIX + "/employees.csv").getInputStream()));
+      BufferedReader reader =
+          new BufferedReader(
+              new InputStreamReader(
+                  new ClassPathResource(CSV_PREFIX + "/employees.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
@@ -308,8 +330,11 @@ public class DatabaseSeeder implements CommandLineRunner {
               employee.setManager(manager);
               employeeRepo.save(employee);
             } else {
-              System.err.println("Warning: Manager not found for employee ID " + employeeId
-                  + ", manager_id: " + managerId);
+              System.err.println(
+                  "Warning: Manager not found for employee ID "
+                      + employeeId
+                      + ", manager_id: "
+                      + managerId);
             }
           }
         }
@@ -329,9 +354,13 @@ public class DatabaseSeeder implements CommandLineRunner {
   }
 
   private Employee mapToEmployee(Map<String, String> row) {
-    Employee employee = new Employee(CONVERTER.toString(row.get("name")),
-        CONVERTER.toString(row.get("email")), CONVERTER.toString(row.get("password")),
-        CONVERTER.toDouble(row.get("salary")), CONVERTER.toString(row.get("position")));
+    Employee employee =
+        new Employee(
+            CONVERTER.toString(row.get("name")),
+            CONVERTER.toString(row.get("email")),
+            CONVERTER.toString(row.get("password")),
+            CONVERTER.toDouble(row.get("salary")),
+            CONVERTER.toString(row.get("position")));
 
     LocalDate hireDate = CONVERTER.toLocalDate(row.get("hire_date"));
     if (hireDate != null) {
@@ -369,8 +398,10 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     try {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(
-          new ClassPathResource(CSV_PREFIX + "/trainings.csv").getInputStream()));
+      BufferedReader reader =
+          new BufferedReader(
+              new InputStreamReader(
+                  new ClassPathResource(CSV_PREFIX + "/trainings.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 
@@ -379,11 +410,13 @@ public class DatabaseSeeder implements CommandLineRunner {
         int skipped = 0;
 
         for (Map<String, String> row : rows) {
-          Training training = new Training(CONVERTER.toString(row.get("training_name")),
-              CONVERTER.toString(row.get("description")),
-              CONVERTER.toLocalDate(row.get("completion_date")),
-              CONVERTER.toLocalDate(row.get("expiry_date")),
-              CONVERTER.toBoolean(row.get("is_required")));
+          Training training =
+              new Training(
+                  CONVERTER.toString(row.get("training_name")),
+                  CONVERTER.toString(row.get("description")),
+                  CONVERTER.toLocalDate(row.get("completion_date")),
+                  CONVERTER.toLocalDate(row.get("expiry_date")),
+                  CONVERTER.toBoolean(row.get("is_required")));
 
           Long personId = CONVERTER.toLong(row.get("person_id"));
           if (personId != null) {
@@ -477,8 +510,10 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
 
     try {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(
-          new ClassPathResource(CSV_PREFIX + "/paychecks.csv").getInputStream()));
+      BufferedReader reader =
+          new BufferedReader(
+              new InputStreamReader(
+                  new ClassPathResource(CSV_PREFIX + "/paychecks.csv").getInputStream()));
 
       List<Map<String, String>> rows = CSV_PARSER.parse(reader);
 

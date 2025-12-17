@@ -14,5 +14,4 @@ public class BusinessManagementApplication {
   public static void main(String[] args) {
     SpringApplication.run(BusinessManagementApplication.class, args);
   }
-
 }

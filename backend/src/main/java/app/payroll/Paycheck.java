@@ -1,9 +1,10 @@
 package app.payroll;
 
-import app.employee.Employee;
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import app.employee.Employee;
+import jakarta.persistence.*;
 
 /**
  * Paycheck entity representing a paycheck record for an employee.
@@ -50,11 +51,14 @@ public class Paycheck {
   @Column(name = "status", nullable = false)
   private PaycheckStatus status = PaycheckStatus.DRAFT;
 
-  public Paycheck() {
-  }
+  public Paycheck() {}
 
-  public Paycheck(Employee employee, double grossPay, double taxDeduction,
-      double insuranceDeduction, LocalDate payDate) {
+  public Paycheck(
+      Employee employee,
+      double grossPay,
+      double taxDeduction,
+      double insuranceDeduction,
+      LocalDate payDate) {
     this.employee = employee;
     this.grossPay = grossPay;
     this.taxDeduction = taxDeduction;

@@ -1,16 +1,18 @@
 package app.user;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 import app.business.BusinessPerson;
+import jakarta.persistence.*;
 
 /**
  * User entity representing a login account. Email for authentication. User has a foreign key to
  * BusinessPerson (Employee or Employer).
  */
 @Entity
-@Table(name = "user", uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
+@Table(
+    name = "user",
+    uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
 public class User {
 
   @Id
@@ -129,7 +131,16 @@ public class User {
 
   @Override
   public String toString() {
-    return "User{" + "id=" + id + ", email='" + email + '\'' + ", role=" + role + ", enabled="
-        + enabled + '}';
+    return "User{"
+        + "id="
+        + id
+        + ", email='"
+        + email
+        + '\''
+        + ", role="
+        + role
+        + ", enabled="
+        + enabled
+        + '}';
   }
 }

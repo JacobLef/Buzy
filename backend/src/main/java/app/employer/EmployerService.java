@@ -1,12 +1,12 @@
 package app.employer;
 
-import app.employer.dto.CreateEmployerRequest;
-import app.employer.dto.UpdateEmployerRequest;
-import app.employee.Employee;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import app.employee.Employee;
+import app.employer.dto.CreateEmployerRequest;
+import app.employer.dto.UpdateEmployerRequest;
 
 public interface EmployerService {
 

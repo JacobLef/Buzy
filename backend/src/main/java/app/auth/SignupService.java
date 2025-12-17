@@ -6,5 +6,6 @@ import app.employer.dto.CreateEmployerRequest;
 
 public interface SignupService {
   AuthDTO signupEmployee(CreateEmployeeRequest request);
+
   AuthDTO signupEmployer(CreateEmployerRequest request);
 }

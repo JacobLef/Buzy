@@ -1,13 +1,13 @@
 package app.training;
 
-import app.training.dto.TrainingDTO;
-import app.training.dto.UpdateTrainingRequest;
-import app.training.dto.CreateTrainingRequest;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import app.training.dto.CreateTrainingRequest;
+import app.training.dto.TrainingDTO;
+import app.training.dto.UpdateTrainingRequest;
 
 @RestController
 @RequestMapping("/api/training")
@@ -20,8 +20,8 @@ public class TrainingController {
   }
 
   @PostMapping("/person/{personId}")
-  public ResponseEntity<TrainingDTO> addTraining(@PathVariable Long personId,
-      @RequestBody CreateTrainingRequest request) {
+  public ResponseEntity<TrainingDTO> addTraining(
+      @PathVariable Long personId, @RequestBody CreateTrainingRequest request) {
     TrainingDTO created = trainingService.addTraining(personId, request);
     return ResponseEntity.status(201).body(created);
   }
@@ -45,8 +45,8 @@ public class TrainingController {
   }
 
   @PutMapping("/{trainingId}")
-  public ResponseEntity<TrainingDTO> updateTraining(@PathVariable Long trainingId,
-      @RequestBody UpdateTrainingRequest request) {
+  public ResponseEntity<TrainingDTO> updateTraining(
+      @PathVariable Long trainingId, @RequestBody UpdateTrainingRequest request) {
     TrainingDTO updated = trainingService.updateTraining(trainingId, request);
     return ResponseEntity.ok(updated);
   }

@@ -1,14 +1,16 @@
 package app.auth;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import app.auth.dto.AuthDTO;
 import app.auth.dto.AuthRequest;
 import app.employee.dto.CreateEmployeeRequest;
 import app.employer.dto.CreateEmployerRequest;
-import java.util.HashMap;
-import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 /** Authentication controller. Handles login and token refresh. */
 @RestController
@@ -64,8 +66,7 @@ public class AuthController {
     return ResponseEntity.ok(response);
   }
 
-  @Autowired
-  private SignupService signupService;
+  @Autowired private SignupService signupService;
 
   /** Employee signup endpoint. POST /api/auth/signup/employee */
   @PostMapping("/signup/employee")

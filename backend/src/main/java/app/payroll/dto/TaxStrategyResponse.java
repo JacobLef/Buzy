@@ -5,5 +5,4 @@ package app.payroll.dto;
  *
  * @author Qing Mi
  */
-public record TaxStrategyResponse(String strategy) {
-}
+public record TaxStrategyResponse(String strategy) {}

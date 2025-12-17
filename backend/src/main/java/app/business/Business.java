@@ -44,16 +44,14 @@ public interface Business {
   /**
    * Add a business person (Employee or Employer) to this business
    *
-   * @param employee
-   *          The business person to add
+   * @param employee The business person to add
    */
   void addEmployee(BusinessPerson employee);
 
   /**
    * Remove a business person (Employee or Employer) from this business
    *
-   * @param employee
-   *          The business person to remove
+   * @param employee The business person to remove
    */
   void removeEmployee(BusinessPerson employee);
 

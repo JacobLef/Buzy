@@ -1,12 +1,11 @@
 package app.business;
 
-import app.business.dto.CreateBusinessRequest;
-import app.business.dto.UpdateBusinessRequest;
 import java.util.List;
 
-/**
- * Service interface for business management operations
- */
+import app.business.dto.CreateBusinessRequest;
+import app.business.dto.UpdateBusinessRequest;
+
+/** Service interface for business management operations */
 public interface BusinessService {
 
   Company createBusiness(CreateBusinessRequest request);

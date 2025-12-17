@@ -7,16 +7,12 @@ package app.payroll.dto;
  * @author Qing Mi
  */
 public record TaxStrategySwitchResponse(String message, String strategy, String error) {
-  /**
-   * Create a success response
-   */
+  /** Create a success response */
   public static TaxStrategySwitchResponse success(String message, String strategy) {
     return new TaxStrategySwitchResponse(message, strategy, null);
   }
 
-  /**
-   * Create an error response
-   */
+  /** Create an error response */
   public static TaxStrategySwitchResponse error(String errorMessage) {
     return new TaxStrategySwitchResponse(null, null, errorMessage);
   }

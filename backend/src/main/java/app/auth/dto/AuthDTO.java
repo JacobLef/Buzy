@@ -1,8 +1,6 @@
 package app.auth.dto;
 
-/**
- * Response DTO for authentication result. Contains JWT token and user information.
- */
+/** Response DTO for authentication result. Contains JWT token and user information. */
 public class AuthDTO {
   private String token;
   private String role;
@@ -10,8 +8,7 @@ public class AuthDTO {
   private Long userId;
   private Long businessPersonId;
 
-  public AuthDTO() {
-  }
+  public AuthDTO() {}
 
   public AuthDTO(String token, String role, String email, Long userId, Long businessPersonId) {
     this.token = token;

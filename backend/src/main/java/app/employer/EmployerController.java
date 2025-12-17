@@ -1,19 +1,20 @@
 package app.employer;
 
-import app.employee.dto.EmployeeDTO;
-import app.employer.dto.EmployerDTO;
-import app.employer.dto.CreateEmployerRequest;
-import app.employer.dto.UpdateEmployerRequest;
-import app.common.factory.DTOFactory;
-import app.employee.Employee;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import app.common.factory.DTOFactory;
+import app.employee.Employee;
+import app.employee.dto.EmployeeDTO;
+import app.employer.dto.CreateEmployerRequest;
+import app.employer.dto.EmployerDTO;
+import app.employer.dto.UpdateEmployerRequest;
 
 @RestController
 @RequestMapping("/api/employers")
@@ -37,21 +38,22 @@ public class EmployerController {
   @GetMapping("/{id}")
   public ResponseEntity<EmployerDTO> getEmployer(@PathVariable Long id) {
     Optional<Employer> employer = employerService.getEmployer(id);
-    return employer.map(value -> ResponseEntity.ok(dtoFactory.createDTO(value)))
+    return employer
+        .map(value -> ResponseEntity.ok(dtoFactory.createDTO(value)))
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @GetMapping
   public ResponseEntity<List<EmployerDTO>> getAllEmployers() {
     List<Employer> employers = employerService.getAllEmployers();
-    List<EmployerDTO> dtos = employers.stream().map(dtoFactory::createDTO)
-        .collect(Collectors.toUnmodifiableList());
+    List<EmployerDTO> dtos =
+        employers.stream().map(dtoFactory::createDTO).collect(Collectors.toUnmodifiableList());
     return ResponseEntity.ok(dtos);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<EmployerDTO> updateEmployer(@PathVariable Long id,
-      @RequestBody UpdateEmployerRequest req) {
+  public ResponseEntity<EmployerDTO> updateEmployer(
+      @PathVariable Long id, @RequestBody UpdateEmployerRequest req) {
     Employer employer = employerService.updateEmployer(id, req);
     EmployerDTO dto = dtoFactory.createDTO(employer);
     return ResponseEntity.ok(dto);
@@ -66,8 +68,8 @@ public class EmployerController {
   @GetMapping("/business/{businessId}")
   public ResponseEntity<List<EmployerDTO>> getEmployersByBusiness(@PathVariable Long businessId) {
     List<Employer> employers = employerService.getEmployersByBusiness(businessId);
-    List<EmployerDTO> dtos = employers.stream().map(dtoFactory::createDTO)
-        .collect(Collectors.toUnmodifiableList());
+    List<EmployerDTO> dtos =
+        employers.stream().map(dtoFactory::createDTO).collect(Collectors.toUnmodifiableList());
     return ResponseEntity.ok(dtos);
   }
 
@@ -75,16 +77,16 @@ public class EmployerController {
   public ResponseEntity<List<EmployerDTO>> getEmployersByDepartment(
       @PathVariable String department) {
     List<Employer> employers = employerService.getEmployersByDepartment(department);
-    List<EmployerDTO> dtos = employers.stream().map(dtoFactory::createDTO)
-        .collect(Collectors.toUnmodifiableList());
+    List<EmployerDTO> dtos =
+        employers.stream().map(dtoFactory::createDTO).collect(Collectors.toUnmodifiableList());
     return ResponseEntity.ok(dtos);
   }
 
   @GetMapping("/{id}/direct-reports")
   public ResponseEntity<Set<EmployeeDTO>> getDirectReports(@PathVariable Long id) {
     Set<Employee> drs = employerService.getDirectReports(id);
-    Set<EmployeeDTO> dtos = drs.stream().map(dtoFactory::createDTO)
-        .collect(Collectors.toUnmodifiableSet());
+    Set<EmployeeDTO> dtos =
+        drs.stream().map(dtoFactory::createDTO).collect(Collectors.toUnmodifiableSet());
     return ResponseEntity.ok(dtos);
   }
 
