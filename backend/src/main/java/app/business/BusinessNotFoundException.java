@@ -1,11 +1,11 @@
 package app.business;
 
 public class BusinessNotFoundException extends RuntimeException {
-  public BusinessNotFoundException(Long id) {
-    super("Could not find business with id " + id);
-  }
+	public BusinessNotFoundException(Long id) {
+		super("Could not find business with id " + id);
+	}
 
-  public BusinessNotFoundException(String message) {
-    super(message);
-  }
+	public BusinessNotFoundException(String message) {
+		super(message);
+	}
 }

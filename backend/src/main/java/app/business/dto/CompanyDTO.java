@@ -3,98 +3,96 @@ package app.business.dto;
 import java.util.List;
 
 /**
- * Data Transfer Object for Company entity
- * Used for API responses
- * 
+ * Data Transfer Object for Company entity Used for API responses
+ *
  * @author Qing Mi
  */
 public class CompanyDTO extends BusinessDTO {
-    
-    private final int totalEmployees;
-    private final int totalEmployers;
-    private final int totalPersons;
-    private final List<Long> employeeIds;
-    private final List<Long> employerIds;
 
-    private CompanyDTO(Builder builder) {
-        super(builder);
-        this.totalEmployees = builder.totalEmployees;
-        this.totalEmployers = builder.totalEmployers;
-        this.totalPersons = builder.totalPersons;
-        this.employeeIds = builder.employeeIds;
-        this.employerIds = builder.employerIds;
-    }
+	private final int totalEmployees;
+	private final int totalEmployers;
+	private final int totalPersons;
+	private final List<Long> employeeIds;
+	private final List<Long> employerIds;
 
-    @Override
-    public String getBusinessType() {
-        return "Company";
-    }
+	private CompanyDTO(Builder builder) {
+		super(builder);
+		this.totalEmployees = builder.totalEmployees;
+		this.totalEmployers = builder.totalEmployers;
+		this.totalPersons = builder.totalPersons;
+		this.employeeIds = builder.employeeIds;
+		this.employerIds = builder.employerIds;
+	}
 
-    public int getTotalEmployees() {
-        return totalEmployees;
-    }
+	@Override
+	public String getBusinessType() {
+		return "Company";
+	}
 
-    public int getTotalEmployers() {
-        return totalEmployers;
-    }
+	public int getTotalEmployees() {
+		return totalEmployees;
+	}
 
-    public int getTotalPersons() {
-        return totalPersons;
-    }
+	public int getTotalEmployers() {
+		return totalEmployers;
+	}
 
-    public List<Long> getEmployeeIds() {
-        return employeeIds;
-    }
+	public int getTotalPersons() {
+		return totalPersons;
+	}
 
-    public List<Long> getEmployerIds() {
-        return employerIds;
-    }
+	public List<Long> getEmployeeIds() {
+		return employeeIds;
+	}
 
-    public static Builder builder() {
-        return new Builder();
-    }
+	public List<Long> getEmployerIds() {
+		return employerIds;
+	}
 
-    public static class Builder extends BusinessDTO.Builder<Builder> {
-    private int totalEmployees;
-    private int totalEmployers;
-    private int totalPersons;
-    private List<Long> employeeIds;
-    private List<Long> employerIds;
+	public static Builder builder() {
+		return new Builder();
+	}
 
-        @Override
-        protected Builder self() {
-            return this;
-        }
+	public static class Builder extends BusinessDTO.Builder<Builder> {
+		private int totalEmployees;
+		private int totalEmployers;
+		private int totalPersons;
+		private List<Long> employeeIds;
+		private List<Long> employerIds;
 
-        public Builder withTotalEmployees(int totalEmployees) {
-            this.totalEmployees = totalEmployees;
-            return this;
-        }
+		@Override
+		protected Builder self() {
+			return this;
+		}
 
-        public Builder withTotalEmployers(int totalEmployers) {
-            this.totalEmployers = totalEmployers;
-            return this;
-        }
+		public Builder withTotalEmployees(int totalEmployees) {
+			this.totalEmployees = totalEmployees;
+			return this;
+		}
 
-        public Builder withTotalPersons(int totalPersons) {
-            this.totalPersons = totalPersons;
-            return this;
-        }
+		public Builder withTotalEmployers(int totalEmployers) {
+			this.totalEmployers = totalEmployers;
+			return this;
+		}
 
-        public Builder withEmployeeIds(List<Long> employeeIds) {
-            this.employeeIds = employeeIds;
-            return this;
-        }
+		public Builder withTotalPersons(int totalPersons) {
+			this.totalPersons = totalPersons;
+			return this;
+		}
 
-        public Builder withEmployerIds(List<Long> employerIds) {
-            this.employerIds = employerIds;
-            return this;
-        }
+		public Builder withEmployeeIds(List<Long> employeeIds) {
+			this.employeeIds = employeeIds;
+			return this;
+		}
 
-        @Override
-        public CompanyDTO build() {
-            return new CompanyDTO(this);
-        }
-    }
+		public Builder withEmployerIds(List<Long> employerIds) {
+			this.employerIds = employerIds;
+			return this;
+		}
+
+		@Override
+		public CompanyDTO build() {
+			return new CompanyDTO(this);
+		}
+	}
 }
-    

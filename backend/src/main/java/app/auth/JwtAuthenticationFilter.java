@@ -15,55 +15,51 @@ import java.io.IOException;
 import java.util.Collections;
 
 /**
- * JWT Authentication Filter.
- * Intercepts incoming HTTP requests and validates JWT tokens.
+ * JWT Authentication Filter. Intercepts incoming HTTP requests and validates
+ * JWT tokens.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-  private final JwtTokenProvider jwtTokenProvider;
+	private final JwtTokenProvider jwtTokenProvider;
 
-  public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
-    this.jwtTokenProvider = jwtTokenProvider;
-  }
+	public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+		this.jwtTokenProvider = jwtTokenProvider;
+	}
 
-  @Override
-  protected boolean shouldNotFilter(HttpServletRequest request) {
-    String path = request.getServletPath();
-    return path.startsWith("/api/auth/");
-  }
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		String path = request.getServletPath();
+		return path.startsWith("/api/auth/");
+	}
 
-  @Override
-  protected void doFilterInternal(
-      HttpServletRequest request,
-      HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
 
-    final String authHeader = request.getHeader("Authorization");
+		final String authHeader = request.getHeader("Authorization");
 
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      filterChain.doFilter(request, response);
-      return;
-    }
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+			filterChain.doFilter(request, response);
+			return;
+		}
 
-    String jwt = authHeader.substring(7);
+		String jwt = authHeader.substring(7);
 
-    if (jwtTokenProvider.validateToken(jwt)) {
-      String email = jwtTokenProvider.extractEmail(jwt);
-      String role = jwtTokenProvider.extractRole(jwt);
+		if (jwtTokenProvider.validateToken(jwt)) {
+			String email = jwtTokenProvider.extractEmail(jwt);
+			String role = jwtTokenProvider.extractRole(jwt);
 
-      if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-            email,
-            null,
-            Collections.singletonList(authority));
+			if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+				SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
+				UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, null,
+						Collections.singletonList(authority));
 
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-      }
-    }
+				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+				SecurityContextHolder.getContext().setAuthentication(authToken);
+			}
+		}
 
-    filterChain.doFilter(request, response);
-  }
+		filterChain.doFilter(request, response);
+	}
 }

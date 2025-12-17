@@ -13,73 +13,68 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-  private final UserRepository userRepository;
-  private final PasswordEncoder passwordEncoder;
-  private final JwtTokenProvider jwtTokenProvider;
+	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final JwtTokenProvider jwtTokenProvider;
 
-  public AuthServiceImpl(
-      UserRepository userRepository,
-      PasswordEncoder passwordEncoder,
-      JwtTokenProvider jwtTokenProvider) {
-    this.userRepository = userRepository;
-    this.passwordEncoder = passwordEncoder;
-    this.jwtTokenProvider = jwtTokenProvider;
-  }
+	public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
+			JwtTokenProvider jwtTokenProvider) {
+		this.userRepository = userRepository;
+		this.passwordEncoder = passwordEncoder;
+		this.jwtTokenProvider = jwtTokenProvider;
+	}
 
-  @Override
-  @Transactional(readOnly = true)
-  public AuthDTO authenticate(AuthRequest request) {
-    User user =
-        userRepository.findByEmail(request.email()).orElseThrow(InvalidCredentialsException::new);
+	@Override
+	@Transactional(readOnly = true)
+	public AuthDTO authenticate(AuthRequest request) {
+		User user = userRepository.findByEmail(request.email()).orElseThrow(InvalidCredentialsException::new);
 
-    if (!user.getEnabled()) {
-      throw new UserDisabledException();
-    }
+		if (!user.getEnabled()) {
+			throw new UserDisabledException();
+		}
 
-    if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-      throw new InvalidCredentialsException();
-    }
+		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+			throw new InvalidCredentialsException();
+		}
 
-    String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name());
+		String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name());
 
-    return buildAuthDTO(user, token);
-  }
+		return buildAuthDTO(user, token);
+	}
 
-  @Override
-  @Transactional(readOnly = true)
-  public AuthDTO refreshToken(String token) {
-    if (!jwtTokenProvider.validateToken(token)) {
-      throw new InvalidTokenException();
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public AuthDTO refreshToken(String token) {
+		if (!jwtTokenProvider.validateToken(token)) {
+			throw new InvalidTokenException();
+		}
 
-    String email = jwtTokenProvider.extractEmail(token);
-    String role = jwtTokenProvider.extractRole(token);
+		String email = jwtTokenProvider.extractEmail(token);
+		String role = jwtTokenProvider.extractRole(token);
 
-    User user =
-        userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
 
-    if (!user.getEnabled()) {
-      throw new UserDisabledException();
-    }
+		if (!user.getEnabled()) {
+			throw new UserDisabledException();
+		}
 
-    String newToken = jwtTokenProvider.generateToken(email, role);
+		String newToken = jwtTokenProvider.generateToken(email, role);
 
-    return buildAuthDTO(user, newToken);
-  }
+		return buildAuthDTO(user, newToken);
+	}
 
-  @Override
-  public boolean validateToken(String token) {
-    return jwtTokenProvider.validateToken(token);
-  }
+	@Override
+	public boolean validateToken(String token) {
+		return jwtTokenProvider.validateToken(token);
+	}
 
-  private AuthDTO buildAuthDTO(User user, String token) {
-    AuthDTO response = new AuthDTO();
-    response.setToken(token);
-    response.setRole(user.getRole().name());
-    response.setEmail(user.getEmail());
-    response.setUserId(user.getId());
-    response.setBusinessPersonId(
-        user.getBusinessPerson() != null ? user.getBusinessPerson().getId() : null);
-    return response;
-  }
+	private AuthDTO buildAuthDTO(User user, String token) {
+		AuthDTO response = new AuthDTO();
+		response.setToken(token);
+		response.setRole(user.getRole().name());
+		response.setEmail(user.getEmail());
+		response.setUserId(user.getId());
+		response.setBusinessPersonId(user.getBusinessPerson() != null ? user.getBusinessPerson().getId() : null);
+		return response;
+	}
 }

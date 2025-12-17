@@ -1,6 +1,5 @@
 package app.employee;
 
-import app.employee.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,33 +10,30 @@ import java.util.List;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-  List<Employee> findByCompanyId(Long companyId);
+	List<Employee> findByCompanyId(Long companyId);
 
-  @Query("SELECT e FROM Employee e WHERE e.manager.id = :managerId")
-  List<Employee> findByManagerId(@Param("managerId") Long managerId);
+	@Query("SELECT e FROM Employee e WHERE e.manager.id = :managerId")
+	List<Employee> findByManagerId(@Param("managerId") Long managerId);
 
-  List<Employee> findByPosition(String position);
+	List<Employee> findByPosition(String position);
 
-  List<Employee> findByNameContainingIgnoreCase(String name);
+	List<Employee> findByNameContainingIgnoreCase(String name);
 
-  List<Employee> findByHireDateAfter(LocalDate date);
+	List<Employee> findByHireDateAfter(LocalDate date);
 
-  List<Employee> findByHireDateBefore(LocalDate date);
+	List<Employee> findByHireDateBefore(LocalDate date);
 
-  List<Employee> findByHireDateBetween(LocalDate startDate, LocalDate endDate);
+	List<Employee> findByHireDateBetween(LocalDate startDate, LocalDate endDate);
 
-  @Query("SELECT e FROM Employee e WHERE e.manager IS NULL")
-  List<Employee> findEmployeesWithoutManager();
+	@Query("SELECT e FROM Employee e WHERE e.manager IS NULL")
+	List<Employee> findEmployeesWithoutManager();
 
-  @Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.status = 'Active'")
-  List<Employee> findActiveEmployeesByBusiness(@Param("companyId") Long companyId);
-  
-  /**
-   * Find employees hired after a date for a specific business
-   */
-  @Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.hireDate >= :date")
-  List<Employee> findByCompanyIdAndHireDateAfter(
-      @Param("companyId") Long companyId,
-      @Param("date") LocalDate date
-  );
+	@Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.status = 'Active'")
+	List<Employee> findActiveEmployeesByBusiness(@Param("companyId") Long companyId);
+
+	/**
+	 * Find employees hired after a date for a specific business
+	 */
+	@Query("SELECT e FROM Employee e WHERE e.company.id = :companyId AND e.hireDate >= :date")
+	List<Employee> findByCompanyIdAndHireDateAfter(@Param("companyId") Long companyId, @Param("date") LocalDate date);
 }

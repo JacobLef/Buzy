@@ -9,71 +9,79 @@ import app.employer.Employer;
 
 /**
  * Business interface defining core operations for business entities
- * 
+ *
  * @author Qing Mi
  */
 public interface Business {
-    Long getId();
+	Long getId();
 
-    void setId(Long id);
+	void setId(Long id);
 
-    String getName();
+	String getName();
 
-    void setName(String name);
+	void setName(String name);
 
-    String getAddress();
+	String getAddress();
 
-    void setAddress(String address);
+	void setAddress(String address);
 
-    String getIndustry();
+	String getIndustry();
 
-    void setIndustry(String industry);
+	void setIndustry(String industry);
 
-    LocalDate getFoundedDate();
+	LocalDate getFoundedDate();
 
-    void setFoundedDate(LocalDate foundedDate);
+	void setFoundedDate(LocalDate foundedDate);
 
-    LocalDateTime getCreatedAt();
+	LocalDateTime getCreatedAt();
 
-    void setCreatedAt(LocalDateTime createdAt);
+	void setCreatedAt(LocalDateTime createdAt);
 
-    LocalDateTime getUpdatedAt();
+	LocalDateTime getUpdatedAt();
 
-    void setUpdatedAt(LocalDateTime updatedAt);
+	void setUpdatedAt(LocalDateTime updatedAt);
 
-    /**
-     * Add a business person (Employee or Employer) to this business
-     * @param employee The business person to add
-     */
-    void addEmployee(BusinessPerson employee);
+	/**
+	 * Add a business person (Employee or Employer) to this business
+	 *
+	 * @param employee
+	 *            The business person to add
+	 */
+	void addEmployee(BusinessPerson employee);
 
-    /**
-     * Remove a business person (Employee or Employer) from this business
-     * @param employee The business person to remove
-     */
-    void removeEmployee(BusinessPerson employee);
+	/**
+	 * Remove a business person (Employee or Employer) from this business
+	 *
+	 * @param employee
+	 *            The business person to remove
+	 */
+	void removeEmployee(BusinessPerson employee);
 
-    /**
-     * Get all business persons (both Employees and Employers) in this business
-     * @return Combined list of all business persons
-     */
-    List<BusinessPerson> getEmployees();
+	/**
+	 * Get all business persons (both Employees and Employers) in this business
+	 *
+	 * @return Combined list of all business persons
+	 */
+	List<BusinessPerson> getEmployees();
 
-    /**
-     * Get only Employee objects (not Employers) in this business
-     * @return List of employees only
-     */
-    List<Employee> getEmployeesOnly();
+	/**
+	 * Get only Employee objects (not Employers) in this business
+	 *
+	 * @return List of employees only
+	 */
+	List<Employee> getEmployeesOnly();
 
-    /**
-     * Get only Employer objects (not Employees) in this business
-     * @return List of employers only
-     */
-    List<Employer> getEmployersOnly();
+	/**
+	 * Get only Employer objects (not Employees) in this business
+	 *
+	 * @return List of employers only
+	 */
+	List<Employer> getEmployersOnly();
 
-    /**
-     * Get total count of all business persons (employees + employers)
-     * @return Total count
-     */
-    int getTotalPersonsCount();
+	/**
+	 * Get total count of all business persons (employees + employers)
+	 *
+	 * @return Total count
+	 */
+	int getTotalPersonsCount();
 }

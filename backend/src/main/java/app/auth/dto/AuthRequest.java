@@ -1,11 +1,7 @@
 package app.auth.dto;
 
 /**
- * Request DTO for authentication (login).
- * Uses email for login.
+ * Request DTO for authentication (login). Uses email for login.
  */
-public record AuthRequest(
-        String email,
-        String password
-) {
+public record AuthRequest(String email, String password) {
 }

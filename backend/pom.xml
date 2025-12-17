@@ -37,9 +37,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
-        <!-- POTENTIALLY UNUSED: Thymeleaf is a server-side template engine.
-             If you're building a REST API for a React frontend, you don't need this.
-             Remove if you're not rendering HTML templates on the backend. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
@@ -85,13 +82,12 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.41.1</version>
+                <version>2.43.0</version>
                 <configuration>
                     <java>
-                        <googleJavaFormat>
-                            <version>1.17.0</version>
-                            <style>GOOGLE</style>
-                        </googleJavaFormat>
+                        <eclipse>
+                            <version>4.26</version>
+                        </eclipse>
                         <removeUnusedImports/>
                         <trimTrailingWhitespace/>
                         <endWithNewline/>
