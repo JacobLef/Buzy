@@ -17,35 +17,37 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-	}
+  public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+  }
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable())
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.csrf(csrf -> csrf.disable())
 
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-				.exceptionHandling(ex -> ex
-						.authenticationEntryPoint((request, response, authException) -> response
-								.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
-						.accessDeniedHandler((request, response, accessDeniedException) -> response
-								.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden")))
+        .exceptionHandling(ex -> ex
+            .authenticationEntryPoint((request, response, authException) -> response
+                .sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
+            .accessDeniedHandler((request, response, accessDeniedException) -> response
+                .sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden")))
 
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
-						.requestMatchers(HttpMethod.GET, "/api/businesses").permitAll()
-						.requestMatchers("/css/**", "/js/**", "/images/**").permitAll().anyRequest().authenticated())
+        .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/businesses").permitAll()
+            .requestMatchers("/css/**", "/js/**", "/images/**").permitAll().anyRequest()
+            .authenticated())
 
-				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-		return http.build();
-	}
+    return http.build();
+  }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 }

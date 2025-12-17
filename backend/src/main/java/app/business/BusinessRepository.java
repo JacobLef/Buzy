@@ -13,13 +13,13 @@ import java.util.Optional;
 @Repository
 public interface BusinessRepository extends JpaRepository<Company, Long> {
 
-	/**
-	 * Find company by name
-	 */
-	Optional<Company> findByName(String name);
+  /**
+   * Find company by name
+   */
+  Optional<Company> findByName(String name);
 
-	/**
-	 * Check if company exists by name
-	 */
-	boolean existsByName(String name);
+  /**
+   * Check if company exists by name
+   */
+  boolean existsByName(String name);
 }

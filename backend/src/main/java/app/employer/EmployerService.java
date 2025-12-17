@@ -10,27 +10,27 @@ import java.util.Set;
 
 public interface EmployerService {
 
-	Employer createEmployer(CreateEmployerRequest request);
+  Employer createEmployer(CreateEmployerRequest request);
 
-	Optional<Employer> getEmployer(Long id);
+  Optional<Employer> getEmployer(Long id);
 
-	List<Employer> getAllEmployers();
+  List<Employer> getAllEmployers();
 
-	Employer updateEmployer(Long id, UpdateEmployerRequest request);
+  Employer updateEmployer(Long id, UpdateEmployerRequest request);
 
-	void deleteEmployer(Long id);
+  void deleteEmployer(Long id);
 
-	List<Employer> getEmployersByBusiness(Long companyId);
+  List<Employer> getEmployersByBusiness(Long companyId);
 
-	List<Employer> getEmployersByDepartment(String department);
+  List<Employer> getEmployersByDepartment(String department);
 
-	Set<Employee> getDirectReports(Long id);
+  Set<Employee> getDirectReports(Long id);
 
-	Employer updateSalary(Long id, Double salary);
+  Employer updateSalary(Long id, Double salary);
 
-	Employer giveBonus(Long id, Double bonus);
+  Employer giveBonus(Long id, Double bonus);
 
-	Employer promoteToAdmin(Long id);
+  Employer promoteToAdmin(Long id);
 
-	Employer removeAdmin(Long id);
+  Employer removeAdmin(Long id);
 }

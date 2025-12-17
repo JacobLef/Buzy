@@ -9,13 +9,13 @@ import java.util.List;
  */
 public interface BusinessService {
 
-	Company createBusiness(CreateBusinessRequest request);
+  Company createBusiness(CreateBusinessRequest request);
 
-	Company updateBusiness(Long id, UpdateBusinessRequest request);
+  Company updateBusiness(Long id, UpdateBusinessRequest request);
 
-	void deleteBusiness(Long id);
+  void deleteBusiness(Long id);
 
-	Company getBusiness(Long id);
+  Company getBusiness(Long id);
 
-	List<Company> getAllBusinesses();
+  List<Company> getAllBusinesses();
 }

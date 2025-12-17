@@ -14,18 +14,18 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class DashboardController {
 
-	private final DashboardServiceImpl dashboardService;
+  private final DashboardServiceImpl dashboardService;
 
-	public DashboardController(DashboardServiceImpl dashboardService) {
-		this.dashboardService = dashboardService;
-	}
+  public DashboardController(DashboardServiceImpl dashboardService) {
+    this.dashboardService = dashboardService;
+  }
 
-	/**
-	 * Get recent activity feed GET /api/dashboard/activity?businessId=1
-	 */
-	@GetMapping("/activity")
-	public ResponseEntity<List<ActivityDTO>> getRecentActivity(@RequestParam Long businessId) {
-		List<ActivityDTO> activities = dashboardService.getRecentActivity(businessId);
-		return ResponseEntity.ok(activities);
-	}
+  /**
+   * Get recent activity feed GET /api/dashboard/activity?businessId=1
+   */
+  @GetMapping("/activity")
+  public ResponseEntity<List<ActivityDTO>> getRecentActivity(@RequestParam Long businessId) {
+    List<ActivityDTO> activities = dashboardService.getRecentActivity(businessId);
+    return ResponseEntity.ok(activities);
+  }
 }

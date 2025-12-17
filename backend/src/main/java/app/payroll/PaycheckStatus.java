@@ -6,8 +6,8 @@ package app.payroll;
  * @author Qing Mi
  */
 public enum PaycheckStatus {
-	DRAFT, // Fully editable, can be deleted
-	PENDING, // Optional: if manager approval step is needed
-	PAID, // Locked, cannot be deleted (for audit reasons)
-	VOIDED // Cancelled/voided paycheck (creates negative entry)
+  DRAFT, // Fully editable, can be deleted
+  PENDING, // Optional: if manager approval step is needed
+  PAID, // Locked, cannot be deleted (for audit reasons)
+  VOIDED // Cancelled/voided paycheck (creates negative entry)
 }

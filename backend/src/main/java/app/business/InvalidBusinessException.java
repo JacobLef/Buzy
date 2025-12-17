@@ -7,11 +7,11 @@ package app.business;
  */
 public class InvalidBusinessException extends RuntimeException {
 
-	public InvalidBusinessException(String message) {
-		super(message);
-	}
+  public InvalidBusinessException(String message) {
+    super(message);
+  }
 
-	public InvalidBusinessException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public InvalidBusinessException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

@@ -7,19 +7,19 @@ package app.payroll;
  */
 public class PayrollCalculationException extends RuntimeException {
 
-	private final Long employeeId;
+  private final Long employeeId;
 
-	public PayrollCalculationException(String message, Long employeeId) {
-		super(message);
-		this.employeeId = employeeId;
-	}
+  public PayrollCalculationException(String message, Long employeeId) {
+    super(message);
+    this.employeeId = employeeId;
+  }
 
-	public PayrollCalculationException(String message, Long employeeId, Throwable cause) {
-		super(message, cause);
-		this.employeeId = employeeId;
-	}
+  public PayrollCalculationException(String message, Long employeeId, Throwable cause) {
+    super(message, cause);
+    this.employeeId = employeeId;
+  }
 
-	public Long getEmployeeId() {
-		return employeeId;
-	}
+  public Long getEmployeeId() {
+    return employeeId;
+  }
 }

@@ -13,53 +13,53 @@ import java.util.List;
 @RequestMapping("/api/training")
 public class TrainingController {
 
-	private final TrainingService trainingService;
+  private final TrainingService trainingService;
 
-	public TrainingController(TrainingService trainingService) {
-		this.trainingService = trainingService;
-	}
+  public TrainingController(TrainingService trainingService) {
+    this.trainingService = trainingService;
+  }
 
-	@PostMapping("/person/{personId}")
-	public ResponseEntity<TrainingDTO> addTraining(@PathVariable Long personId,
-			@RequestBody CreateTrainingRequest request) {
-		TrainingDTO created = trainingService.addTraining(personId, request);
-		return ResponseEntity.status(201).body(created);
-	}
+  @PostMapping("/person/{personId}")
+  public ResponseEntity<TrainingDTO> addTraining(@PathVariable Long personId,
+      @RequestBody CreateTrainingRequest request) {
+    TrainingDTO created = trainingService.addTraining(personId, request);
+    return ResponseEntity.status(201).body(created);
+  }
 
-	@GetMapping("/person/{personId}")
-	public ResponseEntity<List<TrainingDTO>> getTrainingsByPerson(@PathVariable Long personId) {
-		List<TrainingDTO> trainings = trainingService.getTrainingsByPerson(personId);
-		return ResponseEntity.ok(trainings);
-	}
+  @GetMapping("/person/{personId}")
+  public ResponseEntity<List<TrainingDTO>> getTrainingsByPerson(@PathVariable Long personId) {
+    List<TrainingDTO> trainings = trainingService.getTrainingsByPerson(personId);
+    return ResponseEntity.ok(trainings);
+  }
 
-	@GetMapping("/person/{personId}/expired")
-	public ResponseEntity<List<TrainingDTO>> getExpiredTrainings(@PathVariable Long personId) {
-		List<TrainingDTO> trainings = trainingService.getExpiredTrainings(personId);
-		return ResponseEntity.ok(trainings);
-	}
+  @GetMapping("/person/{personId}/expired")
+  public ResponseEntity<List<TrainingDTO>> getExpiredTrainings(@PathVariable Long personId) {
+    List<TrainingDTO> trainings = trainingService.getExpiredTrainings(personId);
+    return ResponseEntity.ok(trainings);
+  }
 
-	@GetMapping("/{trainingId}")
-	public ResponseEntity<TrainingDTO> getTrainingById(@PathVariable Long trainingId) {
-		TrainingDTO training = trainingService.getTrainingById(trainingId);
-		return ResponseEntity.ok(training);
-	}
+  @GetMapping("/{trainingId}")
+  public ResponseEntity<TrainingDTO> getTrainingById(@PathVariable Long trainingId) {
+    TrainingDTO training = trainingService.getTrainingById(trainingId);
+    return ResponseEntity.ok(training);
+  }
 
-	@PutMapping("/{trainingId}")
-	public ResponseEntity<TrainingDTO> updateTraining(@PathVariable Long trainingId,
-			@RequestBody UpdateTrainingRequest request) {
-		TrainingDTO updated = trainingService.updateTraining(trainingId, request);
-		return ResponseEntity.ok(updated);
-	}
+  @PutMapping("/{trainingId}")
+  public ResponseEntity<TrainingDTO> updateTraining(@PathVariable Long trainingId,
+      @RequestBody UpdateTrainingRequest request) {
+    TrainingDTO updated = trainingService.updateTraining(trainingId, request);
+    return ResponseEntity.ok(updated);
+  }
 
-	@DeleteMapping("/{trainingId}")
-	public ResponseEntity<Void> deleteTraining(@PathVariable Long trainingId) {
-		trainingService.deleteTraining(trainingId);
-		return ResponseEntity.noContent().build();
-	}
+  @DeleteMapping("/{trainingId}")
+  public ResponseEntity<Void> deleteTraining(@PathVariable Long trainingId) {
+    trainingService.deleteTraining(trainingId);
+    return ResponseEntity.noContent().build();
+  }
 
-	@GetMapping
-	public ResponseEntity<List<TrainingDTO>> getAllTrainings() {
-		List<TrainingDTO> trainings = trainingService.getAllTrainings();
-		return ResponseEntity.ok(trainings);
-	}
+  @GetMapping
+  public ResponseEntity<List<TrainingDTO>> getAllTrainings() {
+    List<TrainingDTO> trainings = trainingService.getAllTrainings();
+    return ResponseEntity.ok(trainings);
+  }
 }

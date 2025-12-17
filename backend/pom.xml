@@ -86,7 +86,8 @@
                 <configuration>
                     <java>
                         <eclipse>
-                            <version>4.26</version>
+                            <version>4.26.0</version>
+                            <file>${project.basedir}/eclipse-formatter.xml</file>
                         </eclipse>
                         <removeUnusedImports/>
                         <trimTrailingWhitespace/>

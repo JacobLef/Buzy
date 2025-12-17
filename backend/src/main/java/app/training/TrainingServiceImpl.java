@@ -17,118 +17,120 @@ import java.util.stream.Collectors;
 @Transactional
 public class TrainingServiceImpl implements TrainingService {
 
-	private final TrainingRepository trainingRepository;
-	private final BusinessPersonRepository businessPersonRepository;
+  private final TrainingRepository trainingRepository;
+  private final BusinessPersonRepository businessPersonRepository;
 
-	public TrainingServiceImpl(TrainingRepository trainingRepository,
-			BusinessPersonRepository businessPersonRepository) {
-		this.trainingRepository = trainingRepository;
-		this.businessPersonRepository = businessPersonRepository;
-	}
+  public TrainingServiceImpl(TrainingRepository trainingRepository,
+      BusinessPersonRepository businessPersonRepository) {
+    this.trainingRepository = trainingRepository;
+    this.businessPersonRepository = businessPersonRepository;
+  }
 
-	@Override
-	public TrainingDTO addTraining(Long personId, CreateTrainingRequest request) {
-		BusinessPerson person = businessPersonRepository.findById(personId)
-				.orElseThrow(() -> new ResourceNotFoundException("Person", "id", personId));
-		Training training = createTrainingFromRequest(request);
-		training.setPerson(person);
-		Training saved = trainingRepository.save(training);
-		return convertToDTO(saved);
-	}
+  @Override
+  public TrainingDTO addTraining(Long personId, CreateTrainingRequest request) {
+    BusinessPerson person = businessPersonRepository.findById(personId)
+        .orElseThrow(() -> new ResourceNotFoundException("Person", "id", personId));
+    Training training = createTrainingFromRequest(request);
+    training.setPerson(person);
+    Training saved = trainingRepository.save(training);
+    return convertToDTO(saved);
+  }
 
-	private Training createTrainingFromRequest(CreateTrainingRequest request) {
-		return new Training(request.trainingName(), request.description(), request.completionDate(),
-				request.expiryDate(), request.required());
-	}
+  private Training createTrainingFromRequest(CreateTrainingRequest request) {
+    return new Training(request.trainingName(), request.description(), request.completionDate(),
+        request.expiryDate(), request.required());
+  }
 
-	@Override
-	@Transactional(readOnly = true)
-	public List<TrainingDTO> getTrainingsByPerson(Long personId) {
-		if (!businessPersonRepository.existsById(personId)) {
-			throw new ResourceNotFoundException("Person", "id", personId);
-		}
+  @Override
+  @Transactional(readOnly = true)
+  public List<TrainingDTO> getTrainingsByPerson(Long personId) {
+    if (!businessPersonRepository.existsById(personId)) {
+      throw new ResourceNotFoundException("Person", "id", personId);
+    }
 
-		return trainingRepository.findByPersonId(personId).stream().map(this::convertToDTO)
-				.collect(Collectors.toList());
-	}
+    return trainingRepository.findByPersonId(personId).stream().map(this::convertToDTO)
+        .collect(Collectors.toList());
+  }
 
-	@Override
-	@Transactional(readOnly = true)
-	public List<TrainingDTO> getExpiredTrainings(Long personId) {
-		if (!businessPersonRepository.existsById(personId)) {
-			throw new ResourceNotFoundException("Person", "id", personId);
-		}
+  @Override
+  @Transactional(readOnly = true)
+  public List<TrainingDTO> getExpiredTrainings(Long personId) {
+    if (!businessPersonRepository.existsById(personId)) {
+      throw new ResourceNotFoundException("Person", "id", personId);
+    }
 
-		return trainingRepository.findByPersonId(personId).stream().filter(Training::isExpired).map(this::convertToDTO)
-				.collect(Collectors.toList());
-	}
+    return trainingRepository.findByPersonId(personId).stream().filter(Training::isExpired)
+        .map(this::convertToDTO).collect(Collectors.toList());
+  }
 
-	@Override
-	@Transactional(readOnly = true)
-	public TrainingDTO getTrainingById(Long trainingId) {
-		Training training = trainingRepository.findById(trainingId)
-				.orElseThrow(() -> new ResourceNotFoundException("Training", "id", trainingId));
-		return convertToDTO(training);
-	}
+  @Override
+  @Transactional(readOnly = true)
+  public TrainingDTO getTrainingById(Long trainingId) {
+    Training training = trainingRepository.findById(trainingId)
+        .orElseThrow(() -> new ResourceNotFoundException("Training", "id", trainingId));
+    return convertToDTO(training);
+  }
 
-	@Override
-	public TrainingDTO updateTraining(Long trainingId, UpdateTrainingRequest request) {
-		Training training = trainingRepository.findById(trainingId)
-				.orElseThrow(() -> new ResourceNotFoundException("Training", "id", trainingId));
-		if (request.trainingName() != null) {
-			training.setTrainingName(request.trainingName());
-		}
-		if (request.description() != null) {
-			training.setDescription(request.description());
-		}
-		if (request.completionDate() != null) {
-			training.setCompletionDate(request.completionDate());
-		}
-		if (request.expiryDate() != null) {
-			training.setExpiryDate(request.expiryDate());
-		}
-		if (request.required() != null) {
-			training.setRequired(request.required());
-		}
+  @Override
+  public TrainingDTO updateTraining(Long trainingId, UpdateTrainingRequest request) {
+    Training training = trainingRepository.findById(trainingId)
+        .orElseThrow(() -> new ResourceNotFoundException("Training", "id", trainingId));
+    if (request.trainingName() != null) {
+      training.setTrainingName(request.trainingName());
+    }
+    if (request.description() != null) {
+      training.setDescription(request.description());
+    }
+    if (request.completionDate() != null) {
+      training.setCompletionDate(request.completionDate());
+    }
+    if (request.expiryDate() != null) {
+      training.setExpiryDate(request.expiryDate());
+    }
+    if (request.required() != null) {
+      training.setRequired(request.required());
+    }
 
-		Training saved = trainingRepository.save(training);
-		return convertToDTO(saved);
-	}
+    Training saved = trainingRepository.save(training);
+    return convertToDTO(saved);
+  }
 
-	@Override
-	public void deleteTraining(Long trainingId) {
-		if (!trainingRepository.existsById(trainingId)) {
-			throw new ResourceNotFoundException("Training", "id", trainingId);
-		}
+  @Override
+  public void deleteTraining(Long trainingId) {
+    if (!trainingRepository.existsById(trainingId)) {
+      throw new ResourceNotFoundException("Training", "id", trainingId);
+    }
 
-		trainingRepository.deleteById(trainingId);
-	}
+    trainingRepository.deleteById(trainingId);
+  }
 
-	@Override
-	@Transactional(readOnly = true)
-	public List<TrainingDTO> getAllTrainings() {
-		return trainingRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
-	}
+  @Override
+  @Transactional(readOnly = true)
+  public List<TrainingDTO> getAllTrainings() {
+    return trainingRepository.findAll().stream().map(this::convertToDTO)
+        .collect(Collectors.toList());
+  }
 
-	// -------------------- Helper Methods --------------------
+  // -------------------- Helper Methods --------------------
 
-	private Training createTrainingFromDTO(TrainingDTO dto) {
-		return new Training(dto.getTrainingName(), dto.getDescription(), dto.getCompletionDate(), dto.getExpiryDate(),
-				dto.isRequired());
-	}
+  private Training createTrainingFromDTO(TrainingDTO dto) {
+    return new Training(dto.getTrainingName(), dto.getDescription(), dto.getCompletionDate(),
+        dto.getExpiryDate(), dto.isRequired());
+  }
 
-	private TrainingDTO convertToDTO(Training training) {
-		TrainingDTO.Builder builder = TrainingDTO.builder().withId(training.getId())
-				.withTrainingName(training.getTrainingName()).withDescription(training.getDescription())
-				.withCompletionDate(training.getCompletionDate()).withExpiryDate(training.getExpiryDate())
-				.withRequired(training.isRequired()).withCompleted(training.isCompleted())
-				.withExpired(training.isExpired()).withCreatedAt(training.getCreatedAt());
+  private TrainingDTO convertToDTO(Training training) {
+    TrainingDTO.Builder builder = TrainingDTO.builder().withId(training.getId())
+        .withTrainingName(training.getTrainingName()).withDescription(training.getDescription())
+        .withCompletionDate(training.getCompletionDate()).withExpiryDate(training.getExpiryDate())
+        .withRequired(training.isRequired()).withCompleted(training.isCompleted())
+        .withExpired(training.isExpired()).withCreatedAt(training.getCreatedAt());
 
-		if (training.getPerson() != null) {
-			builder.withPersonId(training.getPerson().getId()).withPersonName(training.getPerson().getName())
-					.withPersonType(training.getPerson().getPersonType());
-		}
+    if (training.getPerson() != null) {
+      builder.withPersonId(training.getPerson().getId())
+          .withPersonName(training.getPerson().getName())
+          .withPersonType(training.getPerson().getPersonType());
+    }
 
-		return builder.build();
-	}
+    return builder.build();
+  }
 }

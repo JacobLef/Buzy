@@ -6,5 +6,5 @@ package app.common;
  * @author Team 10
  */
 public interface HierarchyService {
-	// Interface methods will be defined here
+  // Interface methods will be defined here
 }
