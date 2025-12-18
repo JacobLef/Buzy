@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import app.auth.dto.AuthDTO;
+import app.common.exception.EmailNotFoundException;
 import app.employee.Employee;
 import app.employee.EmployeeService;
 import app.employee.dto.CreateEmployeeRequest;
@@ -39,7 +40,7 @@ public class SignupServiceImpl implements SignupService {
   @Transactional
   public AuthDTO signupEmployee(CreateEmployeeRequest request) {
     if (userRepository.existsByEmail(request.email())) {
-      throw new RuntimeException("Email already exists");
+      throw new EmailNotFoundException("Email already exists");
     }
 
     String encryptedPassword = passwordEncoder.encode(request.password());
@@ -74,7 +75,7 @@ public class SignupServiceImpl implements SignupService {
   @Transactional
   public AuthDTO signupEmployer(CreateEmployerRequest request) {
     if (userRepository.existsByEmail(request.email())) {
-      throw new RuntimeException("Email already exists");
+      throw new EmailNotFoundException("Email already exists");
     }
     String encryptedPassword = passwordEncoder.encode(request.password());
     CreateEmployerRequest requestWithEncryptedPassword = new CreateEmployerRequest(request.name(),
