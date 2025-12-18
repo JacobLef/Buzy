@@ -2,6 +2,7 @@ package app.business;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 import app.employee.Employee;
 import app.employer.Employer;
 import app.user.PersonStatus;
@@ -174,8 +175,23 @@ public abstract class BusinessPerson {
 
   @Override
   public String toString() {
-    return getPersonType() + "{" + "id=" + id + ", name='" + name + '\'' + ", email='" + email
-        + '\'' + ", salary=" + salary + ", hireDate=" + hireDate + ", status='" + status + '\''
+    return getPersonType()
+        + "{"
+        + "id="
+        + id
+        + ", name='"
+        + name
+        + '\''
+        + ", email='"
+        + email
+        + '\''
+        + ", salary="
+        + salary
+        + ", hireDate="
+        + hireDate
+        + ", status='"
+        + status
+        + '\''
         + '}';
   }
 }

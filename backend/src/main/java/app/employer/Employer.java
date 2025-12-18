@@ -2,6 +2,7 @@ package app.employer;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import app.business.BusinessPerson;
 import app.employee.Employee;
 import jakarta.persistence.CascadeType;
@@ -37,8 +38,8 @@ public class Employer extends BusinessPerson {
     this.managedEmployees = new HashSet<>();
   }
 
-  public Employer(String name, String email, String password, Double salary, String department,
-      String title) {
+  public Employer(
+      String name, String email, String password, Double salary, String department, String title) {
     super(name, email, password, salary);
     this.department = department;
     this.title = title;
@@ -116,9 +117,30 @@ public class Employer extends BusinessPerson {
 
   @Override
   public String toString() {
-    return "Employer{" + "id=" + getId() + ", name='" + getName() + '\'' + ", email='" + getEmail()
-        + '\'' + ", department='" + department + '\'' + ", title='" + title + '\'' + ", salary="
-        + getSalary() + ", hireDate=" + getHireDate() + ", directReports=" + getDirectReportsCount()
-        + ", status='" + getStatus() + '\'' + '}';
+    return "Employer{"
+        + "id="
+        + getId()
+        + ", name='"
+        + getName()
+        + '\''
+        + ", email='"
+        + getEmail()
+        + '\''
+        + ", department='"
+        + department
+        + '\''
+        + ", title='"
+        + title
+        + '\''
+        + ", salary="
+        + getSalary()
+        + ", hireDate="
+        + getHireDate()
+        + ", directReports="
+        + getDirectReportsCount()
+        + ", status='"
+        + getStatus()
+        + '\''
+        + '}';
   }
 }
