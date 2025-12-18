@@ -57,9 +57,27 @@ public class Employee extends BusinessPerson {
 
   @Override
   public String toString() {
-    return "Employee{" + "id=" + getId() + ", name='" + getName() + '\'' + ", email='" + getEmail()
-        + '\'' + ", position='" + position + '\'' + ", salary=" + getSalary() + ", hireDate="
-        + getHireDate() + ", manager=" + (manager != null ? manager.getName() : "None")
-        + ", status='" + getStatus() + '\'' + '}';
+    return "Employee{"
+        + "id="
+        + getId()
+        + ", name='"
+        + getName()
+        + '\''
+        + ", email='"
+        + getEmail()
+        + '\''
+        + ", position='"
+        + position
+        + '\''
+        + ", salary="
+        + getSalary()
+        + ", hireDate="
+        + getHireDate()
+        + ", manager="
+        + (manager != null ? manager.getName() : "None")
+        + ", status='"
+        + getStatus()
+        + '\''
+        + '}';
   }
 }

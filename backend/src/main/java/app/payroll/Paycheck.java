@@ -2,6 +2,7 @@ package app.payroll;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
 import app.employee.Employee;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -63,8 +64,12 @@ public class Paycheck {
 
   public Paycheck() {}
 
-  public Paycheck(Employee employee, double grossPay, double taxDeduction,
-      double insuranceDeduction, LocalDate payDate) {
+  public Paycheck(
+      Employee employee,
+      double grossPay,
+      double taxDeduction,
+      double insuranceDeduction,
+      LocalDate payDate) {
     this.employee = employee;
     this.grossPay = grossPay;
     this.taxDeduction = taxDeduction;

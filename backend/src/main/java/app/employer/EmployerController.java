@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import app.common.factory.DTOFactory;
 import app.employee.Employee;
 import app.employee.dto.EmployeeDTO;
@@ -43,7 +45,8 @@ public class EmployerController {
   @GetMapping("/{id}")
   public ResponseEntity<EmployerDTO> getEmployer(@PathVariable Long id) {
     Optional<Employer> employer = employerService.getEmployer(id);
-    return employer.map(value -> ResponseEntity.ok(dtoFactory.createDTO(value)))
+    return employer
+        .map(value -> ResponseEntity.ok(dtoFactory.createDTO(value)))
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
@@ -56,8 +59,8 @@ public class EmployerController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<EmployerDTO> updateEmployer(@PathVariable Long id,
-      @RequestBody UpdateEmployerRequest req) {
+  public ResponseEntity<EmployerDTO> updateEmployer(
+      @PathVariable Long id, @RequestBody UpdateEmployerRequest req) {
     Employer employer = employerService.updateEmployer(id, req);
     EmployerDTO dto = dtoFactory.createDTO(employer);
     return ResponseEntity.ok(dto);
