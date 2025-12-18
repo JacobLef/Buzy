@@ -4,17 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import app.auth.dto.AuthDTO;
-import app.business.*;
 import app.employee.Employee;
 import app.employee.EmployeeService;
 import app.employee.dto.CreateEmployeeRequest;
 import app.employer.Employer;
 import app.employer.EmployerService;
 import app.employer.dto.CreateEmployerRequest;
-import app.user.*;
+import app.user.User;
 import app.user.UserRepository;
+import app.user.UserRole;
 
 @Service
 public class SignupServiceImpl implements SignupService {
@@ -26,11 +25,8 @@ public class SignupServiceImpl implements SignupService {
   private final JwtTokenProvider jwtTokenProvider;
 
   @Autowired
-  public SignupServiceImpl(
-      EmployeeService employeeService,
-      EmployerService employerService,
-      UserRepository userRepository,
-      PasswordEncoder passwordEncoder,
+  public SignupServiceImpl(EmployeeService employeeService, EmployerService employerService,
+      UserRepository userRepository, PasswordEncoder passwordEncoder,
       JwtTokenProvider jwtTokenProvider) {
     this.employeeService = employeeService;
     this.employerService = employerService;
@@ -53,14 +49,12 @@ public class SignupServiceImpl implements SignupService {
     // Create a new request object with encrypted password
 
     CreateEmployeeRequest requestWithEncryptedPassword =
-        new CreateEmployeeRequest(
-            request.name(),
-            request.email(),
-            encryptedPassword, // already encrypted, for employeeService use
-            request.salary(),
-            request.position(),
-            request.companyId(),
-            request.managerId(),
+        new CreateEmployeeRequest(request.name(), request.email(), encryptedPassword, // already
+                                                                                      // encrypted,
+                                                                                      // for
+                                                                                      // employeeService
+                                                                                      // use
+            request.salary(), request.position(), request.companyId(), request.managerId(),
             request.hireDate());
 
     Employee employee = employeeService.createEmployee(requestWithEncryptedPassword);
@@ -103,15 +97,12 @@ public class SignupServiceImpl implements SignupService {
 
     // Create request with encrypted password for existing EmployerService
     CreateEmployerRequest requestWithEncryptedPassword =
-        new CreateEmployerRequest(
-            request.name(),
-            request.email(),
-            encryptedPassword, // Already encrypted, EmployerService will use it
+        new CreateEmployerRequest(request.name(), request.email(), encryptedPassword, // Already
+                                                                                      // encrypted,
+                                                                                      // EmployerService
+                                                                                      // will use it
             // directly
-            request.salary(),
-            request.department(),
-            request.title(),
-            request.companyId(),
+            request.salary(), request.department(), request.title(), request.companyId(),
             request.hireDate());
 
     Employer employer = employerService.createEmployer(requestWithEncryptedPassword);

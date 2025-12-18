@@ -2,9 +2,19 @@ package app.payroll;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 import app.employee.Employee;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 /**
  * Paycheck entity representing a paycheck record for an employee.
@@ -53,12 +63,8 @@ public class Paycheck {
 
   public Paycheck() {}
 
-  public Paycheck(
-      Employee employee,
-      double grossPay,
-      double taxDeduction,
-      double insuranceDeduction,
-      LocalDate payDate) {
+  public Paycheck(Employee employee, double grossPay, double taxDeduction,
+      double insuranceDeduction, LocalDate payDate) {
     this.employee = employee;
     this.grossPay = grossPay;
     this.taxDeduction = taxDeduction;

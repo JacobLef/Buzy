@@ -3,12 +3,18 @@ package app.employee;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import app.common.factory.DTOFactory;
 import app.employee.dto.CreateEmployeeRequest;
 import app.employee.dto.EmployeeDTO;
@@ -57,8 +63,8 @@ public class EmployeeController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<EmployeeDTO> updateEmployee(
-      @PathVariable Long id, @RequestBody UpdateEmployeeRequest req) {
+  public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable Long id,
+      @RequestBody UpdateEmployeeRequest req) {
     Employee employee = employeeService.updateEmployee(id, req);
     EmployeeDTO dto = dtoFactory.createDTO(employee);
     return ResponseEntity.ok(dto);
@@ -87,8 +93,8 @@ public class EmployeeController {
   }
 
   @PutMapping("/{id}/manager")
-  public ResponseEntity<EmployeeDTO> assignManager(
-      @PathVariable Long id, @RequestParam Long managerId) {
+  public ResponseEntity<EmployeeDTO> assignManager(@PathVariable Long id,
+      @RequestParam Long managerId) {
     Employee employee = employeeService.assignManager(id, managerId);
     EmployeeDTO dto = dtoFactory.createDTO(employee);
     return ResponseEntity.ok(dto);

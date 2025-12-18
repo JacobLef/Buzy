@@ -2,9 +2,24 @@ package app.business;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+import app.employee.Employee;
+import app.employer.Employer;
 import app.user.PersonStatus;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 /**
  * Abstract base class for all company persons ({@link Employee} and {@link Employer}). Uses JOINED
@@ -159,23 +174,8 @@ public abstract class BusinessPerson {
 
   @Override
   public String toString() {
-    return getPersonType()
-        + "{"
-        + "id="
-        + id
-        + ", name='"
-        + name
-        + '\''
-        + ", email='"
-        + email
-        + '\''
-        + ", salary="
-        + salary
-        + ", hireDate="
-        + hireDate
-        + ", status='"
-        + status
-        + '\''
+    return getPersonType() + "{" + "id=" + id + ", name='" + name + '\'' + ", email='" + email
+        + '\'' + ", salary=" + salary + ", hireDate=" + hireDate + ", status='" + status + '\''
         + '}';
   }
 }

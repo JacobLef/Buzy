@@ -7,10 +7,18 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import app.employee.Employee;
 import app.employer.Employer;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 /**
  * Company entity representing a business organization
@@ -81,7 +89,8 @@ public class Company implements Business {
 
   @Override
   public void addEmployee(BusinessPerson person) {
-    if (person == null) return;
+    if (person == null)
+      return;
 
     if (person instanceof Employee) {
       Employee emp = (Employee) person;
@@ -100,7 +109,8 @@ public class Company implements Business {
 
   @Override
   public void removeEmployee(BusinessPerson person) {
-    if (person == null) return;
+    if (person == null)
+      return;
 
     if (person instanceof Employee) {
       Employee emp = (Employee) person;
@@ -272,10 +282,8 @@ public class Company implements Business {
               LocalDate.parse(foundedDateStr.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
           builder.foundedDate(foundedDate);
         } catch (DateTimeParseException e) {
-          System.err.println(
-              "Warning: Invalid date format for founded_date: "
-                  + foundedDateStr
-                  + ". Skipping date.");
+          System.err.println("Warning: Invalid date format for founded_date: " + foundedDateStr
+              + ". Skipping date.");
         }
       }
 
