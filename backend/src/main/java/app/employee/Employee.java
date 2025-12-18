@@ -1,7 +1,12 @@
 package app.employee;
 
 import app.business.BusinessPerson;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 /** Employee entity representing an employee within a business. */
 @Entity
@@ -52,27 +57,9 @@ public class Employee extends BusinessPerson {
 
   @Override
   public String toString() {
-    return "Employee{"
-        + "id="
-        + getId()
-        + ", name='"
-        + getName()
-        + '\''
-        + ", email='"
-        + getEmail()
-        + '\''
-        + ", position='"
-        + position
-        + '\''
-        + ", salary="
-        + getSalary()
-        + ", hireDate="
-        + getHireDate()
-        + ", manager="
-        + (manager != null ? manager.getName() : "None")
-        + ", status='"
-        + getStatus()
-        + '\''
-        + '}';
+    return "Employee{" + "id=" + getId() + ", name='" + getName() + '\'' + ", email='" + getEmail()
+        + '\'' + ", position='" + position + '\'' + ", salary=" + getSalary() + ", hireDate="
+        + getHireDate() + ", manager=" + (manager != null ? manager.getName() : "None")
+        + ", status='" + getStatus() + '\'' + '}';
   }
 }
