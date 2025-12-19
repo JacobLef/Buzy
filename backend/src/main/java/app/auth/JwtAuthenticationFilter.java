@@ -2,6 +2,7 @@ package app.auth;
 
 import java.io.IOException;
 import java.util.Collections;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,12 +13,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 
 /** JWT Authentication Filter. Intercepts incoming HTTP requests and validates JWT tokens. */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
   private final JwtTokenProvider jwtTokenProvider;
 
   public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
@@ -25,18 +24,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected boolean shouldNotFilter(@NotNull HttpServletRequest request) {
+  protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
     String path = request.getServletPath();
     return path.startsWith("/api/auth/");
   }
 
   @Override
-  protected void doFilterInternal(
-    @NotNull HttpServletRequest request,
-    @NotNull HttpServletResponse response,
-    @NotNull FilterChain filterChain
-  ) throws ServletException, IOException {
-
+  protected void doFilterInternal(@NonNull HttpServletRequest request,
+      @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+      throws ServletException, IOException {
     final String authHeader = request.getHeader("Authorization");
 
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -54,7 +50,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
             email, null, Collections.singletonList(authority));
-
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
       }
