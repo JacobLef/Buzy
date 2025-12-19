@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
-
 import app.dashboard.dto.ActivityDTO;
 import app.employee.EmployeeRepository;
 import app.payroll.Paycheck;
@@ -17,16 +15,14 @@ import app.payroll.PaycheckRepository;
 import app.training.TrainingRepository;
 
 @Service
-public class DashboardServiceImpl {
+public class DashboardServiceImpl implements DashBoardService {
 
   private final PaycheckRepository paycheckRepository;
   private final EmployeeRepository employeeRepository;
   private final TrainingRepository trainingRepository;
 
-  public DashboardServiceImpl(
-      PaycheckRepository paycheckRepository,
-      EmployeeRepository employeeRepository,
-      TrainingRepository trainingRepository) {
+  public DashboardServiceImpl(PaycheckRepository paycheckRepository,
+      EmployeeRepository employeeRepository, TrainingRepository trainingRepository) {
     this.paycheckRepository = paycheckRepository;
     this.employeeRepository = employeeRepository;
     this.trainingRepository = trainingRepository;
@@ -51,23 +47,14 @@ public class DashboardServiceImpl {
       double totalNetPay = paychecksForDate.stream().mapToDouble(Paycheck::getNetPay).sum();
 
       int count = paychecksForDate.size();
-      String title =
-          count == 1
-              ? "Payroll generated for "
-                  + (paychecksForDate.get(0).getEmployee() != null
-                      ? paychecksForDate.get(0).getEmployee().getName()
-                      : "Employee")
-              : String.format(
-                  "Payroll generated for %d employees (Total: $%.2f)", count, totalNetPay);
+      String title = count == 1
+          ? "Payroll generated for " + (paychecksForDate.get(0).getEmployee() != null
+              ? paychecksForDate.get(0).getEmployee().getName()
+              : "Employee")
+          : String.format("Payroll generated for %d employees (Total: $%.2f)", count, totalNetPay);
 
-      activities.add(
-          new ActivityDTO(
-              payDate.toEpochDay(),
-              "PAYROLL",
-              title,
-              formatRelativeTime(payDateTime),
-              payDateTime,
-              "completed"));
+      activities.add(new ActivityDTO(payDate.toEpochDay(), "PAYROLL", title,
+          formatRelativeTime(payDateTime), payDateTime, "completed"));
     }
 
     LocalDate threeMonthsAgo = LocalDate.now().minusDays(7);
@@ -77,14 +64,9 @@ public class DashboardServiceImpl {
     for (var employee : recentHires) {
       LocalDateTime hireDateTime = employee.getHireDate().atStartOfDay();
 
-      activities.add(
-          new ActivityDTO(
-              employee.getId(),
-              "EMPLOYEE",
-              "New Hire: " + employee.getName(),
-              formatRelativeTime(hireDateTime),
-              hireDateTime,
-              "info"));
+      activities
+          .add(new ActivityDTO(employee.getId(), "EMPLOYEE", "New Hire: " + employee.getName(),
+              formatRelativeTime(hireDateTime), hireDateTime, "info"));
     }
 
     LocalDate weekFromNow = LocalDate.now().plusDays(7);
@@ -95,18 +77,13 @@ public class DashboardServiceImpl {
       LocalDateTime expiryDateTime = training.getExpiryDate().atStartOfDay();
       long daysUntilExpiry = ChronoUnit.DAYS.between(LocalDate.now(), training.getExpiryDate());
 
-      activities.add(
-          new ActivityDTO(
-              training.getId(),
-              "TRAINING",
-              training.getTrainingName() + " expires soon",
-              "Due in " + daysUntilExpiry + (daysUntilExpiry == 1 ? " day" : " days"),
-              expiryDateTime,
-              "warning"));
+      activities.add(new ActivityDTO(training.getId(), "TRAINING",
+          training.getTrainingName() + " expires soon",
+          "Due in " + daysUntilExpiry + (daysUntilExpiry == 1 ? " day" : " days"), expiryDateTime,
+          "warning"));
     }
 
-    return activities.stream()
-        .sorted(Comparator.comparing(ActivityDTO::timestamp).reversed())
+    return activities.stream().sorted(Comparator.comparing(ActivityDTO::timestamp).reversed())
         .toList();
   }
 
