@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import app.auth.dto.AuthDTO;
+import app.common.exception.EmailNotFoundException;
 import app.employee.Employee;
 import app.employee.EmployeeService;
 import app.employee.dto.CreateEmployeeRequest;
@@ -26,11 +26,8 @@ public class SignupServiceImpl implements SignupService {
   private final JwtTokenProvider jwtTokenProvider;
 
   @Autowired
-  public SignupServiceImpl(
-      EmployeeService employeeService,
-      EmployerService employerService,
-      UserRepository userRepository,
-      PasswordEncoder passwordEncoder,
+  public SignupServiceImpl(EmployeeService employeeService, EmployerService employerService,
+      UserRepository userRepository, PasswordEncoder passwordEncoder,
       JwtTokenProvider jwtTokenProvider) {
     this.employeeService = employeeService;
     this.employerService = employerService;
@@ -42,48 +39,28 @@ public class SignupServiceImpl implements SignupService {
   @Override
   @Transactional
   public AuthDTO signupEmployee(CreateEmployeeRequest request) {
-    // Check if email already exists
     if (userRepository.existsByEmail(request.email())) {
-      throw new RuntimeException("Email already exists");
+      throw new EmailNotFoundException("Email already exists");
     }
 
-    // Encrypt the plain password here in SignupService
     String encryptedPassword = passwordEncoder.encode(request.password());
 
-    // Create a new request object with encrypted password
-
-    CreateEmployeeRequest requestWithEncryptedPassword =
-        new CreateEmployeeRequest(
-            request.name(),
-            request.email(),
-            encryptedPassword, // already
-            // encrypted,
-            // for
-            // employeeService
-            // use
-            request.salary(),
-            request.position(),
-            request.companyId(),
-            request.managerId(),
-            request.hireDate());
+    CreateEmployeeRequest requestWithEncryptedPassword = new CreateEmployeeRequest(request.name(),
+        request.email(), encryptedPassword, request.salary(), request.position(),
+        request.companyId(), request.managerId(), request.hireDate());
 
     Employee employee = employeeService.createEmployee(requestWithEncryptedPassword);
 
-    // Create User account for authentication
     User user = new User();
     user.setEmail(request.email());
-    user.setPassword(encryptedPassword); // Same encrypted password
+    user.setPassword(encryptedPassword);
     user.setRole(UserRole.EMPLOYEE);
     user.setBusinessPerson(employee);
     user.setEnabled(true);
 
-    // Save User
     user = userRepository.save(user);
-
-    // Generate JWT token
     String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name());
 
-    // Build response
     AuthDTO response = new AuthDTO();
     response.setToken(token);
     response.setRole(user.getRole().name());
@@ -97,46 +74,26 @@ public class SignupServiceImpl implements SignupService {
   @Override
   @Transactional
   public AuthDTO signupEmployer(CreateEmployerRequest request) {
-    // Check if email already exists
     if (userRepository.existsByEmail(request.email())) {
-      throw new RuntimeException("Email already exists");
+      throw new EmailNotFoundException("Email already exists");
     }
-
-    // Encrypt the plain password here in SignupService
     String encryptedPassword = passwordEncoder.encode(request.password());
-
-    // Create request with encrypted password for existing EmployerService
-    CreateEmployerRequest requestWithEncryptedPassword =
-        new CreateEmployerRequest(
-            request.name(),
-            request.email(),
-            encryptedPassword, // Already
-            // encrypted,
-            // EmployerService
-            // will use it
-            // directly
-            request.salary(),
-            request.department(),
-            request.title(),
-            request.companyId(),
-            request.hireDate());
+    CreateEmployerRequest requestWithEncryptedPassword = new CreateEmployerRequest(request.name(),
+        request.email(), encryptedPassword, request.salary(), request.department(), request.title(),
+        request.companyId(), request.hireDate());
 
     Employer employer = employerService.createEmployer(requestWithEncryptedPassword);
 
-    // Create User account for authentication
     User user = new User();
     user.setEmail(request.email());
-    user.setPassword(encryptedPassword); // Same encrypted password
+    user.setPassword(encryptedPassword);
     user.setRole(UserRole.EMPLOYER);
     user.setBusinessPerson(employer);
     user.setEnabled(true);
 
     user = userRepository.save(user);
-
-    // enerate JWT token
     String token = jwtTokenProvider.generateToken(user.getEmail(), user.getRole().name());
 
-    // Build response
     AuthDTO response = new AuthDTO();
     response.setToken(token);
     response.setRole(user.getRole().name());
