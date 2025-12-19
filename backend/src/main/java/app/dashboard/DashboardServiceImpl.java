@@ -15,7 +15,7 @@ import app.payroll.PaycheckRepository;
 import app.training.TrainingRepository;
 
 @Service
-public class DashboardServiceImpl implements DashBoardService {
+public class DashboardServiceImpl implements DashboardService {
 
   private final PaycheckRepository paycheckRepository;
   private final EmployeeRepository employeeRepository;
