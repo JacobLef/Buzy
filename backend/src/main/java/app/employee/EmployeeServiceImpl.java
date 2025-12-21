@@ -3,42 +3,38 @@ package app.employee;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import app.business.BusinessPerson;
 import app.business.BusinessPersonRepository;
 import app.business.BusinessRepository;
 import app.business.Company;
 import app.employee.dto.CreateEmployeeRequest;
 import app.employee.dto.UpdateEmployeeRequest;
-import app.employer.EmployerRepository;
 import app.user.PersonStatus;
 import app.user.User;
 import app.user.UserRepository;
 
+/**
+ * Transactional employee service implementation for all employee related functionality.
+ *
+ * @author Jacob Lefkowitz
+ */
 @Service
 @Transactional
 public class EmployeeServiceImpl implements EmployeeService {
 
   private final EmployeeRepository employeeRepository;
-  private final EmployerRepository employerRepository;
   private final BusinessPersonRepository businessPersonRepository;
   private final BusinessRepository businessRepository;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public EmployeeServiceImpl(
-      EmployeeRepository employeeRepository,
-      EmployerRepository employerRepository,
-      BusinessPersonRepository businessPersonRepository,
-      BusinessRepository businessRepository,
-      UserRepository userRepository,
-      PasswordEncoder passwordEncoder) {
+  public EmployeeServiceImpl(EmployeeRepository employeeRepository,
+      BusinessPersonRepository businessPersonRepository, BusinessRepository businessRepository,
+      UserRepository userRepository, PasswordEncoder passwordEncoder) {
     this.employeeRepository = employeeRepository;
-    this.employerRepository = employerRepository;
     this.businessPersonRepository = businessPersonRepository;
     this.businessRepository = businessRepository;
     this.userRepository = userRepository;
@@ -47,33 +43,22 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   @Override
   public Employee createEmployee(CreateEmployeeRequest request) {
-    Employee employee =
-        new Employee(
-            request.name(),
-            request.email(),
-            request.password(),
-            request.salary(),
-            request.position());
+    Employee employee = new Employee(request.name(), request.email(), request.password(),
+        request.salary(), request.position());
 
     if (request.hireDate() != null) {
       employee.setHireDate(request.hireDate());
     }
 
     if (request.companyId() != null) {
-      Company company =
-          businessRepository
-              .findById(request.companyId())
-              .orElseThrow(
-                  () -> new RuntimeException("Company not found with id: " + request.companyId()));
+      Company company = businessRepository.findById(request.companyId()).orElseThrow(
+          () -> new RuntimeException("Company not found with id: " + request.companyId()));
       employee.setCompany(company);
     }
 
     if (request.managerId() != null) {
-      BusinessPerson manager =
-          businessPersonRepository
-              .findById(request.managerId())
-              .orElseThrow(
-                  () -> new RuntimeException("Manager not found with id: " + request.managerId()));
+      BusinessPerson manager = businessPersonRepository.findById(request.managerId()).orElseThrow(
+          () -> new RuntimeException("Manager not found with id: " + request.managerId()));
       employee.setManager(manager);
     }
 
@@ -133,11 +118,8 @@ public class EmployeeServiceImpl implements EmployeeService {
       employee.setHireDate(request.hireDate());
     }
     if (request.managerId() != null) {
-      BusinessPerson manager =
-          businessPersonRepository
-              .findById(request.managerId())
-              .orElseThrow(
-                  () -> new RuntimeException("Manager not found with id: " + request.managerId()));
+      BusinessPerson manager = businessPersonRepository.findById(request.managerId()).orElseThrow(
+          () -> new RuntimeException("Manager not found with id: " + request.managerId()));
       employee.setManager(manager);
     }
     if (request.status() != null) {
@@ -181,15 +163,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   @Override
   public Employee assignManager(Long employeeId, Long managerId) {
-    Employee employee =
-        employeeRepository
-            .findById(employeeId)
-            .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+    Employee employee = employeeRepository.findById(employeeId)
+        .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
 
-    BusinessPerson manager =
-        businessPersonRepository
-            .findById(managerId)
-            .orElseThrow(() -> new RuntimeException("Manager not found with id: " + managerId));
+    BusinessPerson manager = businessPersonRepository.findById(managerId)
+        .orElseThrow(() -> new RuntimeException("Manager not found with id: " + managerId));
 
     employee.setManager(manager);
     return employeeRepository.save(employee);
@@ -223,10 +201,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   @Override
   public Employee removeManager(Long employeeId) {
-    Employee employee =
-        employeeRepository
-            .findById(employeeId)
-            .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+    Employee employee = employeeRepository.findById(employeeId)
+        .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
 
     employee.setManager(null);
     return employeeRepository.save(employee);
@@ -234,10 +210,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   @Override
   public Employee updatePosition(Long employeeId, String newPosition) {
-    Employee employee =
-        employeeRepository
-            .findById(employeeId)
-            .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+    Employee employee = employeeRepository.findById(employeeId)
+        .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
 
     employee.setPosition(newPosition);
     return employeeRepository.save(employee);
@@ -245,10 +219,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   @Override
   public Employee updateStatus(Long employeeId, String status) {
-    Employee employee =
-        employeeRepository
-            .findById(employeeId)
-            .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+    Employee employee = employeeRepository.findById(employeeId)
+        .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
 
     employee.setStatus(PersonStatus.valueOf(status));
     return employeeRepository.save(employee);
