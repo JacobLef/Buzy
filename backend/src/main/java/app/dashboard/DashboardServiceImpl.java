@@ -2,152 +2,178 @@ package app.dashboard;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
-
 import app.dashboard.dto.ActivityDTO;
+import app.employee.Employee;
 import app.employee.EmployeeRepository;
 import app.payroll.Paycheck;
 import app.payroll.PaycheckRepository;
+import app.training.Training;
 import app.training.TrainingRepository;
 
 @Service
-public class DashboardServiceImpl {
+public class DashboardServiceImpl implements DashboardService {
+
+  private static final int RECENT_ACTIVITY_DAYS = 7;
+  private static final int TRAINING_WARNING_DAYS = 7;
 
   private final PaycheckRepository paycheckRepository;
   private final EmployeeRepository employeeRepository;
   private final TrainingRepository trainingRepository;
 
-  public DashboardServiceImpl(
-      PaycheckRepository paycheckRepository,
-      EmployeeRepository employeeRepository,
-      TrainingRepository trainingRepository) {
+  public DashboardServiceImpl(PaycheckRepository paycheckRepository,
+      EmployeeRepository employeeRepository, TrainingRepository trainingRepository) {
     this.paycheckRepository = paycheckRepository;
     this.employeeRepository = employeeRepository;
     this.trainingRepository = trainingRepository;
   }
 
-  /** Get recent activity feed (last 10 events) */
+  @Override
   public List<ActivityDTO> getRecentActivity(Long businessId) {
     List<ActivityDTO> activities = new ArrayList<>();
 
-    LocalDate monthAgoForPaychecks = LocalDate.now().minusDays(7);
-    var recentPaychecks =
-        paycheckRepository.findByBusinessIdAndPayDateAfter(businessId, monthAgoForPaychecks);
+    activities.addAll(getPayrollActivities(businessId));
+    activities.addAll(getNewHireActivities(businessId));
+    activities.addAll(getExpiringTrainingActivities(businessId));
 
-    var paychecksByDate =
-        recentPaychecks.stream().collect(Collectors.groupingBy(Paycheck::getPayDate));
-
-    for (var entry : paychecksByDate.entrySet()) {
-      LocalDate payDate = entry.getKey();
-      List<Paycheck> paychecksForDate = entry.getValue();
-      LocalDateTime payDateTime = payDate.atStartOfDay();
-
-      double totalNetPay = paychecksForDate.stream().mapToDouble(Paycheck::getNetPay).sum();
-
-      int count = paychecksForDate.size();
-      String title =
-          count == 1
-              ? "Payroll generated for "
-                  + (paychecksForDate.get(0).getEmployee() != null
-                      ? paychecksForDate.get(0).getEmployee().getName()
-                      : "Employee")
-              : String.format(
-                  "Payroll generated for %d employees (Total: $%.2f)", count, totalNetPay);
-
-      activities.add(
-          new ActivityDTO(
-              payDate.toEpochDay(),
-              "PAYROLL",
-              title,
-              formatRelativeTime(payDateTime),
-              payDateTime,
-              "completed"));
-    }
-
-    LocalDate threeMonthsAgo = LocalDate.now().minusDays(7);
-    var recentHires =
-        employeeRepository.findByCompanyIdAndHireDateAfter(businessId, threeMonthsAgo);
-
-    for (var employee : recentHires) {
-      LocalDateTime hireDateTime = employee.getHireDate().atStartOfDay();
-
-      activities.add(
-          new ActivityDTO(
-              employee.getId(),
-              "EMPLOYEE",
-              "New Hire: " + employee.getName(),
-              formatRelativeTime(hireDateTime),
-              hireDateTime,
-              "info"));
-    }
-
-    LocalDate weekFromNow = LocalDate.now().plusDays(7);
-    var expiringTrainings =
-        trainingRepository.findExpiringBetween(businessId, LocalDate.now(), weekFromNow);
-
-    for (var training : expiringTrainings) {
-      LocalDateTime expiryDateTime = training.getExpiryDate().atStartOfDay();
-      long daysUntilExpiry = ChronoUnit.DAYS.between(LocalDate.now(), training.getExpiryDate());
-
-      activities.add(
-          new ActivityDTO(
-              training.getId(),
-              "TRAINING",
-              training.getTrainingName() + " expires soon",
-              "Due in " + daysUntilExpiry + (daysUntilExpiry == 1 ? " day" : " days"),
-              expiryDateTime,
-              "warning"));
-    }
-
-    return activities.stream()
-        .sorted(Comparator.comparing(ActivityDTO::timestamp).reversed())
+    return activities.stream().sorted(Comparator.comparing(ActivityDTO::timestamp).reversed())
         .toList();
   }
 
-  /** Format timestamp as relative time ("2 hours ago" or "Due in 3 days") */
-  private String formatRelativeTime(LocalDateTime timestamp) {
-    LocalDateTime now = LocalDateTime.now();
-    boolean isFuture = timestamp.isAfter(now);
-    long minutes = Math.abs(ChronoUnit.MINUTES.between(timestamp, now));
+  private List<ActivityDTO> getPayrollActivities(Long businessId) {
+    LocalDate sevenDaysAgo = LocalDate.now().minusDays(RECENT_ACTIVITY_DAYS);
+    List<Paycheck> recentPaychecks =
+        paycheckRepository.findByBusinessIdAndPayDateAfter(businessId, sevenDaysAgo);
 
-    if (minutes < 1) {
-      return isFuture ? "due now" : "just now";
-    }
-    if (minutes < 60) {
-      String timeStr = minutes == 1 ? "1 minute" : minutes + " minutes";
-      return isFuture ? "due in " + timeStr : timeStr + " ago";
-    }
+    Map<LocalDate, List<Paycheck>> paychecksByDate =
+        recentPaychecks.stream().collect(Collectors.groupingBy(Paycheck::getPayDate));
 
-    long hours = Math.abs(ChronoUnit.HOURS.between(timestamp, now));
-    if (hours < 24) {
-      String timeStr = hours == 1 ? "1 hour" : hours + " hours";
-      return isFuture ? "due in " + timeStr : timeStr + " ago";
+    List<ActivityDTO> activities = new ArrayList<>();
+
+    for (Map.Entry<LocalDate, List<Paycheck>> entry : paychecksByDate.entrySet()) {
+      LocalDate payDate = entry.getKey();
+      List<Paycheck> paychecksForDate = entry.getValue();
+
+      activities.add(createPayrollActivity(payDate, paychecksForDate));
     }
 
-    long days = Math.abs(ChronoUnit.DAYS.between(timestamp, now));
-    if (days == 0) {
-      String timeStr = hours == 1 ? "1 hour" : hours + " hours";
-      return isFuture ? "due in " + timeStr : timeStr + " ago";
-    }
-    if (days < 7) {
-      String timeStr = days == 1 ? "1 day" : days + " days";
-      return isFuture ? "due in " + timeStr : timeStr + " ago";
+    return activities;
+  }
+
+  private ActivityDTO createPayrollActivity(LocalDate payDate, List<Paycheck> paychecks) {
+    LocalDateTime payDateTime = payDate.atStartOfDay();
+    int employeeCount = paychecks.size();
+
+    String title;
+    if (employeeCount == 1) {
+      Paycheck paycheck = paychecks.get(0);
+      String employeeName =
+          paycheck.getEmployee() != null ? paycheck.getEmployee().getName() : "Employee";
+      title = "Payroll generated for " + employeeName;
+    } else {
+      double totalNetPay = paychecks.stream().mapToDouble(Paycheck::getNetPay).sum();
+      title = String.format("Payroll generated for %d employees (Total: $%.2f)", employeeCount,
+          totalNetPay);
     }
 
-    long weeks = Math.abs(ChronoUnit.WEEKS.between(timestamp, now));
-    if (weeks < 4) {
-      String timeStr = weeks == 1 ? "1 week" : weeks + " weeks";
-      return isFuture ? "due in " + timeStr : timeStr + " ago";
+    return new ActivityDTO(payDate.toEpochDay(), "PAYROLL", title,
+        TimeFormatter.formatRelativeTime(payDateTime), payDateTime, "completed");
+  }
+
+  private List<ActivityDTO> getNewHireActivities(Long businessId) {
+    LocalDate sevenDaysAgo = LocalDate.now().minusDays(RECENT_ACTIVITY_DAYS);
+    List<Employee> recentHires =
+        employeeRepository.findByCompanyIdAndHireDateAfter(businessId, sevenDaysAgo);
+
+    List<ActivityDTO> activities = new ArrayList<>();
+
+    for (Employee employee : recentHires) {
+      LocalDateTime hireDateTime = employee.getHireDate().atStartOfDay();
+
+      activities
+          .add(new ActivityDTO(employee.getId(), "EMPLOYEE", "New Hire: " + employee.getName(),
+              TimeFormatter.formatRelativeTime(hireDateTime), hireDateTime, "info"));
     }
 
-    long months = Math.abs(ChronoUnit.MONTHS.between(timestamp, now));
-    String timeStr = months == 1 ? "1 month" : months + " months";
-    return isFuture ? "due in " + timeStr : timeStr + " ago";
+    return activities;
+  }
+
+  private List<ActivityDTO> getExpiringTrainingActivities(Long businessId) {
+    LocalDate today = LocalDate.now();
+    LocalDate weekFromNow = today.plusDays(TRAINING_WARNING_DAYS);
+
+    List<Training> expiringTrainings =
+        trainingRepository.findExpiringBetween(businessId, today, weekFromNow);
+
+    List<ActivityDTO> activities = new ArrayList<>();
+
+    for (Training training : expiringTrainings) {
+      LocalDateTime expiryDateTime = training.getExpiryDate().atStartOfDay();
+      String daysUntilText = TimeFormatter.formatDaysUntil(today, training.getExpiryDate());
+
+      activities.add(new ActivityDTO(training.getId(), "TRAINING",
+          training.getTrainingName() + " expires soon", daysUntilText, expiryDateTime, "warning"));
+    }
+
+    return activities;
+  }
+
+  private static class TimeFormatter {
+
+    static String formatDaysUntil(LocalDate from, LocalDate to) {
+      long days = java.time.temporal.ChronoUnit.DAYS.between(from, to);
+
+      if (days == 0) {
+        return "Due today";
+      } else if (days == 1) {
+        return "Due in 1 day";
+      } else {
+        return "Due in " + days + " days";
+      }
+    }
+
+    static String formatRelativeTime(LocalDateTime timestamp) {
+      LocalDateTime now = LocalDateTime.now();
+      boolean isFuture = timestamp.isAfter(now);
+
+      long minutes = Math.abs(java.time.temporal.ChronoUnit.MINUTES.between(timestamp, now));
+      if (minutes < 1) {
+        return isFuture ? "due now" : "just now";
+      }
+      if (minutes < 60) {
+        return formatTimeUnit(minutes, "minute", isFuture);
+      }
+
+      long hours = Math.abs(java.time.temporal.ChronoUnit.HOURS.between(timestamp, now));
+      if (hours < 24) {
+        return formatTimeUnit(hours, "hour", isFuture);
+      }
+
+      long days = Math.abs(java.time.temporal.ChronoUnit.DAYS.between(timestamp, now));
+      if (days == 0) {
+        return formatTimeUnit(hours, "hour", isFuture);
+      }
+      if (days < 7) {
+        return formatTimeUnit(days, "day", isFuture);
+      }
+
+      long weeks = Math.abs(java.time.temporal.ChronoUnit.WEEKS.between(timestamp, now));
+      if (weeks < 4) {
+        return formatTimeUnit(weeks, "week", isFuture);
+      }
+
+      long months = Math.abs(java.time.temporal.ChronoUnit.MONTHS.between(timestamp, now));
+      return formatTimeUnit(months, "month", isFuture);
+    }
+
+    private static String formatTimeUnit(long value, String unit, boolean isFuture) {
+      String timeStr = value == 1 ? "1 " + unit : value + " " + unit + "s";
+      return isFuture ? "due in " + timeStr : timeStr + " ago";
+    }
   }
 }

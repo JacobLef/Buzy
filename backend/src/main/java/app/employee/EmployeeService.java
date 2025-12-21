@@ -9,7 +9,7 @@ import app.employee.dto.UpdateEmployeeRequest;
 /**
  * Service interface for employee management operations
  *
- * @author Team 10
+ * @author Jacob Lefkowitz
  */
 public interface EmployeeService {
   /**
