@@ -6,15 +6,19 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import app.business.BusinessNotFoundException;
 import app.business.BusinessPerson;
 import app.business.BusinessPersonRepository;
 import app.business.BusinessRepository;
 import app.business.Company;
 import app.employee.dto.CreateEmployeeRequest;
 import app.employee.dto.UpdateEmployeeRequest;
+import app.employer.EmployerNotFoundException;
 import app.user.PersonStatus;
 import app.user.User;
 import app.user.UserRepository;
+
+// TODO: update params to be @NotNull annoated
 
 /**
  * Transactional employee service implementation for all employee related functionality.
@@ -51,14 +55,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     if (request.companyId() != null) {
-      Company company = businessRepository.findById(request.companyId()).orElseThrow(
-          () -> new RuntimeException("Company not found with id: " + request.companyId()));
+      Company company = businessRepository.findById(request.companyId())
+          .orElseThrow(() -> new BusinessNotFoundException(request.companyId()));
       employee.setCompany(company);
     }
 
     if (request.managerId() != null) {
-      BusinessPerson manager = businessPersonRepository.findById(request.managerId()).orElseThrow(
-          () -> new RuntimeException("Manager not found with id: " + request.managerId()));
+      BusinessPerson manager = businessPersonRepository.findById(request.managerId())
+          .orElseThrow(() -> new EmployerNotFoundException(request.managerId()));
       employee.setManager(manager);
     }
 
@@ -118,8 +122,8 @@ public class EmployeeServiceImpl implements EmployeeService {
       employee.setHireDate(request.hireDate());
     }
     if (request.managerId() != null) {
-      BusinessPerson manager = businessPersonRepository.findById(request.managerId()).orElseThrow(
-          () -> new RuntimeException("Manager not found with id: " + request.managerId()));
+      BusinessPerson manager = businessPersonRepository.findById(request.managerId())
+          .orElseThrow(() -> new EmployerNotFoundException(request.managerId()));
       employee.setManager(manager);
     }
     if (request.status() != null) {
@@ -167,7 +171,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
 
     BusinessPerson manager = businessPersonRepository.findById(managerId)
-        .orElseThrow(() -> new RuntimeException("Manager not found with id: " + managerId));
+        .orElseThrow(() -> new EmployerNotFoundException(managerId));
 
     employee.setManager(manager);
     return employeeRepository.save(employee);
