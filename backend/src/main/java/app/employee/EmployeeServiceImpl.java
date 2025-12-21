@@ -86,7 +86,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     Employee employee =
         employeeRepository.findById(id).orElseThrow(() -> new EmployeeNotFoundException(id));
 
-    // Track if email changed to update User table
     String oldEmail = employee.getEmail();
     boolean emailChanged = false;
 
@@ -98,12 +97,10 @@ public class EmployeeServiceImpl implements EmployeeService {
       emailChanged = true;
     }
 
-    // Handle password update: encrypt and sync with User table
     if (request.password() != null && !request.password().trim().isEmpty()) {
       String encryptedPassword = passwordEncoder.encode(request.password());
       employee.setPassword(encryptedPassword);
 
-      // Update User table password for authentication
       Optional<User> userOpt = userRepository.findByBusinessPersonId(id);
       if (userOpt.isPresent()) {
         User user = userOpt.get();
@@ -132,7 +129,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     Employee savedEmployee = employeeRepository.save(employee);
 
-    // Update User table email if it changed
     if (emailChanged) {
       Optional<User> userOpt = userRepository.findByBusinessPersonId(id);
       if (userOpt.isPresent()) {

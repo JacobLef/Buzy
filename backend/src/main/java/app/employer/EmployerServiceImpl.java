@@ -194,8 +194,7 @@ public class EmployerServiceImpl implements EmployerService {
     Employer employer =
         employerRepository.findById(id).orElseThrow(() -> new EmployerNotFoundException(id));
 
-    // Don't allow removing admin from owner
-    if (employer.getIsOwner()) {
+    if (Boolean.TRUE.equals(employer.getIsOwner())) {
       throw new IllegalArgumentException("Cannot remove admin rights from owner");
     }
 
