@@ -3,11 +3,16 @@ package app.employer;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import app.employee.Employee;
 import app.employer.dto.CreateEmployerRequest;
 import app.employer.dto.UpdateEmployerRequest;
 
+/**
+ * Service interface for employers such that this is the outward facing API for all employer related
+ * functionalities.
+ *
+ * @author Jacob Lefkowitz
+ */
 public interface EmployerService {
 
   Employer createEmployer(CreateEmployerRequest request);

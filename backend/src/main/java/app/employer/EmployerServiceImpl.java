@@ -3,11 +3,9 @@ package app.employer;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import app.business.BusinessRepository;
 import app.business.Company;
 import app.employee.Employee;
@@ -16,6 +14,11 @@ import app.employer.dto.UpdateEmployerRequest;
 import app.user.User;
 import app.user.UserRepository;
 
+/**
+ * Transactrional employer service for all employer related functionality.
+ *
+ * @author Jacob Lefkowitz
+ */
 @Service
 @Transactional
 public class EmployerServiceImpl implements EmployerService {
@@ -25,10 +28,8 @@ public class EmployerServiceImpl implements EmployerService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public EmployerServiceImpl(
-      EmployerRepository employerRepository,
-      BusinessRepository businessRepository,
-      UserRepository userRepository,
+  public EmployerServiceImpl(EmployerRepository employerRepository,
+      BusinessRepository businessRepository, UserRepository userRepository,
       PasswordEncoder passwordEncoder) {
     this.employerRepository = employerRepository;
     this.businessRepository = businessRepository;
@@ -38,25 +39,16 @@ public class EmployerServiceImpl implements EmployerService {
 
   @Override
   public Employer createEmployer(CreateEmployerRequest request) {
-    Employer employer =
-        new Employer(
-            request.name(),
-            request.email(),
-            request.password(),
-            request.salary(),
-            request.department(),
-            request.title());
+    Employer employer = new Employer(request.name(), request.email(), request.password(),
+        request.salary(), request.department(), request.title());
 
     if (request.hireDate() != null) {
       employer.setHireDate(request.hireDate());
     }
 
     if (request.companyId() != null) {
-      Company company =
-          businessRepository
-              .findById(request.companyId())
-              .orElseThrow(
-                  () -> new RuntimeException("Company not found with id: " + request.companyId()));
+      Company company = businessRepository.findById(request.companyId()).orElseThrow(
+          () -> new RuntimeException("Company not found with id: " + request.companyId()));
       employer.setCompany(company);
     }
 
@@ -202,8 +194,7 @@ public class EmployerServiceImpl implements EmployerService {
     Employer employer =
         employerRepository.findById(id).orElseThrow(() -> new EmployerNotFoundException(id));
 
-    // Don't allow removing admin from owner
-    if (employer.getIsOwner()) {
+    if (Boolean.TRUE.equals(employer.getIsOwner())) {
       throw new IllegalArgumentException("Cannot remove admin rights from owner");
     }
 

@@ -21,34 +21,50 @@ import app.user.UserNotFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  private static final String NOT_FOUND = "NOT FOUND";
+  private enum ErrorMessage {
+    NOT_FOUND("NOT FOUND"),
+    UNAUTHORIZED("Unauthorized"),
+    FORBIDDEN("Forbidden"),
+    BAD_REQUEST("Bad Request"),
+    INTERNAL_SERVER_ERROR("Internal Server Error");
+
+    private final String msg;
+
+    private ErrorMessage(String msg) {
+      this.msg = msg;
+    }
+
+    public String msg() {
+      return this.msg;
+    }
+  }
 
   @ExceptionHandler(InvalidCredentialsException.class)
   public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(
       InvalidCredentialsException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value(),
-        "Unauthorized", e.getMessage());
+        ErrorMessage.UNAUTHORIZED.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
   }
 
   @ExceptionHandler(InvalidTokenException.class)
   public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value(),
-        "Unauthorized", e.getMessage());
+        ErrorMessage.UNAUTHORIZED.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
   }
 
   @ExceptionHandler(UserDisabledException.class)
   public ResponseEntity<ErrorResponse> handleUserDisabledException(UserDisabledException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.FORBIDDEN.value(),
-        "Forbidden", e.getMessage());
+        ErrorMessage.FORBIDDEN.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
   }
 
   @ExceptionHandler(UserNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(),
-        NOT_FOUND, e.getMessage());
+        ErrorMessage.NOT_FOUND.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
   }
 
@@ -56,7 +72,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleEmployerNotFoundException(
       EmployerNotFoundException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(),
-        NOT_FOUND, e.getMessage());
+        ErrorMessage.NOT_FOUND.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
   }
 
@@ -64,7 +80,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleEmployeeNotFoundException(
       EmployeeNotFoundException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(),
-        NOT_FOUND, e.getMessage());
+        ErrorMessage.NOT_FOUND.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
   }
 
@@ -72,35 +88,36 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleBusinessNotFoundException(
       BusinessNotFoundException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(),
-        NOT_FOUND, e.getMessage());
+        ErrorMessage.NOT_FOUND.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
   }
 
   @ExceptionHandler(InvalidBusinessException.class)
   public ResponseEntity<ErrorResponse> handleInvalidBusinessException(InvalidBusinessException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
-        "Bad Request", e.getMessage());
+        ErrorMessage.BAD_REQUEST.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
-        "Bad Request", e.getMessage());
+        ErrorMessage.BAD_REQUEST.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
   }
 
   @ExceptionHandler(IllegalStateException.class)
   public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException e) {
-    ErrorResponse res = new ErrorResponse(LocalDateTime.now(),
-        HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", e.getMessage());
+    ErrorResponse res =
+        new ErrorResponse(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            ErrorMessage.INTERNAL_SERVER_ERROR.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
   }
 
   @ExceptionHandler(EmailNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleEmailNotFoundException(EmailNotFoundException e) {
     ErrorResponse res = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
-        "Bad Request", e.getMessage());
+        ErrorMessage.BAD_REQUEST.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
   }
 
@@ -131,8 +148,9 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleException(Exception e) {
-    ErrorResponse res = new ErrorResponse(LocalDateTime.now(),
-        HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", e.getMessage());
+    ErrorResponse res =
+        new ErrorResponse(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            ErrorMessage.INTERNAL_SERVER_ERROR.msg(), e.getMessage());
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
   }
 }
