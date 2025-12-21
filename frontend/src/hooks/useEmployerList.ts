@@ -1,15 +1,21 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { getEmployersByBusiness, getAllEmployers } from '../api/employers';
-import { getEmployer } from '../api/employers';
-import type { Employer } from '../types/employer';
-import { PersonStatus } from '../types/person_status';
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { getEmployersByBusiness, getAllEmployers } from "../api/employers";
+import { getEmployer } from "../api/employers";
+import type { Employer } from "../types/employer";
+import { PersonStatus } from "../types/person_status";
 
-type SortField = 'name' | 'salary' | 'hireDate' | 'title' | 'department' | 'directReportsCount';
-type SortDirection = 'asc' | 'desc';
+type SortField =
+  | "name"
+  | "salary"
+  | "hireDate"
+  | "title"
+  | "department"
+  | "directReportsCount";
+type SortDirection = "asc" | "desc";
 
 interface Filters {
   search: string;
-  status: PersonStatus | 'ALL';
+  status: PersonStatus | "ALL";
   department: string;
   sortBy: SortField;
   sortDirection: SortDirection;
@@ -21,27 +27,27 @@ export const useEmployerList = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [filters, setFilters] = useState<Filters>({
-    search: '',
-    status: 'ALL',
-    department: '',
-    sortBy: 'name',
-    sortDirection: 'asc',
+    search: "",
+    status: "ALL",
+    department: "",
+    sortBy: "name",
+    sortDirection: "asc",
   });
 
   // Load business ID from user
   const loadBusinessId = useCallback(async (): Promise<number | null> => {
     try {
-      const userStr = localStorage.getItem('user');
+      const userStr = localStorage.getItem("user");
       if (!userStr) return null;
 
       const user = JSON.parse(userStr);
-      if (user.role === 'EMPLOYER' && user.businessPersonId) {
+      if (user.role === "EMPLOYER" && user.businessPersonId) {
         const response = await getEmployer(user.businessPersonId);
         return response.data.companyId;
       }
       return null;
     } catch (error) {
-      console.error('Failed to load business ID:', error);
+      console.error("Failed to load business ID:", error);
       return null;
     }
   }, []);
@@ -52,14 +58,14 @@ export const useEmployerList = () => {
     setError(null);
     try {
       const businessId = await loadBusinessId();
-      const response = businessId 
+      const response = businessId
         ? await getEmployersByBusiness(businessId)
         : await getAllEmployers();
       setEmployers(response.data);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || 'Failed to load employers');
-      console.error('Error fetching employers:', err);
+      setError(error.response?.data?.message || "Failed to load employers");
+      console.error("Error fetching employers:", err);
     } finally {
       setLoading(false);
     }
@@ -77,22 +83,22 @@ export const useEmployerList = () => {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       result = result.filter(
-        emp =>
+        (emp) =>
           emp.name.toLowerCase().includes(searchLower) ||
           emp.email.toLowerCase().includes(searchLower) ||
           emp.title.toLowerCase().includes(searchLower) ||
-          emp.department.toLowerCase().includes(searchLower)
+          emp.department.toLowerCase().includes(searchLower),
       );
     }
 
     // Apply status filter
-    if (filters.status !== 'ALL') {
-      result = result.filter(emp => emp.status === filters.status);
+    if (filters.status !== "ALL") {
+      result = result.filter((emp) => emp.status === filters.status);
     }
 
     // Apply department filter
     if (filters.department) {
-      result = result.filter(emp => emp.department === filters.department);
+      result = result.filter((emp) => emp.department === filters.department);
     }
 
     // Apply sorting
@@ -101,27 +107,27 @@ export const useEmployerList = () => {
       let bValue: string | number;
 
       switch (filters.sortBy) {
-        case 'name':
+        case "name":
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
           break;
-        case 'salary':
+        case "salary":
           aValue = a.salary;
           bValue = b.salary;
           break;
-        case 'hireDate':
+        case "hireDate":
           aValue = new Date(a.hireDate).getTime();
           bValue = new Date(b.hireDate).getTime();
           break;
-        case 'title':
+        case "title":
           aValue = a.title.toLowerCase();
           bValue = b.title.toLowerCase();
           break;
-        case 'department':
+        case "department":
           aValue = a.department.toLowerCase();
           bValue = b.department.toLowerCase();
           break;
-        case 'directReportsCount':
+        case "directReportsCount":
           aValue = a.directReportsCount;
           bValue = b.directReportsCount;
           break;
@@ -129,8 +135,8 @@ export const useEmployerList = () => {
           return 0;
       }
 
-      if (aValue < bValue) return filters.sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return filters.sortDirection === 'asc' ? 1 : -1;
+      if (aValue < bValue) return filters.sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return filters.sortDirection === "asc" ? 1 : -1;
       return 0;
     });
 
@@ -139,7 +145,7 @@ export const useEmployerList = () => {
 
   // Selection handlers
   const toggleSelect = useCallback((id: number) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -154,7 +160,7 @@ export const useEmployerList = () => {
     if (selectedIds.size === filteredAndSortedEmployers.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredAndSortedEmployers.map(emp => emp.id)));
+      setSelectedIds(new Set(filteredAndSortedEmployers.map((emp) => emp.id)));
     }
   }, [selectedIds.size, filteredAndSortedEmployers]);
 
@@ -163,23 +169,29 @@ export const useEmployerList = () => {
   }, []);
 
   // Filter handlers
-  const updateFilter = useCallback((key: keyof Filters, value: string | PersonStatus | SortField | SortDirection) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  }, []);
+  const updateFilter = useCallback(
+    (
+      key: keyof Filters,
+      value: string | PersonStatus | SortField | SortDirection,
+    ) => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
 
   const clearFilters = useCallback(() => {
     setFilters({
-      search: '',
-      status: 'ALL',
-      department: '',
-      sortBy: 'name',
-      sortDirection: 'asc',
+      search: "",
+      status: "ALL",
+      department: "",
+      sortBy: "name",
+      sortDirection: "asc",
     });
   }, []);
 
   // Get unique departments for filter
   const departments = useMemo(() => {
-    const deptSet = new Set(employers.map(emp => emp.department));
+    const deptSet = new Set(employers.map((emp) => emp.department));
     return Array.from(deptSet).sort();
   }, [employers]);
 
@@ -202,4 +214,3 @@ export const useEmployerList = () => {
     clearFilters,
   };
 };
-
