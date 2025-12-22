@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
-import type { Paycheck } from '../types/payroll';
-import { getPayrollHistory } from '../api/payroll';
+import { useState, useEffect, useMemo } from "react";
+import type { Paycheck } from "../types/payroll";
+import { getPayrollHistory } from "../api/payroll";
 
 export const useEmployeePayroll = (employeeId: number | null) => {
   const [history, setHistory] = useState<Paycheck[]>([]);
@@ -17,10 +17,13 @@ export const useEmployeePayroll = (employeeId: number | null) => {
       try {
         const response = await getPayrollHistory(employeeId);
         // Filter out DRAFT paychecks for employee view
-        const filtered = response.data.filter((p: Paycheck) => p.status !== 'DRAFT');
+        const filtered = response.data.filter(
+          (p: Paycheck) => p.status !== "DRAFT",
+        );
         // Sort: Newest first
-        const sorted = filtered.sort((a: Paycheck, b: Paycheck) => 
-          new Date(b.payDate).getTime() - new Date(a.payDate).getTime()
+        const sorted = filtered.sort(
+          (a: Paycheck, b: Paycheck) =>
+            new Date(b.payDate).getTime() - new Date(a.payDate).getTime(),
         );
         setHistory(sorted);
       } catch (error) {
@@ -37,14 +40,19 @@ export const useEmployeePayroll = (employeeId: number | null) => {
   // Frontend YTD Calculation (MVP Shortcut)
   const stats = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    const thisYearChecks = history.filter(p => new Date(p.payDate).getFullYear() === currentYear);
-    
+    const thisYearChecks = history.filter(
+      (p) => new Date(p.payDate).getFullYear() === currentYear,
+    );
+
     return {
       totalGross: thisYearChecks.reduce((sum, p) => sum + p.grossPay, 0),
       totalNet: thisYearChecks.reduce((sum, p) => sum + p.netPay, 0),
       totalTax: thisYearChecks.reduce((sum, p) => sum + p.taxDeduction, 0),
-      totalInsurance: thisYearChecks.reduce((sum, p) => sum + p.insuranceDeduction, 0),
-      paycheckCount: thisYearChecks.length
+      totalInsurance: thisYearChecks.reduce(
+        (sum, p) => sum + p.insuranceDeduction,
+        0,
+      ),
+      paycheckCount: thisYearChecks.length,
     };
   }, [history]);
 
@@ -52,4 +60,3 @@ export const useEmployeePayroll = (employeeId: number | null) => {
 
   return { history, latestPaycheck, stats, loading };
 };
-
