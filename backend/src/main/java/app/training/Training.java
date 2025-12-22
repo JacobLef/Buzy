@@ -3,7 +3,6 @@ package app.training;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-
 import app.business.BusinessPerson;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -50,18 +49,12 @@ public class Training {
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
-  // -------------------- Constructors --------------------
-
   public Training() {
     this.createdAt = LocalDateTime.now();
   }
 
-  public Training(
-      String trainingName,
-      String description,
-      LocalDate completionDate,
-      LocalDate expiryDate,
-      boolean required) {
+  public Training(String trainingName, String description, LocalDate completionDate,
+      LocalDate expiryDate, boolean required) {
     this.trainingName = trainingName;
     this.description = description;
     this.completionDate = completionDate;
@@ -76,8 +69,6 @@ public class Training {
       this.createdAt = LocalDateTime.now();
     }
   }
-
-  // -------------------- Business Logic --------------------
 
   /**
    * Check if the training is completed. A training is considered completed if completionDate is not
@@ -100,8 +91,6 @@ public class Training {
     }
     return ChronoUnit.DAYS.between(LocalDate.now(), expiryDate);
   }
-
-  // -------------------- Getters / Setters --------------------
 
   public Long getId() {
     return id;
@@ -165,20 +154,9 @@ public class Training {
 
   @Override
   public String toString() {
-    return "Training{"
-        + "id="
-        + id
-        + ", trainingName='"
-        + trainingName
-        + '\''
-        + ", personType="
-        + (person != null ? person.getPersonType() : "null")
-        + ", personName="
-        + (person != null ? person.getName() : "null")
-        + ", required="
-        + required
-        + ", expired="
-        + isExpired()
-        + '}';
+    return "Training{" + "id=" + id + ", trainingName='" + trainingName + '\'' + ", personType="
+        + (person != null ? person.getPersonType() : "null") + ", personName="
+        + (person != null ? person.getName() : "null") + ", required=" + required + ", expired="
+        + isExpired() + '}';
   }
 }
