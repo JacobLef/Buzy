@@ -3,13 +3,13 @@ import type { Paycheck } from '../../types/payroll';
 import { Download, Printer } from 'lucide-react';
 import { Button } from '../ui/Button';
 
-export const PaycheckModal = ({ 
-  isOpen, 
-  onClose, 
-  check 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
+export const PaycheckModal = ({
+  isOpen,
+  onClose,
+  check
+}: {
+  isOpen: boolean;
+  onClose: () => void;
   check: Paycheck | null;
 }) => {
   if (!check) return null;
