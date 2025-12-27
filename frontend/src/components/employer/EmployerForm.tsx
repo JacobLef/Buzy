@@ -82,19 +82,16 @@ export const EmployerForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Build base data
     const baseData: any = {
       ...formData,
     };
-    
-    // For edit mode, only include password if it's provided and not empty
+
     if (mode === 'edit') {
       if (!formData.password || formData.password.trim() === '') {
-        // Remove password field if empty in edit mode
         delete baseData.password;
       }
     }
-    
+
     await onSubmit(baseData as UpdateEmployerRequest | CreateEmployerRequest);
   };
 
@@ -210,11 +207,11 @@ export const EmployerForm = ({
             )}
           </>
         )}
-        
+
         {!canEditFullProfile && mode === 'edit' && (
           <div className="md:col-span-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800">
-              Limited edit mode: You can only edit name, email, and password. 
+              Limited edit mode: You can only edit name, email, and password.
               Contact an admin to modify other fields.
             </p>
           </div>
