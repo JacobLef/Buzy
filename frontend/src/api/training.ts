@@ -1,9 +1,5 @@
 import api from "./axios";
-import type { Training } from "../types/training";
-import type {
-  CreateTrainingRequest,
-  UpdateTrainingRequest,
-} from "../types/training";
+import type { Training, CreateTrainingRequest, UpdateTrainingRequest } from "../types/training";
 
 export const addTraining = (personId: number, data: CreateTrainingRequest) =>
   api.post<Training>(`/api/training/person/${personId}`, data);
