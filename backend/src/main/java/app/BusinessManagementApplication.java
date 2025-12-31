@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * Main Spring Boot Application Entry Point Business Management Platform
  *
- * @author Team 10
+ * @author Jacob Lefkowitz
  */
 @SpringBootApplication
 public class BusinessManagementApplication {

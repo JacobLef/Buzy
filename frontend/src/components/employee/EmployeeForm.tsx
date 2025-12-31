@@ -183,7 +183,7 @@ export const EmployeeForm = ({
           />
         </div>
 
-        {mode === 'edit' && (
+        {mode === 'edit' && 'status' in formData && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Status *
@@ -244,4 +244,3 @@ export const EmployeeForm = ({
     </form>
   );
 };
-

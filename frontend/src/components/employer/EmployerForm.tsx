@@ -10,7 +10,7 @@ interface EmployerFormProps {
   saving?: boolean;
   mode?: 'edit' | 'create';
   companyId?: number;
-  canEditFullProfile?: boolean; // If false, only name, email, password can be edited
+  canEditFullProfile?: boolean;
 }
 
 export const EmployerForm = ({
@@ -188,7 +188,7 @@ export const EmployerForm = ({
               />
             </div>
 
-            {mode === 'edit' && (
+            {mode === 'edit' && 'status' in formData && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Status *
@@ -217,19 +217,21 @@ export const EmployerForm = ({
           </div>
         )}
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Hire Date *
-          </label>
-          <input
-            type="date"
-            name="hireDate"
-            value={formData.hireDate}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-          />
-        </div>
+        {canEditFullProfile && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Hire Date *
+            </label>
+            <input
+              type="date"
+              name="hireDate"
+              value={formData.hireDate}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
@@ -243,4 +245,3 @@ export const EmployerForm = ({
     </form>
   );
 };
-

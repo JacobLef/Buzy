@@ -14,7 +14,7 @@ export const EmployeeFieldDisplay = ({
   className = ''
 }: EmployeeFieldDisplayProps) => {
   const displayValue = value ?? 'N/A';
-  
+
   return (
     <div className={`flex items-center gap-4 ${className}`}>
       <div className="p-3 bg-gray-100 rounded-lg">
