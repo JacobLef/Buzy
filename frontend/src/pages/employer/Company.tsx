@@ -94,7 +94,6 @@ export default function CompanyView() {
   const [saving, setSaving] = useState(false);
   const [companyId, setCompanyId] = useState<number | null>(null);
   const [currentUserEmployer, setCurrentUserEmployer] = useState<Employer | null>(null);
-  const [showAdminSection, setShowAdminSection] = useState(false);
 
   // Get highlightEmployer from URL query params
   const highlightEmployerId = searchParams.get('highlightEmployer');
@@ -103,7 +102,6 @@ export default function CompanyView() {
   const isOwner = currentUserEmployer?.isOwner ?? false;
   const isAdmin = currentUserEmployer?.isAdmin ?? false;
   const canEditCompany = isAdmin || isOwner;
-  const canManageAdmins = isOwner;
 
   // Fetch data from backend
   useEffect(() => {
