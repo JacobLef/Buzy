@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { signupEmployer } from "../api/auth";
 import type { AuthResponse } from "../types/auth";
 import type { CreateEmployerRequest } from "../types/employer";
@@ -7,7 +7,6 @@ import { getAllBusinesses } from "../api/businesses";
 import type { Company } from "../types/business";
 
 export default function SignupEmployer() {
-    const navigate = useNavigate();
     const [formData, setFormData] = useState<CreateEmployerRequest>({
         name: "",
         email: "",

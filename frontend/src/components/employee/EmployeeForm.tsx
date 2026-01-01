@@ -60,7 +60,6 @@ export const EmployeeForm = ({
       });
       setManagerId(null);
     } else if (employee && mode === 'edit') {
-      console.log('Loading employee data into form:', employee); // Debug log
       setFormData({
         name: employee.name,
         email: employee.email,
@@ -73,7 +72,7 @@ export const EmployeeForm = ({
       });
       setManagerId(employee.managerId);
     }
-  }, [employee?.id, mode, companyId]); // Use employee.id as dependency to trigger when employee changes
+  }, [employee?.id, mode, companyId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -93,21 +92,17 @@ export const EmployeeForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Ensure managerId is set correctly
-    // Build base data
     const baseData: any = {
       ...formData,
       managerId: managerId || 0,
     };
-    
-    // For edit mode, only include password if it's provided and not empty
+
     if (mode === 'edit') {
       if (!formData.password || formData.password.trim() === '') {
-        // Remove password field if empty in edit mode
         delete baseData.password;
       }
     }
-    
+
     await onSubmit(baseData as UpdateEmployeeRequest | CreateEmployeeRequest);
   };
 
@@ -188,7 +183,7 @@ export const EmployeeForm = ({
           />
         </div>
 
-        {mode === 'edit' && (
+        {mode === 'edit' && 'status' in formData && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Status *
@@ -249,4 +244,3 @@ export const EmployeeForm = ({
     </form>
   );
 };
-

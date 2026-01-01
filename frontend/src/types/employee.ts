@@ -1,4 +1,4 @@
-import { PersonStatus } from "./person_status";  
+import { PersonStatus } from "./person_status";
 
 export interface Employee {
   id: number;
@@ -10,30 +10,30 @@ export interface Employee {
   companyId: number;
   companyName: string;
   position: string;
-  managerId: number | null; 
+  managerId: number | null;
   managerName: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateEmployeeRequest {
-  name: string,
-  email: string,
-  password: string,
-  salary: number,
-  position: string,
-  companyId: number,
-  managerId: number,
-  hireDate: string
-};
+  name: string;
+  email: string;
+  password: string;
+  salary: number;
+  position: string;
+  companyId: number;
+  managerId: number;
+  hireDate: string;
+}
 
 export interface UpdateEmployeeRequest {
-  name: string,
-  email: string,
-  password?: string | null,
-  salary: number,
-  position: string,
-  managerId: number,
-  hireDate: string,
-  status: PersonStatus
-};
+  name: string;
+  email: string;
+  password?: string;
+  salary: number;
+  position: string;
+  managerId: number;
+  hireDate: string;
+  status: PersonStatus;
+}

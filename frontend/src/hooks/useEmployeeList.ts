@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getEmployeesByBusiness, getAllEmployees } from '../api/employees';
-import { getEmployer, getEmployersByBusiness } from '../api/employers';
+import { getEmployer } from '../api/employers';
 import type { Employee } from '../types/employee';
-import type { Employer } from '../types/employer';
 import { PersonStatus } from '../types/person_status';
 
 // Unified type for display purposes
@@ -72,7 +71,7 @@ export const useEmployeeList = () => {
     setError(null);
     try {
       const businessId = await loadBusinessId();
-      const response = businessId 
+      const response = businessId
         ? await getEmployeesByBusiness(businessId)
         : await getAllEmployees();
 
@@ -129,7 +128,7 @@ export const useEmployeeList = () => {
 
     // Apply department filter
     if (filters.department) {
-      result = result.filter(member => 
+      result = result.filter(member =>
         member.department === filters.department
       );
     }

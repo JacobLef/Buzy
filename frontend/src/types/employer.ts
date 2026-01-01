@@ -6,7 +6,7 @@ export interface Employer {
   email: string;
   status: PersonStatus;
   salary: number;
-  hireDate: string; 
+  hireDate: string;
   companyId: number;
   companyName: string;
   department: string;
@@ -32,7 +32,7 @@ export interface CreateEmployerRequest {
 export interface UpdateEmployerRequest {
   name: string;
   email: string;
-  password?: string | null;
+  password?: string;
   salary: number;
   department: string;
   title: string;

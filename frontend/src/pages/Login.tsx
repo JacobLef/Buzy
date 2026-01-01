@@ -1,13 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate, Link } from "react-router-dom";
-import { login } from "../api/auth";
-import type { AuthResponse } from "../types/auth";
+import { Link } from "react-router-dom";
 
 /**
  * Login page component
  * Handles UI rendering and user input, delegates business logic to useAuth hook
- * TODO: Replace with Ren's styled auth pages later
  * @author: Qing Mi
  */
 function Login() {

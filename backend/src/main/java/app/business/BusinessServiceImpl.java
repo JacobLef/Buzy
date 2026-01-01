@@ -2,11 +2,9 @@ package app.business;
 
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import app.business.dto.CreateBusinessRequest;
 import app.business.dto.UpdateBusinessRequest;
 
@@ -24,13 +22,8 @@ public class BusinessServiceImpl implements BusinessService {
 
   @Override
   public Company createBusiness(CreateBusinessRequest request) {
-    Company company =
-        Company.builder()
-            .name(request.name())
-            .address(request.address())
-            .industry(request.industry())
-            .foundedDate(request.foundedDate())
-            .build();
+    Company company = Company.builder().name(request.name()).address(request.address())
+        .industry(request.industry()).foundedDate(request.foundedDate()).build();
     return businessRepository.save(company);
   }
 
@@ -53,7 +46,7 @@ public class BusinessServiceImpl implements BusinessService {
       }
       return businessRepository.save(companyToUpdate);
     }
-    throw new RuntimeException("Business not found with id: " + id);
+    throw new InvalidBusinessException("Business not found with id: " + id);
   }
 
   @Override
@@ -61,16 +54,15 @@ public class BusinessServiceImpl implements BusinessService {
     if (businessRepository.existsById(id)) {
       businessRepository.deleteById(id);
     } else {
-      throw new RuntimeException("Business not found with id: " + id);
+      throw new InvalidBusinessException("Business not found with id: " + id);
     }
   }
 
   @Override
   @Transactional(readOnly = true)
   public Company getBusiness(Long id) {
-    return businessRepository
-        .findById(id)
-        .orElseThrow(() -> new RuntimeException("Business not found with id: " + id));
+    return businessRepository.findById(id)
+        .orElseThrow(() -> new InvalidBusinessException("Business not found with id: " + id));
   }
 
   @Override
