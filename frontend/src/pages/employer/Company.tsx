@@ -10,13 +10,12 @@ import { Modal } from '../../components/ui/Modal';
 import { useCompanyNavigation } from '../../hooks/useCompanyNavigation';
 import { buildOrgTree, flattenTree } from '../../utils/orgTreeBuilder';
 import { getEmployeesByBusiness, updateEmployee } from '../../api/employees';
-import { getEmployersByBusiness, getEmployer, promoteToAdmin, removeAdmin, updateEmployer } from '../../api/employers';
+import { getEmployersByBusiness, getEmployer, updateEmployer } from '../../api/employers';
 import { EmployerForm } from '../../components/employer/EmployerForm';
 import type { EmployeeNode, DepartmentSummary } from '../../types/company';
 import type { Employee, UpdateEmployeeRequest } from '../../types/employee';
 import type { Employer, UpdateEmployerRequest } from '../../types/employer';
 import { authStorage } from '../../utils/authStorage';
-import { Shield, Crown, UserPlus, UserMinus } from 'lucide-react';
 
 /**
  * Extract department information from tree
@@ -33,11 +32,11 @@ function extractDepartments(
   // Recursive function to collect department members
   const collectMembers = (node: EmployeeNode) => {
     const employer = employers.find(e => e.id === node.id);
-    
+
     // If this is an employer node (potential department head)
     if (employer && employer.department) {
       const deptName = employer.department;
-      
+
       // Initialize department if not exists
       if (!deptMap.has(deptName)) {
         deptMap.set(deptName, {
@@ -46,22 +45,22 @@ function extractDepartments(
           members: new Set(),
         });
       }
-      
+
       // Count this employer
       deptMap.get(deptName)!.members.add(node.id);
     }
-    
+
     // Recursively count children
     if (node.children) {
       node.children.forEach(child => {
         // Determine child's department
         const childEmployer = employers.find(e => e.id === child.id);
         const childDept = childEmployer?.department || node.department;
-        
+
         if (deptMap.has(childDept)) {
           deptMap.get(childDept)!.members.add(child.id);
         }
-        
+
         collectMembers(child);
       });
     }
@@ -96,10 +95,10 @@ export default function CompanyView() {
   const [companyId, setCompanyId] = useState<number | null>(null);
   const [currentUserEmployer, setCurrentUserEmployer] = useState<Employer | null>(null);
   const [showAdminSection, setShowAdminSection] = useState(false);
-  
+
   // Get highlightEmployer from URL query params
   const highlightEmployerId = searchParams.get('highlightEmployer');
-  
+
   // Calculate permissions
   const isOwner = currentUserEmployer?.isOwner ?? false;
   const isAdmin = currentUserEmployer?.isAdmin ?? false;
@@ -136,7 +135,7 @@ export default function CompanyView() {
           setEmployees(employeesResponse.data);
           setEmployers(employersResponse.data);
           setCompanyId(currentBusinessId);
-          
+
           // Get current user's employer info for permissions
           if (userStr) {
             const user = JSON.parse(userStr);
@@ -163,7 +162,7 @@ export default function CompanyView() {
   // Build tree structure from backend data
   const fullTree = useMemo(() => {
     const tree = buildOrgTree(employees, employers);
-    
+
     return tree;
   }, [employees, employers]);
 
@@ -243,7 +242,7 @@ export default function CompanyView() {
     const highlighted = currentRoot.id === searchHighlight;
 
     return (
-      <MindMapNode 
+      <MindMapNode
         node={currentRoot}
         isExpanded={expanded}
         isHighlighted={highlighted}
@@ -275,8 +274,8 @@ export default function CompanyView() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 h-[calc(100vh-20px)] flex flex-col"> 
-      
+    <div className="max-w-7xl mx-auto p-6 h-[calc(100vh-20px)] flex flex-col">
+
       {/* 1. Header (Fixed Height) */}
       <div className="flex-none flex flex-col md:flex-row justify-between gap-4 bg-white p-4 rounded-xl shadow-md border border-slate-50 z-20 mb-6">
         {/* ... Header Content ... */}
@@ -301,8 +300,8 @@ export default function CompanyView() {
         <div className="flex gap-2">
           {viewMode === 'MICRO_TREE' && (
             <div className="relative filter-menu-container">
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 onClick={() => setShowFilterMenu(!showFilterMenu)}
               >
                 <Filter size={18} className="mr-2" />
@@ -343,7 +342,7 @@ export default function CompanyView() {
       </div>
 
       {/* 2. Content Area (Fills remaining space) */}
-      <div className="flex-1 min-h-0 relative"> 
+      <div className="flex-1 min-h-0 relative">
         {/* min-h-0 is crucial for nested flex scrolling */}
 
         {/* MACRO VIEW */}
@@ -365,7 +364,7 @@ export default function CompanyView() {
         {/* MICRO VIEW - Fixed Scrolling Container */}
         {viewMode === 'MICRO_TREE' && currentRoot && (
           <div className="bg-slate-50/50 rounded-2xl border border-slate-200 h-full relative flex flex-col">
-            
+
             {/* Badge */}
             <div className="absolute top-4 left-4 z-20">
               <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
@@ -416,7 +415,7 @@ export default function CompanyView() {
           // Find the person in employees or employers array
           const employee = employees.find(emp => emp.id === employeeId);
           const employer = employers.find(emp => emp.id === employeeId);
-          
+
           if (employer) {
             setEditingPerson(employer);
             setIsPersonEmployer(true);
@@ -446,7 +445,7 @@ export default function CompanyView() {
               mode="edit"
               companyId={companyId || undefined}
               canEditFullProfile={
-                canEditCompany && 
+                canEditCompany &&
                 editingPerson.id !== currentUserEmployer?.id &&
                 !(isAdmin && !isOwner && (editingPerson as Employer).isOwner)
               }
@@ -461,7 +460,7 @@ export default function CompanyView() {
                   ]);
                   setEmployees(employeesResponse.data);
                   setEmployers(employersResponse.data);
-                  
+
                   // Refresh current user if editing self
                   if (editingPerson.id === currentUserEmployer?.id) {
                     const user = authStorage.getUser();
@@ -470,7 +469,7 @@ export default function CompanyView() {
                       setCurrentUserEmployer(currentEmployerResponse.data);
                     }
                   }
-                  
+
                   setIsEditModalOpen(false);
                   setEditingPerson(null);
                   setSelectedEmp(null);
