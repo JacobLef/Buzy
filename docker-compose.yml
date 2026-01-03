@@ -1,0 +1,24 @@
+services:
+  api:
+    image: openjdk-17
+    build: .
+    ports:
+      - "80:80"
+    volumes:
+      - ./app/api
+    networks:
+      - buzy_network
+
+  frontend:
+    image: nginx
+    build: .
+    ports:
+      - "5173:5174"
+    volumes:
+      - ./app/frontend
+    networks:
+      - buzy_network
+
+networks:
+  buzy_network:
+    driver: bridge
