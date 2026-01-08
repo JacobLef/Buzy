@@ -1,21 +1,19 @@
 services:
-  api:
-    image: openjdk-17
-    build: .
+  backend:
+    build: ./backend
+    container_name: backend
     ports:
       - "80:80"
-    volumes:
-      - ./app/api
     networks:
       - buzy_network
 
   frontend:
-    image: nginx
-    build: .
+    build: ./frontend
+    container_name: frontend
     ports:
-      - "5173:5174"
-    volumes:
-      - ./app/frontend
+      - "5173:80"
+    depends_on:
+      - backend
     networks:
       - buzy_network
 
