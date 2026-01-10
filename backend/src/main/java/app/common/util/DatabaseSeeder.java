@@ -42,8 +42,6 @@ public class DatabaseSeeder implements CommandLineRunner {
   private static final StringConverter CONVERTER = new StringConverterImpl();
   private static final String CSV_PREFIX = "data/csv";
 
-  // ==================== Log Message Enum ====================
-
   // @formatter:off
   private enum LogMessage {
     SEEDING_DISABLED("Database seeding is disabled"),

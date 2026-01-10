@@ -1,9 +1,20 @@
 services:
+  docker-mysql:
+    image: mysql:9.5
+    environment:
+      - MY_SQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MY_SQL_PASSWORD=${DB_PASSWORD}
+      - MY_SQL_DATABASE=database
+      - MY_SQL_USERNAME=${DB_USERNAME}
+    ports:
+      - 3307:3006
   backend:
     build: ./backend
     container_name: backend
     ports:
-      - "80:80"
+      - 8080:8080
+    depends_on:
+      - docker-mysql
     networks:
       - buzy_network
 
@@ -11,7 +22,7 @@ services:
     build: ./frontend
     container_name: frontend
     ports:
-      - "5173:80"
+      - 5173:80
     depends_on:
       - backend
     networks:
