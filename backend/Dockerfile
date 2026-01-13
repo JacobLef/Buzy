@@ -13,7 +13,7 @@ COPY src ./src
 
 RUN ./mvnw clean package -DskipTests
 
-FROM eclipse-temurin:17-jre
+FROM amazoncorretto:17-alpine-jdk
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
